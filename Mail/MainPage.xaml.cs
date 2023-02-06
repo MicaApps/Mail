@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mail.Pages;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,6 +33,17 @@ namespace Mail
             var titleBar = ApplicationView.GetForCurrentView().TitleBar;
             titleBar.ButtonBackgroundColor = Colors.Transparent;
             titleBar.InactiveBackgroundColor = Colors.Transparent;
+        }
+
+        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args != null)
+            {
+                if (args.IsSettingsSelected)
+                {
+                    NavigationContent.Navigate(typeof(SettingsPage));
+                }
+            }
         }
     }
 }

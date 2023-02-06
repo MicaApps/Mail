@@ -10,10 +10,13 @@
     mucx:BackdropMaterial.ApplyToRootOrPageBackground="True">
 
     <Grid>
-        <mucx:NavigationView IsTitleBarAutoPaddingEnabled="False">
+        <mucx:NavigationView IsTitleBarAutoPaddingEnabled="False" SelectionChanged="NavigationView_SelectionChanged">
             <mucx:NavigationView.Resources>
                 <Thickness x:Key="NavigationViewContentMargin">0,44,0,0</Thickness>
             </mucx:NavigationView.Resources>
+            <mucx:NavigationView.Content>
+                <Frame x:Name="NavigationContent" />
+            </mucx:NavigationView.Content>
         </mucx:NavigationView>
     </Grid>
 </Page>
