@@ -5,53 +5,53 @@
     xmlns:local="using:Mail"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:mucx="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    mucx:BackdropMaterial.ApplyToRootOrPageBackground="True">
+    muxc:BackdropMaterial.ApplyToRootOrPageBackground="True">
 
     <Grid>
-        <mucx:NavigationView IsTitleBarAutoPaddingEnabled="False" SelectionChanged="NavigationView_SelectionChanged" >
-            <mucx:NavigationView.Resources>
+        <muxc:NavigationView IsTitleBarAutoPaddingEnabled="False" SelectionChanged="NavigationView_SelectionChanged" >
+            <muxc:NavigationView.Resources>
                 <Thickness x:Key="NavigationViewContentMargin">0,44,0,0</Thickness>
-            </mucx:NavigationView.Resources>
+            </muxc:NavigationView.Resources>
 
-            <mucx:NavigationView.AutoSuggestBox>
+            <muxc:NavigationView.AutoSuggestBox>
                 <AutoSuggestBox QueryIcon="Find" AutomationProperties.Name="Search" />
-            </mucx:NavigationView.AutoSuggestBox>
+            </muxc:NavigationView.AutoSuggestBox>
 
-            <mucx:NavigationView.MenuItems>
-                <mucx:NavigationViewItem Content="Inbox" Tag="Inbox" x:Name="Inbox">
-                    <mucx:NavigationViewItem.Icon>
+            <muxc:NavigationView.MenuItems>
+                <muxc:NavigationViewItem Content="Inbox" Tag="Inbox" x:Name="Inbox">
+                    <muxc:NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Mail" />
-                    </mucx:NavigationViewItem.Icon>
-                </mucx:NavigationViewItem>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <mucx:NavigationViewItem Content="Sent" Tag="Sent" x:Name="Sent">
-                    <mucx:NavigationViewItem.Icon>
+                <muxc:NavigationViewItem Content="Sent" Tag="Sent" x:Name="Sent">
+                    <muxc:NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Send" />
-                    </mucx:NavigationViewItem.Icon>
-                </mucx:NavigationViewItem>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <mucx:NavigationViewItem Content="Draft" Tag="Draft" x:Name="Draft">
-                    <mucx:NavigationViewItem.Icon>
+                <muxc:NavigationViewItem Content="Draft" Tag="Draft" x:Name="Draft">
+                    <muxc:NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Edit" />
-                    </mucx:NavigationViewItem.Icon>
-                </mucx:NavigationViewItem>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <mucx:NavigationViewItem Content="Deleted" Tag="Deleted" x:Name="Deleted">
-                    <mucx:NavigationViewItem.Icon>
+                <muxc:NavigationViewItem Content="Deleted" Tag="Deleted" x:Name="Deleted">
+                    <muxc:NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Delete" />
-                    </mucx:NavigationViewItem.Icon>
-                </mucx:NavigationViewItem>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-            </mucx:NavigationView.MenuItems>
+            </muxc:NavigationView.MenuItems>
 
-            <mucx:NavigationView.Content>
+            <muxc:NavigationView.Content>
                 <Frame x:Name="NavigationContent" />
-            </mucx:NavigationView.Content>
+            </muxc:NavigationView.Content>
             
             
             
-        </mucx:NavigationView>
+        </muxc:NavigationView>
     </Grid>
 </Page>
