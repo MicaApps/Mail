@@ -19,6 +19,33 @@
                 <AutoSuggestBox QueryIcon="Find" AutomationProperties.Name="Search" />
             </mucx:NavigationView.AutoSuggestBox>
 
+            <mucx:NavigationView.MenuItems>
+                <mucx:NavigationViewItem Content="Inbox" Tag="Inbox" x:Name="Inbox">
+                    <mucx:NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Mail" />
+                    </mucx:NavigationViewItem.Icon>
+                </mucx:NavigationViewItem>
+
+                <mucx:NavigationViewItem Content="Sent" Tag="Sent" x:Name="Sent">
+                    <mucx:NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Send" />
+                    </mucx:NavigationViewItem.Icon>
+                </mucx:NavigationViewItem>
+
+                <mucx:NavigationViewItem Content="Draft" Tag="Draft" x:Name="Draft">
+                    <mucx:NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Edit" />
+                    </mucx:NavigationViewItem.Icon>
+                </mucx:NavigationViewItem>
+
+                <mucx:NavigationViewItem Content="Deleted" Tag="Deleted" x:Name="Deleted">
+                    <mucx:NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Delete" />
+                    </mucx:NavigationViewItem.Icon>
+                </mucx:NavigationViewItem>
+
+            </mucx:NavigationView.MenuItems>
+
             <mucx:NavigationView.Content>
                 <Frame x:Name="NavigationContent" />
             </mucx:NavigationView.Content>
