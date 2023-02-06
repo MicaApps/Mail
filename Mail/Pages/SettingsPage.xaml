@@ -7,12 +7,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:labs="using:CommunityToolkit.Labs.WinUI" 
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
 
     <Grid>
-        <StackPanel Spacing="4">
-
+        <StackPanel Spacing="8" Margin="12,8">
+            <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" Margin="8,8,12,32"/>
             <labs:SettingsCard x:Name="AccountSetting"
                            Description="Manager your Account"
                            Header="Account"
