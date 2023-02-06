@@ -4,11 +4,61 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Mail.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI" xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
+        <StackPanel Spacing="4">
 
+            <labs:SettingsCard x:Name="settingsCard"
+                           Description="A SettingsCard can be made clickable and you can leverage the Command property or Click event."
+                           Header="A clickable SettingsCard"
+                           IsClickEnabled="True"
+                           >
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE799;" />
+                </labs:SettingsCard.HeaderIcon>
+            </labs:SettingsCard>
+
+            <labs:SettingsCard ActionIconToolTip="Open in new window"
+                           Description="You can customize the ActionIcon and ActionIconToolTip."
+                           Header="Customizing the ActionIcon"
+                           IsClickEnabled="True"
+                           >
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE12B;" />
+                </labs:SettingsCard.HeaderIcon>
+                <labs:SettingsCard.ActionIcon>
+                    <FontIcon Glyph="&#xE8A7;" />
+                </labs:SettingsCard.ActionIcon>
+            </labs:SettingsCard>
+
+            <labs:SettingsExpander x:Name="settingsCard4"
+                               Description="The SettingsExpander has the same properties as a Card, and you can set SettingsCard as part of the Items collection."
+                               Header="SettingsExpander"
+                               >
+                <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+                <labs:SettingsExpander.HeaderIcon>
+                    <FontIcon Glyph="&#xE91B;" />
+                </labs:SettingsExpander.HeaderIcon>
+                <ComboBox SelectedIndex="0">
+                    <ComboBoxItem>Option 1</ComboBoxItem>
+                    <ComboBoxItem>Option 2</ComboBoxItem>
+                    <ComboBoxItem>Option 3</ComboBoxItem>
+                </ComboBox>
+
+                <labs:SettingsExpander.Items>
+                    <labs:SettingsCard Header="A basic SettingsCard within an SettingsExpander">
+                        <Button Content="Button" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard Description="SettingsCard within an Expander can be made clickable too!"
+                                   Header="This item can be clicked"
+                                   IsClickEnabled="True" />
+                </labs:SettingsExpander.Items>
+            </labs:SettingsExpander>
+
+        </StackPanel>
     </Grid>
 </Page>
