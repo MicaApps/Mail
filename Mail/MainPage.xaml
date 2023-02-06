@@ -1,0 +1,19 @@
+﻿<Page
+    x:Class="Mail.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Mail"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mucx="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    mucx:BackdropMaterial.ApplyToRootOrPageBackground="True">
+
+    <Grid>
+        <mucx:NavigationView IsTitleBarAutoPaddingEnabled="False">
+            <mucx:NavigationView.Resources>
+                <Thickness x:Key="NavigationViewContentMargin">0,44,0,0</Thickness>
+            </mucx:NavigationView.Resources>
+        </mucx:NavigationView>
+    </Grid>
+</Page>
