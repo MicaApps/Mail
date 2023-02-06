@@ -12,50 +12,56 @@
     <Grid>
         <StackPanel Spacing="4">
 
-            <labs:SettingsCard x:Name="settingsCard"
-                           Description="A SettingsCard can be made clickable and you can leverage the Command property or Click event."
-                           Header="A clickable SettingsCard"
+            <labs:SettingsCard x:Name="AccountSetting"
+                           Description="Manager your Account"
+                           Header="Account"
                            IsClickEnabled="True"
                            >
                 <labs:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE799;" />
+                    <FontIcon Glyph="&#xE13D;" />
                 </labs:SettingsCard.HeaderIcon>
             </labs:SettingsCard>
 
-            <labs:SettingsCard ActionIconToolTip="Open in new window"
-                           Description="You can customize the ActionIcon and ActionIconToolTip."
-                           Header="Customizing the ActionIcon"
-                           IsClickEnabled="True"
-                           >
-                <labs:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE12B;" />
-                </labs:SettingsCard.HeaderIcon>
-                <labs:SettingsCard.ActionIcon>
-                    <FontIcon Glyph="&#xE8A7;" />
-                </labs:SettingsCard.ActionIcon>
-            </labs:SettingsCard>
 
-            <labs:SettingsExpander x:Name="settingsCard4"
-                               Description="The SettingsExpander has the same properties as a Card, and you can set SettingsCard as part of the Items collection."
-                               Header="SettingsExpander"
+            <labs:SettingsExpander x:Name="AutoReply"
+                               Description="AutoReply"
+                               Header="AutoReply"
                                >
+                                    
+                        <ToggleSwitch/>
+                
+                <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+                <labs:SettingsExpander.HeaderIcon>
+                    <FontIcon Glyph="&#xE172;" />
+                </labs:SettingsExpander.HeaderIcon>
+
+
+                <labs:SettingsExpander.Items>
+                    <labs:SettingsCard Header="Outlook">
+                        <ToggleSwitch/>
+                    </labs:SettingsCard>
+
+                </labs:SettingsExpander.Items>
+            </labs:SettingsExpander>
+
+            <labs:SettingsExpander x:Name="FoucsOn"
+                               Description="Foucs On"
+                               Header="Foucs On"
+                               >
+
+                <ToggleSwitch/>
+
                 <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
                 <labs:SettingsExpander.HeaderIcon>
                     <FontIcon Glyph="&#xE91B;" />
                 </labs:SettingsExpander.HeaderIcon>
-                <ComboBox SelectedIndex="0">
-                    <ComboBoxItem>Option 1</ComboBoxItem>
-                    <ComboBoxItem>Option 2</ComboBoxItem>
-                    <ComboBoxItem>Option 3</ComboBoxItem>
-                </ComboBox>
+
 
                 <labs:SettingsExpander.Items>
-                    <labs:SettingsCard Header="A basic SettingsCard within an SettingsExpander">
-                        <Button Content="Button" />
+                    <labs:SettingsCard Header="Outlook">
+                        <ToggleSwitch/>
                     </labs:SettingsCard>
-                    <labs:SettingsCard Description="SettingsCard within an Expander can be made clickable too!"
-                                   Header="This item can be clicked"
-                                   IsClickEnabled="True" />
+
                 </labs:SettingsExpander.Items>
             </labs:SettingsExpander>
 
