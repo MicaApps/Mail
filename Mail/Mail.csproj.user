@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Source>E:\Users\Shomn\Downloads\mail2.png</Source>
+    <SmallTileSource>E:\Users\Shomn\Downloads\mail2.png</SmallTileSource>
+    <MediumTileSource>E:\Users\Shomn\Downloads\mail2.png</MediumTileSource>
+    <WideTileSource>E:\Users\Shomn\Downloads\mail2.png</WideTileSource>
+    <LargeTileSource>E:\Users\Shomn\Downloads\mail2.png</LargeTileSource>
+    <AppIconSource>E:\Users\Shomn\Downloads\mail2.png</AppIconSource>
+    <SplashScreenSource>E:\Users\Shomn\Downloads\mail2.png</SplashScreenSource>
+    <PackageLogoSource>E:\Users\Shomn\Downloads\mail2.png</PackageLogoSource>
+  </PropertyGroup>
+</Project>
