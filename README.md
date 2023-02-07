@@ -1,4 +1,4 @@
-# ![Mail2@2x](https://user-images.githubusercontent.com/6630660/217159691-a230d068-b1ae-4933-b5b6-e0cef8a0b6db.png) Mail
+#  ![Mail2@2x](https://user-images.githubusercontent.com/6630660/217154573-9489676a-b34b-4523-aba4-05cd9ed81f97.png) Mail
 
 Aim at providing UWP Mail for Windows.
 
