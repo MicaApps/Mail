@@ -1,4 +1,4 @@
-# ![Mail (自定义)](https://user-images.githubusercontent.com/6630660/216893304-e5991a38-77b0-41fb-9f0e-252e0ab48d05.png) Mail
+# ![Mail2@2x](https://user-images.githubusercontent.com/6630660/217159691-a230d068-b1ae-4933-b5b6-e0cef8a0b6db.png) Mail
 
 Aim at providing UWP Mail for Windows.
 
