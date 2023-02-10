@@ -9,5 +9,5 @@ Azure Active Directory
 https://github.com/DiskTools/Mail/tree/GraphAuth
 
 ## Build
-Add unget package
+Add unget source
 https://github.com/CommunityToolkit/Labs-Windows
