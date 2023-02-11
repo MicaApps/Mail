@@ -11,9 +11,9 @@ https://github.com/DiskTools/Mail/tree/GraphAuth
 
 2. RichTextToolbar
 
-2.1. https://www.syncfusion.com/uwp-ui-controls/richtextbox
+- https://www.syncfusion.com/uwp-ui-controls/richtextbox
 
-2.2. Windows Community Toolkit/Controls/TextToolbar
+- Windows Community Toolkit/Controls/TextToolbar
 
 
 ## Build
