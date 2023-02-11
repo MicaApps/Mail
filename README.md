@@ -9,7 +9,9 @@ Azure Active Directory
 https://github.com/DiskTools/Mail/tree/GraphAuth
 
 RichTextToolbar
+
 https://www.syncfusion.com/uwp-ui-controls/richtextbox
+
 Windows Community Toolkit/Controls/TextToolbar
 
 
