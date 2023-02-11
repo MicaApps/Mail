@@ -8,6 +8,11 @@ Aim at providing UWP Mail for Windows.
 Azure Active Directory
 https://github.com/DiskTools/Mail/tree/GraphAuth
 
+RichTextToolbar
+https://www.syncfusion.com/uwp-ui-controls/richtextbox
+Windows Community Toolkit/Controls/TextToolbar
+
+
 ## Build
 Add unget source
 https://github.com/CommunityToolkit/Labs-Windows
