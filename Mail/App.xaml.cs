@@ -1,5 +1,10 @@
-﻿using System;
+﻿using CommunityToolkit.Graph.Extensions;
+using Mail.Pages;
+using Mail.Servives;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -28,8 +33,21 @@ namespace Mail
         /// </summary>
         public App()
         {
+            Services = ConfigureServices();
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+        }
+
+        public new static App Current => (App) Application.Current;
+
+        public IServiceProvider Services { get; }
+
+
+        private static IServiceProvider ConfigureServices()
+        {
+            return new ServiceCollection()
+                .AddSingleton<OutlookService, OutlookService>()
+                .BuildServiceProvider();
         }
 
         /// <summary>
@@ -37,7 +55,7 @@ namespace Mail
         /// 将在启动应用程序以打开特定文件等情况下使用。
         /// </summary>
         /// <param name="e">有关启动请求和过程的详细信息。</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
             Frame rootFrame = Window.Current.Content as Frame;
 
@@ -57,6 +75,19 @@ namespace Mail
 
                 // 将框架放在当前窗口中
                 Window.Current.Content = rootFrame;
+
+                if(e.PreviousExecutionState != ApplicationExecutionState.Running)
+                {
+                    bool loadState = (e.PreviousExecutionState == ApplicationExecutionState.Terminated);
+                    SplashPage extendedSplash = new SplashPage(e.SplashScreen, loadState);
+                    rootFrame.Content = extendedSplash;
+                    Window.Current.Content = rootFrame;
+                    
+                    var service = Services.GetService<OutlookService>();
+                    
+                    var result = await service.SignInSilent();
+                    extendedSplash.DismissExtendedSplash(result);
+                }
             }
 
             if (e.PrelaunchActivated == false)

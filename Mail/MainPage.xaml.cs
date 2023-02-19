@@ -1,22 +1,13 @@
-﻿using Mail.Pages;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+﻿
+using Mail.Pages;
+using Mail.Servives;
+using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel.Core;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
 
 namespace Mail
@@ -29,40 +20,54 @@ namespace Mail
         public MainPage()
         {
             this.InitializeComponent();
-            CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
-            var titleBar = ApplicationView.GetForCurrentView().TitleBar;
-            titleBar.ButtonBackgroundColor = Colors.Transparent;
-            titleBar.InactiveBackgroundColor = Colors.Transparent;
+
         }
 
-        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (args != null)
+            if (e.Parameter is bool value )
             {
-                if (args.IsSettingsSelected)
+                if (value)
                 {
-                    NavigationContent.Navigate(typeof(SettingsPage));
+                    MainNavigation.Navigate(typeof(HomePage));
+                }
+                else
+                {
+                    MainNavigation.Navigate(typeof(LoginPage));
+                    
+                }
+            }
+            App.Current.Services.GetService<OutlookService>().Provider.StateChanged += Provider_StateChanged;
+        }
+
+        private void Provider_StateChanged(object sender, CommunityToolkit.Authentication.ProviderStateChangedEventArgs e)
+        {
+            if (e.OldState != e.NewState)
+            {
+                switch(e.NewState)
+                {
+                    case CommunityToolkit.Authentication.ProviderState.SignedIn:
+                        MainNavigation.Navigate(typeof(HomePage));
+                        break;
+                    case CommunityToolkit.Authentication.ProviderState.SignedOut:
+                        MainNavigation.Navigate(typeof(LoginPage));
+                        break;
                 }
             }
         }
 
+        
+
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            
             var coreApplicationViewTitleBar = CoreApplication.GetCurrentView().TitleBar;
-            coreApplicationViewTitleBar.LayoutMetricsChanged += (s, args) => UpdateAppTitle(s);
             coreApplicationViewTitleBar.ExtendViewIntoTitleBar = true;
-
-            Window.Current.SetTitleBar(AppTitleBar);
 
             var applicationViewTitleBar = ApplicationView.GetForCurrentView().TitleBar;
             applicationViewTitleBar.ButtonBackgroundColor = Colors.Transparent;
             applicationViewTitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
         }
 
-        private void UpdateAppTitle(CoreApplicationViewTitleBar coreTitleBar)
-        {
-            Thickness currMargin = AppTitleBar.Margin;
-            AppTitleBar.Margin = new Thickness(currMargin.Left, currMargin.Top, coreTitleBar.SystemOverlayRightInset, currMargin.Bottom);
-        }
     }
 }
