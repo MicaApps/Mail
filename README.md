@@ -17,5 +17,22 @@ https://github.com/DiskTools/Mail/tree/GraphAuth
 
 
 ## Build
-Add nuget source guide , see :
+### 1. Add `CommunityToolkitLab` nuget source guide , see :
 https://github.com/CommunityToolkit/Labs-Windows
+
+### 2. Create Sercret.cs in the `Mail` folder, the source code like this
+```
+namespace Mail
+{
+    internal class Secrect
+    {
+        public static readonly string AadClientId = "Your AAD ClientId";
+    }
+}
+
+```
+
+## Contribution
+You should not develop and commit code directly based on the `main` branch, but instead create your own branch, submit a `Pull Request` after the code is completed, and merge into the `main` branch after `Code Review` by others.
+
+
