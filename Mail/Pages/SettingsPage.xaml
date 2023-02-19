@@ -2,34 +2,37 @@
     x:Class="Mail.Pages.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Mail.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI" 
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:local="using:Mail.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
     <Grid>
-        <StackPanel Spacing="8" Margin="12,8">
-            <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" Margin="8,8,12,32"/>
-            <labs:SettingsCard x:Name="AccountSetting"
-                           Description="Manager your Account"
-                           Header="Account"
-                           IsClickEnabled="True"
-                           >
+        <StackPanel Margin="12,8" Spacing="8">
+            <TextBlock
+                Margin="8,8,12,32"
+                Style="{ThemeResource TitleTextBlockStyle}"
+                Text="Settings" />
+            <labs:SettingsCard
+                x:Name="AccountSetting"
+                Description="Manager your Account"
+                Header="Account"
+                IsClickEnabled="True">
                 <labs:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE13D;" />
                 </labs:SettingsCard.HeaderIcon>
             </labs:SettingsCard>
 
 
-            <labs:SettingsExpander x:Name="AutoReply"
-                               Description="AutoReply"
-                               Header="AutoReply"
-                               >
-                                    
-                        <ToggleSwitch/>
-                
+            <labs:SettingsExpander
+                x:Name="AutoReply"
+                Description="AutoReply"
+                Header="AutoReply">
+
+                <ToggleSwitch />
+
                 <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
                 <labs:SettingsExpander.HeaderIcon>
                     <FontIcon Glyph="&#xE172;" />
@@ -38,18 +41,18 @@
 
                 <labs:SettingsExpander.Items>
                     <labs:SettingsCard Header="Outlook">
-                        <ToggleSwitch/>
+                        <ToggleSwitch />
                     </labs:SettingsCard>
 
                 </labs:SettingsExpander.Items>
             </labs:SettingsExpander>
 
-            <labs:SettingsExpander x:Name="FoucsOn"
-                               Description="Foucs On"
-                               Header="Foucs On"
-                               >
+            <labs:SettingsExpander
+                x:Name="FoucsOn"
+                Description="Foucs On"
+                Header="Foucs On">
 
-                <ToggleSwitch/>
+                <ToggleSwitch />
 
                 <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
                 <labs:SettingsExpander.HeaderIcon>
@@ -59,7 +62,7 @@
 
                 <labs:SettingsExpander.Items>
                     <labs:SettingsCard Header="Outlook">
-                        <ToggleSwitch/>
+                        <ToggleSwitch />
                     </labs:SettingsCard>
 
                 </labs:SettingsExpander.Items>

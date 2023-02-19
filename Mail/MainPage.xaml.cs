@@ -45,5 +45,24 @@ namespace Mail
                 }
             }
         }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            var coreApplicationViewTitleBar = CoreApplication.GetCurrentView().TitleBar;
+            coreApplicationViewTitleBar.LayoutMetricsChanged += (s, args) => UpdateAppTitle(s);
+            coreApplicationViewTitleBar.ExtendViewIntoTitleBar = true;
+
+            Window.Current.SetTitleBar(AppTitleBar);
+
+            var applicationViewTitleBar = ApplicationView.GetForCurrentView().TitleBar;
+            applicationViewTitleBar.ButtonBackgroundColor = Colors.Transparent;
+            applicationViewTitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+        }
+
+        private void UpdateAppTitle(CoreApplicationViewTitleBar coreTitleBar)
+        {
+            Thickness currMargin = AppTitleBar.Margin;
+            AppTitleBar.Margin = new Thickness(currMargin.Left, currMargin.Top, coreTitleBar.SystemOverlayRightInset, currMargin.Bottom);
+        }
     }
 }
