@@ -17,5 +17,5 @@ https://github.com/DiskTools/Mail/tree/GraphAuth
 
 
 ## Build
-Add unget source
+Add nuget source guide , see :
 https://github.com/CommunityToolkit/Labs-Windows
