@@ -20,7 +20,7 @@ https://github.com/DiskTools/Mail/tree/GraphAuth
 ### 1. Add `CommunityToolkitLab` nuget source guide , see :
 https://github.com/CommunityToolkit/Labs-Windows
 
-### 2. Create Sercret.cs in the `Mail` folder, the source code like this
+### 2. Create `Secret.cs` in the `Mail` folder, the source code like this
 ```
 namespace Mail
 {
