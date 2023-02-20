@@ -15,6 +15,33 @@
                 Margin="8,8,12,32"
                 Style="{ThemeResource TitleTextBlockStyle}"
                 Text="Settings" />
+            <Button  Click="SignOut" Content="退出" />
+            <Button  Click="GetEmail" Content="获取联系人" />
+            <ListView  x:Name="list" Margin="0,7.5,0,0">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:Email" >
+                        <Grid Padding="0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+                            <Ellipse
+                                    Width="32"
+                                    Height="32"
+                                    Fill="SteelBlue" />
+                            <StackPanel Grid.Column="2" >
+                                <TextBlock FontWeight="SemiBold" Text="{x:Bind name}" />
+                                <TextBlock
+                                        FontSize="13"
+                                        Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                        Text="{x:Bind address}" />
+
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
             <labs:SettingsCard
                 x:Name="AccountSetting"
                 Description="Manager your Account"

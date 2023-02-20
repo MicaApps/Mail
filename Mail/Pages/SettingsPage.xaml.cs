@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Mail.Servives;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Graph;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -22,9 +26,28 @@ namespace Mail.Pages
     /// </summary>
     public sealed partial class SettingsPage : Page
     {
+        //数据绑定
+        private static ObservableCollection<Email> data = new ObservableCollection<Email>();
         public SettingsPage()
         {
             this.InitializeComponent();
+            list.ItemsSource = data;
         }
+        public void SignOut(object sender, RoutedEventArgs e)
+        {
+            _ = App.Current.Services.GetService<OutlookService>().SignOut(null);
+        }
+        public async void GetEmail(object sender, RoutedEventArgs e)
+        {
+            var emails =await App.Current.Services.GetService<OutlookService>().GetEmail();
+
+            data.Clear();
+            for (int i = 0; i < emails.Count; i++)
+            {
+                data.Add(emails[i]);
+            }
+        }
+
+
     }
 }

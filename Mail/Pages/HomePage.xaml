@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     Loaded="Page_Loaded"
+    xmlns:page="using:Mail.Pages"
     mc:Ignorable="d">
 
     <Grid>
@@ -59,9 +60,9 @@
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
             </muxc:NavigationView.Resources>
             <muxc:NavigationView.PaneCustomContent>
-                <ListView Margin="0,7.5,0,0">
+                <ListView  x:Name="listView" Margin="0,7.5,0,0">
                     <ListView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="page:Email" >
                             <Grid Padding="0,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -72,18 +73,17 @@
                                     Width="32"
                                     Height="32"
                                     Fill="SteelBlue" />
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock FontWeight="SemiBold" Text="Nick Spe" />
+                                <StackPanel Grid.Column="2" >
+                                    <TextBlock FontWeight="SemiBold" Text="{x:Bind name}" />
                                     <TextBlock
                                         FontSize="13"
                                         Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                        Text="jiomfmouri@gmail.com" />
+                                        Text="{x:Bind address}" />
+                                   
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
-                    <x:String>A</x:String>
-                    <x:String>A</x:String>
                 </ListView>
             </muxc:NavigationView.PaneCustomContent>
 
