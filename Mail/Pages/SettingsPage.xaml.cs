@@ -1,4 +1,5 @@
 ﻿using Mail.Class;
+using Mail.Class.Models;
 using Mail.Servives;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
@@ -9,7 +10,7 @@ namespace Mail.Pages
 {
     public sealed partial class SettingsPage : Page
     {
-        private readonly ObservableCollection<Email> EmailSource = new ObservableCollection<Email>();
+        private readonly ObservableCollection<ContactModel> ContactSource = new ObservableCollection<ContactModel>();
 
         public SettingsPage()
         {
@@ -23,8 +24,8 @@ namespace Mail.Pages
 
         public async void GetEmail(object sender, RoutedEventArgs e)
         {
-            EmailSource.Clear();
-            EmailSource.AddRange(await App.Services.GetService<OutlookService>().GetEmailAsync());
+            ContactSource.Clear();
+            ContactSource.AddRange(await App.Services.GetService<OutlookService>().GetContactsAsync());
         }
     }
 }

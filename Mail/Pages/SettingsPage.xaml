@@ -4,7 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:labs="using:CommunityToolkit.Labs.WinUI"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:class="using:Mail.Class"
+      xmlns:models="using:Mail.Class.Models"
       mc:Ignorable="d">
 
     <Grid>
@@ -20,10 +20,10 @@
                 <Button Click="GetEmail"
                         Content="获取联系人" />
                 <ListView x:Name="list"
-                          ItemsSource="{x:Bind EmailSource}"
+                          ItemsSource="{x:Bind ContactSource}"
                           Margin="0,7.5,0,0">
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="class:Email">
+                        <DataTemplate x:DataType="models:ContactModel">
                             <Grid Padding="0,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />

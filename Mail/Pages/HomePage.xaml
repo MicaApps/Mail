@@ -5,7 +5,8 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-      xmlns:class="using:Mail.Class"
+      xmlns:models="using:Mail.Class.Models"
+      xmlns:enum="using:Mail.Enum"
       mc:Ignorable="d">
 
     <Grid>
@@ -58,9 +59,9 @@
             <muxc:NavigationView.PaneCustomContent>
                 <ListView  x:Name="listView"
                            Margin="0,7.5,0,0"
-                           ItemsSource="{x:Bind EmailSource}">
+                           ItemsSource="{x:Bind AccountSource}">
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="class:Email">
+                        <DataTemplate x:DataType="models:AccountModel">
                             <Grid Padding="0,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -88,7 +89,7 @@
                 <muxc:NavigationViewItemSeparator />
                 <muxc:NavigationViewItem x:Name="Inbox"
                                          Content="Inbox"
-                                         Tag="Inbox">
+                                         Tag="{x:Bind enum:MailFolderType.Inbox}">
                     <muxc:NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Download" />
                     </muxc:NavigationViewItem.Icon>
@@ -96,7 +97,7 @@
 
                 <muxc:NavigationViewItem x:Name="Sent"
                                          Content="Sent"
-                                         Tag="Sent">
+                                         Tag="{x:Bind enum:MailFolderType.SentItems}">
                     <muxc:NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Upload" />
                     </muxc:NavigationViewItem.Icon>
@@ -104,7 +105,7 @@
 
                 <muxc:NavigationViewItem x:Name="Deleted"
                                          Content="Deleted"
-                                         Tag="Deleted">
+                                         Tag="{x:Bind enum:MailFolderType.Deleted}">
                     <muxc:NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Delete" />
                     </muxc:NavigationViewItem.Icon>
@@ -112,7 +113,7 @@
 
                 <muxc:NavigationViewItem x:Name="Draft"
                                          Content="Draft"
-                                         Tag="Draft">
+                                         Tag="{x:Bind enum:MailFolderType.Drafts}">
                     <muxc:NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Edit" />
                     </muxc:NavigationViewItem.Icon>

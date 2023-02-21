@@ -1,9 +1,9 @@
-﻿
-using Mail.Class;
+﻿using Mail.Class.Models;
 using System.Collections.ObjectModel;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media.Animation;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 
@@ -11,14 +11,14 @@ namespace Mail.Pages
 {
     public sealed partial class HomePage : Page
     {
-        private readonly ObservableCollection<Email> EmailSource = new ObservableCollection<Email>();
+        private readonly ObservableCollection<AccountModel> AccountSource = new ObservableCollection<AccountModel>();
 
         public HomePage()
         {
             InitializeComponent();
 
             //Test only
-            EmailSource.Add(new Email("TestName", "TestAddress"));
+            AccountSource.Add(new AccountModel("TestName", "TestAddress"));
 
             CoreApplicationViewTitleBar SystemBar = CoreApplication.GetCurrentView().TitleBar;
             SystemBar.LayoutMetricsChanged += SystemBar_LayoutMetricsChanged;
@@ -47,15 +47,15 @@ namespace Mail.Pages
             AppTitleBar.Margin = new Thickness(sender.SystemOverlayLeftInset, AppTitleBar.Margin.Top, sender.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
         }
 
-        private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        private async void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             if (args.IsSettingsInvoked)
             {
-                NavigationContent.Navigate(typeof(SettingsPage));
+                NavigationContent.Navigate(typeof(SettingsPage), null, new DrillInNavigationTransitionInfo());
             }
             else
             {
-                //Navigato to other page if needed
+                NavigationContent.Navigate(typeof(MailFolderDetailsPage), args.InvokedItemContainer.Tag, new DrillInNavigationTransitionInfo());
             }
         }
     }
