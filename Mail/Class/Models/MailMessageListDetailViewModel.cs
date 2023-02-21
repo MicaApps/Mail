@@ -1,5 +1,5 @@
 ﻿using Mail.Class.Data;
-using Windows.UI.Xaml.Media.Imaging;
+using Mail.Enum;
 
 namespace Mail.Class.Models
 {
@@ -12,6 +12,8 @@ namespace Mail.Class.Models
         public string SenderName => InnerData.Sender.Name;
 
         public string Content => InnerData.Content.Content;
+
+        public MailMessageContentType ContentType => InnerData.Content.ContentType;
 
         private readonly MailMessageData InnerData;
 

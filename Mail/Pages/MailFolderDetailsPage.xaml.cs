@@ -24,6 +24,7 @@ namespace Mail.Pages
         public MailFolderDetailsPage()
         {
             InitializeComponent();
+            Environment.SetEnvironmentVariable("WEBVIEW2_DEFAULT_BACKGROUND_COLOR", "0");
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -51,7 +52,17 @@ namespace Mail.Pages
                         {
                             if (View.FindChildOfType<WebView2>() is WebView2 Browser)
                             {
-                                await Browser.EnsureCoreWebView2Async().AsTask().ContinueWith((_) => Browser.NavigateToString(Model.Content), TaskScheduler.FromCurrentSynchronizationContext());
+                                await Browser.EnsureCoreWebView2Async();
+
+                                if (Model.ContentType == MailMessageContentType.Text)
+                                {
+                                    Browser.NavigateToString(@$"<html><head><style type=""text/css"">body{{color: #fff; background-color: transparent;}}</style></head><body>{Model.Content}</body></html>");
+                                }
+                                else
+                                {
+                                    Browser.NavigateToString(Model.Content);
+                                }
+
                                 break;
                             }
 

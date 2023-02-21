@@ -8,6 +8,7 @@
       xmlns:models="using:Mail.Class.Models"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       mc:Ignorable="d"
+      NavigationCacheMode="Required"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
