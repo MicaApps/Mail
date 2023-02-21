@@ -1,41 +1,37 @@
 ﻿using CommunityToolkit.Authentication;
+using Mail.Servives.Interface;
 using Microsoft.Identity.Client;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
 
 namespace Mail.Servives
 {
     // TODO: Re-Implement OAuthProvider, PCA and MsalProvider only support Microsoft Account
     internal abstract class OAuthMailService : IMailService
     {
+        private readonly IPublicClientApplication ClientApplication;
 
-        private BaseProvider provider;
+        public BaseProvider Provider { get; }
 
-        public BaseProvider Provider { get => provider; }
+        protected abstract string[] Scopes { get; }
 
-        private IPublicClientApplication application;
+        public virtual bool IsSupported => true;
 
-        private string[] scopes;
+        public virtual bool IsSignIn => Provider.State == ProviderState.SignedIn;
 
-        public OAuthMailService(string[] scopes, WebAccountProviderConfig config)
+        protected OAuthMailService(WebAccountProviderType Type)
         {
-            var builder = PublicClientApplicationBuilder.Create(config.ClientId)
+            ClientApplication = PublicClientApplicationBuilder.Create(Secrect.AadClientId)
                 .WithClientName("MailService")
                 .WithClientVersion("1.0.0")
                 .WithAuthority("https://login.microsoftonline.com/common")
                 .WithDefaultRedirectUri()
-                .WithBroker(true);
-            application = builder.Build();
-            this.scopes= scopes;
-            this.provider = new MsalProvider(application, scopes);
-            this.provider.StateChanged += Provider_StateChanged;
+                .WithBroker(true)
+                .Build();
+
+            Provider = new MsalProvider(ClientApplication, Scopes);
+            Provider.StateChanged += Provider_StateChanged;
         }
 
         private void Provider_StateChanged(object sender, ProviderStateChangedEventArgs e)
@@ -43,31 +39,27 @@ namespace Mail.Servives
             Trace.WriteLine($"AuthService: {e.NewState}");
         }
 
-        public async Task SignIn()
+        public async Task SignInAsync()
         {
             //Workaround for MsalProvider sign-in not pop up
-            var account = (await application.GetAccountsAsync()).FirstOrDefault();
-            await application.AcquireTokenInteractive(scopes)
-                .WithAccount(account)
-                .ExecuteAsync();
-            await provider.TrySilentSignInAsync();
+            var account = (await ClientApplication.GetAccountsAsync()).FirstOrDefault();
+            await ClientApplication.AcquireTokenInteractive(Scopes).WithAccount(account).ExecuteAsync();
+            await Provider.TrySilentSignInAsync();
         }
 
-        public async Task<bool> SignInSilent()
+        public async Task<bool> SignInSilentAsync()
         {
             return await Provider.TrySilentSignInAsync();
         }
 
-        public async Task SignOut(IAccount account)
+        public async Task SignOutAsync(IAccount account)
         {
             await Provider.SignOutAsync();
         }
 
-        public Task<bool> InitSerivice() { return Task.FromResult(true); }
-
-        public bool IsSupported() => true;
-
-        public bool IsSignIn() => provider.State == ProviderState.SignedIn;
-
+        public virtual Task<bool> InitSeriviceAsync()
+        {
+            return Task.FromResult(true);
+        }
     }
 }

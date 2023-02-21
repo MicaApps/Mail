@@ -1,100 +1,98 @@
-﻿<Page
-    x:Class="Mail.Pages.SettingsPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
-    xmlns:local="using:Mail.Pages"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    mc:Ignorable="d">
+﻿<Page x:Class="Mail.Pages.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:class="using:Mail.Class"
+      mc:Ignorable="d">
 
     <Grid>
-        <StackPanel Margin="12,8" Spacing="8">
-            <TextBlock
-                Margin="8,8,12,32"
-                Style="{ThemeResource TitleTextBlockStyle}"
-                Text="Settings" />
-            <Button  Click="SignOut" Content="退出" />
-            <Button  Click="GetEmail" Content="获取联系人" />
-            <ListView  x:Name="list" Margin="0,7.5,0,0">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="local:Email" >
-                        <Grid Padding="0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="1*" />
-                            </Grid.ColumnDefinitions>
-                            <Ellipse
-                                    Width="32"
-                                    Height="32"
-                                    Fill="SteelBlue" />
-                            <StackPanel Grid.Column="2" >
-                                <TextBlock FontWeight="SemiBold" Text="{x:Bind name}" />
-                                <TextBlock
-                                        FontSize="13"
-                                        Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                        Text="{x:Bind address}" />
+        <ScrollViewer HorizontalScrollMode="Disabled"
+                      VerticalScrollMode="Auto">
+            <StackPanel Margin="12,8"
+                        Spacing="8">
+                <TextBlock Margin="8,8,12,32"
+                           Style="{ThemeResource TitleTextBlockStyle}"
+                           Text="Settings" />
+                <Button Click="SignOut"
+                        Content="退出" />
+                <Button Click="GetEmail"
+                        Content="获取联系人" />
+                <ListView x:Name="list"
+                          ItemsSource="{x:Bind EmailSource}"
+                          Margin="0,7.5,0,0">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="class:Email">
+                            <Grid Padding="0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+                                <Ellipse Width="32"
+                                         Height="32"
+                                         Fill="SteelBlue" />
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock FontWeight="SemiBold"
+                                               Text="{x:Bind Name}" />
+                                    <TextBlock FontSize="13"
+                                               Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                               Text="{x:Bind Address}" />
 
-                            </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-            <labs:SettingsCard
-                x:Name="AccountSetting"
-                Description="Manager your Account"
-                Header="Account"
-                IsClickEnabled="True">
-                <labs:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE13D;" />
-                </labs:SettingsCard.HeaderIcon>
-            </labs:SettingsCard>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <labs:SettingsCard x:Name="AccountSetting"
+                                   Description="Manager your Account"
+                                   Header="Account"
+                                   IsClickEnabled="True">
+                    <labs:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE13D;" />
+                    </labs:SettingsCard.HeaderIcon>
+                </labs:SettingsCard>
 
+                <labs:SettingsExpander x:Name="AutoReply"
+                                       Description="AutoReply"
+                                       Header="AutoReply">
 
-            <labs:SettingsExpander
-                x:Name="AutoReply"
-                Description="AutoReply"
-                Header="AutoReply">
+                    <ToggleSwitch />
 
-                <ToggleSwitch />
+                    <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+                    <labs:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE172;" />
+                    </labs:SettingsExpander.HeaderIcon>
 
-                <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
-                <labs:SettingsExpander.HeaderIcon>
-                    <FontIcon Glyph="&#xE172;" />
-                </labs:SettingsExpander.HeaderIcon>
+                    <labs:SettingsExpander.Items>
+                        <labs:SettingsCard Header="Outlook">
+                            <ToggleSwitch />
+                        </labs:SettingsCard>
 
+                    </labs:SettingsExpander.Items>
+                </labs:SettingsExpander>
 
-                <labs:SettingsExpander.Items>
-                    <labs:SettingsCard Header="Outlook">
-                        <ToggleSwitch />
-                    </labs:SettingsCard>
+                <labs:SettingsExpander x:Name="FoucsOn"
+                                       Description="Foucs On"
+                                       Header="Foucs On">
 
-                </labs:SettingsExpander.Items>
-            </labs:SettingsExpander>
+                    <ToggleSwitch />
 
-            <labs:SettingsExpander
-                x:Name="FoucsOn"
-                Description="Foucs On"
-                Header="Foucs On">
+                    <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+                    <labs:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE91B;" />
+                    </labs:SettingsExpander.HeaderIcon>
 
-                <ToggleSwitch />
+                    <labs:SettingsExpander.Items>
+                        <labs:SettingsCard Header="Outlook">
+                            <ToggleSwitch />
+                        </labs:SettingsCard>
 
-                <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
-                <labs:SettingsExpander.HeaderIcon>
-                    <FontIcon Glyph="&#xE91B;" />
-                </labs:SettingsExpander.HeaderIcon>
+                    </labs:SettingsExpander.Items>
+                </labs:SettingsExpander>
 
-
-                <labs:SettingsExpander.Items>
-                    <labs:SettingsCard Header="Outlook">
-                        <ToggleSwitch />
-                    </labs:SettingsCard>
-
-                </labs:SettingsExpander.Items>
-            </labs:SettingsExpander>
-
-        </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

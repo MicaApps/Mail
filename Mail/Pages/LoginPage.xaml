@@ -1,15 +1,14 @@
-﻿<Page
-    x:Class="Mail.Pages.LoginPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Mail.Pages"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ctkl="using:CommunityToolkit.Labs.WinUI"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    mc:Ignorable="d">
+﻿<Page x:Class="Mail.Pages.LoginPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Mail.Pages"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ctkl="using:CommunityToolkit.Labs.WinUI"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+      mc:Ignorable="d">
     <Page.Resources>
-        <ResourceDictionary >
+        <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
                     <x:String x:Key="WelcomeIcon">Log In</x:String>
@@ -23,11 +22,26 @@
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Page.Resources>
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" MaxWidth="800" Padding="32" Spacing="8">
-        <TextBlock Text="{StaticResource ResourceKey=WelcomeIcon}" Height="100" HorizontalAlignment="Center"/>
-        <ctkl:SettingsCard Header="Outlook" IsClickEnabled="True" Click="Outlook_Click"/>
-        <ctkl:SettingsCard Header="Google" IsClickEnabled="True" IsEnabled="False"/>
-        <ctkl:SettingsCard Header="POP3" IsClickEnabled="True" IsEnabled="False"/>
-        <ctkl:SettingsCard Header="IMAP" IsClickEnabled="True" IsEnabled="False"/>
+    <StackPanel Orientation="Vertical"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                MaxWidth="800"
+                Padding="32"
+                Spacing="8">
+        <TextBlock Text="{StaticResource ResourceKey=WelcomeIcon}"
+                   Height="100"
+                   HorizontalAlignment="Center" />
+        <ctkl:SettingsCard Header="Outlook"
+                           IsClickEnabled="True"
+                           Click="Outlook_Click" />
+        <ctkl:SettingsCard Header="Google"
+                           IsClickEnabled="True"
+                           IsEnabled="False" />
+        <ctkl:SettingsCard Header="POP3"
+                           IsClickEnabled="True"
+                           IsEnabled="False" />
+        <ctkl:SettingsCard Header="IMAP"
+                           IsClickEnabled="True"
+                           IsEnabled="False" />
     </StackPanel>
 </Page>
