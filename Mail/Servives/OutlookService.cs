@@ -1,21 +1,19 @@
 ﻿
-using System.Threading.Tasks;
-using Microsoft.Graph;
 using CommunityToolkit.Authentication;
 using CommunityToolkit.Graph.Extensions;
-using System;
-using Mail.Pages;
+using Mail.Class;
+using Microsoft.Graph;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
-using Newtonsoft.Json;
-using System.Net;
+using System.Threading.Tasks;
 
 namespace Mail.Servives
 {
     internal class OutlookService : OAuthMailService
     {
-        static string[] scopes = new string[] {
+        protected override string[] Scopes { get; } = new string[]
+        {
             "User.Read",
             "User.ReadBasic.All",
             "People.Read",
@@ -27,46 +25,20 @@ namespace Mail.Servives
             "offline_access"
         };
 
-        static string clientId = Secrect.AadClientId;
-
-
-        private GraphServiceClient graphClient = null;
-
-        public OutlookService() : base(scopes, new WebAccountProviderConfig
+        public OutlookService() : base(WebAccountProviderType.Msa)
         {
-            ClientId = clientId,
-            WebAccountProviderType = WebAccountProviderType.Msa
-        })
-        {
-            graphClient = Provider.GetClient();
+
         }
 
-        internal async Task<List<Email>> GetEmail()
+        public async Task<IReadOnlyList<Email>> GetEmailAsync()
         {
-            var emails = new List<Email>();
-            if (graphClient != null) {
+            var contacts = await Provider.GetClient().Me.Contacts.Request().GetAsync();
 
-                var contacts = await graphClient.Me.Contacts
-                                        .Request()
-                                        .GetAsync();
-                System.Diagnostics.Trace.WriteLine(contacts);
-                System.Diagnostics.Trace.WriteLine(JsonConvert.SerializeObject(contacts));
-                
-                System.Diagnostics.Trace.WriteLine(contacts.Count);
-                for (int i = 0; i < contacts.Count; i++)
-                {
-                    if (contacts[i].EmailAddresses.Count() > 0)
-                    {
-                        emails.Add(new Email
-                        {
-                            name = contacts[i].EmailAddresses.LastOrDefault().Name,
-                            address = contacts[i].EmailAddresses.LastOrDefault().Address
-                        });
-                    }
-                    
-                }
-            }
-            return  emails;
+            System.Diagnostics.Trace.WriteLine(contacts);
+            System.Diagnostics.Trace.WriteLine(JsonConvert.SerializeObject(contacts));
+            System.Diagnostics.Trace.WriteLine(contacts.Count);
+
+            return contacts.Select((contact) => contact.EmailAddresses.LastOrDefault()).OfType<EmailAddress>().Select((Address) => new Email(Address.Address, Address.Name)).ToArray();
         }
     }
 }

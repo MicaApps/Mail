@@ -1,18 +1,31 @@
-﻿<Page
-    x:Class="Mail.Pages.SplashPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Mail.Pages"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+﻿<Page x:Class="Mail.Pages.SplashPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Mail.Pages"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+      mc:Ignorable="d"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid >
-        <Canvas>
-            <Image x:Name="extendedSplashImage" Source="/Assets/SplashScreen.png"/>
-            <muxc:ProgressRing Name="splashProgressRing" IsActive="True" Width="24" Height="24" HorizontalAlignment="Center"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
+        <Canvas Grid.RowSpan="2">
+            <Image x:Name="extendedSplashImage"
+                   Source="/Assets/SplashScreen.png" />
+            <muxc:ProgressRing Name="splashProgressRing"
+                               IsActive="True"
+                               Width="24"
+                               Height="24"
+                               HorizontalAlignment="Center" />
         </Canvas>
+
+        <Border x:Name="AppTitleBar"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"/>
     </Grid>
 </Page>
