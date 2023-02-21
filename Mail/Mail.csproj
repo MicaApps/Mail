@@ -19,8 +19,8 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
-	<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-	<Use64BitCompiler>true</Use64BitCompiler>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Use64BitCompiler>true</Use64BitCompiler>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -122,8 +122,17 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Class\Email.cs" />
+    <Compile Include="Class\Data\MailFolderData.cs" />
+    <Compile Include="Class\Data\MailMessageAttachmentData.cs" />
+    <Compile Include="Class\Data\MailMessageContentData.cs" />
+    <Compile Include="Class\Data\MailMessageData.cs" />
+    <Compile Include="Class\Data\MailMessageRecipientData.cs" />
+    <Compile Include="Class\Models\AccountModel.cs" />
+    <Compile Include="Class\Models\ContactModel.cs" />
     <Compile Include="Class\Extension.cs" />
+    <Compile Include="Class\Models\MailMessageListDetailViewModel.cs" />
+    <Compile Include="Enum\MailFolder.cs" />
+    <Compile Include="Enum\MailMessageContentType.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -132,6 +141,9 @@
     </Compile>
     <Compile Include="Pages\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\MailFolderDetailsPage.xaml.cs">
+      <DependentUpon>MailFolderDetailsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\SettingsPage.xaml.cs">
       <DependentUpon>SettingsPage.xaml</DependentUpon>
@@ -222,6 +234,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Pages\MailFolderDetailsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Pages\SettingsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -253,11 +269,20 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.14</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
+      <Version>7.1.3</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.8.2</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Nito.AsyncEx">
+      <Version>5.1.2</Version>
+    </PackageReference>
+    <PackageReference Include="System.Interactive.Async">
+      <Version>6.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
