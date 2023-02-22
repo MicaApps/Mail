@@ -127,6 +127,7 @@
     <Compile Include="Class\Data\MailMessageContentData.cs" />
     <Compile Include="Class\Data\MailMessageData.cs" />
     <Compile Include="Class\Data\MailMessageRecipientData.cs" />
+    <Compile Include="Class\MailIncrementalLoadingObservableCollection.cs" />
     <Compile Include="Class\Models\AccountModel.cs" />
     <Compile Include="Class\Models\ContactModel.cs" />
     <Compile Include="Class\Extension.cs" />

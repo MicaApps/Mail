@@ -8,36 +8,40 @@
       xmlns:models="using:Mail.Class.Models"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       mc:Ignorable="d"
+      NavigationCacheMode="Required"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <controls:ListDetailsView BackButtonBehavior="Automatic"
-                                  ItemsSource="{x:Bind PreviewSource}"
+        <controls:ListDetailsView x:Name="DetailsView"
+                                  BackButtonBehavior="Manual"
                                   NoSelectionContent="Select an item to view"
-                                  CompactModeThresholdWidth="720"
                                   DetailsPaneBackground="Transparent"
-                                  SelectionChanged="ListDetailsView_SelectionChanged">
+                                  IsTapEnabled="True"
+                                  Tapped="ListDetailsView_Tapped"
+                                  Loaded="ListDetailsView_Loaded"
+                                  ViewStateChanged="DetailsView_ViewStateChanged"
+                                  SelectionChanged="DetailsView_SelectionChanged">
             <controls:ListDetailsView.ItemContainerStyle>
                 <Style TargetType="ListViewItem"
                        BasedOn="{StaticResource DefaultListViewItemStyle}">
                     <Setter Property="Padding"
-                            Value="5"/>
+                            Value="5" />
                 </Style>
             </controls:ListDetailsView.ItemContainerStyle>
             <controls:ListDetailsView.ListPaneEmptyContent>
                 <Grid>
-                    <TextBlock Text="No available data"
-                               FontSize="18"
+                    <TextBlock x:Name="EmptyContentText"
+                               FontSize="16"
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center" />
                 </Grid>
             </controls:ListDetailsView.ListPaneEmptyContent>
             <controls:ListDetailsView.ItemTemplate>
                 <DataTemplate x:DataType="models:MailMessageListDetailViewModel">
                     <Grid Padding="0,8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <PersonPicture Width="50"
                                        Height="50"
@@ -76,12 +80,17 @@
             </controls:ListDetailsView.NoSelectionContentTemplate>
             <controls:ListDetailsView.DetailsTemplate>
                 <DataTemplate>
-                    <muxc:WebView2 HorizontalAlignment="Stretch"
-                                   VerticalAlignment="Stretch"/>
+                    <Grid>
+                        <muxc:WebView2 HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Stretch" />
+                    </Grid>
                 </DataTemplate>
             </controls:ListDetailsView.DetailsTemplate>
             <controls:ListDetailsView.ListCommandBar>
-                <CommandBar>
+                <CommandBar ClosedDisplayMode="Compact"
+                            IsDynamicOverflowEnabled="False"
+                            OverflowButtonVisibility="Collapsed"
+                            Background="{ThemeResource SystemControlAcrylicElementBrush}">
                     <AppBarButton Icon="Back"
                                   Label="Back" />
                     <AppBarButton Icon="Forward"
@@ -89,7 +98,14 @@
                 </CommandBar>
             </controls:ListDetailsView.ListCommandBar>
             <controls:ListDetailsView.DetailsCommandBar>
-                <CommandBar>
+                <CommandBar ClosedDisplayMode="Compact"
+                            IsDynamicOverflowEnabled="False"
+                            OverflowButtonVisibility="Collapsed"
+                            Background="{ThemeResource SystemControlAcrylicElementBrush}">
+                    <AppBarButton Icon="Back"
+                                  Label="Back"
+                                  x:Name="DetailsViewGoBack"
+                                  Click="DetailsViewGoBack_Click"/>
                     <AppBarButton Icon="MailReply"
                                   Label="Reply" />
                     <AppBarButton Icon="MailReplyAll"

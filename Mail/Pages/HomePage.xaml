@@ -45,7 +45,10 @@
                     BorderBrush="{ThemeResource NavigationViewContentGridBorderBrush}"
                     BorderThickness="0,1,0,0" />
         </Grid>
-        <muxc:NavigationView IsBackButtonVisible="Collapsed"
+        <muxc:NavigationView x:Name="NavView"
+                             PaneDisplayMode="Left"
+                             OverflowLabelMode="MoreLabel"
+                             IsBackButtonVisible="Collapsed"
                              IsTitleBarAutoPaddingEnabled="False"
                              OpenPaneLength="250"
                              ItemInvoked="NavigationView_ItemInvoked">
@@ -89,6 +92,7 @@
                 <muxc:NavigationViewItemSeparator />
                 <muxc:NavigationViewItem x:Name="Inbox"
                                          Content="Inbox"
+                                         IsSelected="True"
                                          Tag="{x:Bind enum:MailFolderType.Inbox}">
                     <muxc:NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Download" />

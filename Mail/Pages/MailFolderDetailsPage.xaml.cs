@@ -8,10 +8,12 @@ using Microsoft.Toolkit.Uwp.UI.Controls;
 using Microsoft.UI.Xaml.Controls;
 using Nito.AsyncEx;
 using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
+using Windows.UI;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace Mail.Pages
@@ -19,29 +21,49 @@ namespace Mail.Pages
     public sealed partial class MailFolderDetailsPage : Page
     {
         private readonly AsyncLock SelectionChangeLocker = new AsyncLock();
-        private readonly ObservableCollection<MailMessageListDetailViewModel> PreviewSource = new ObservableCollection<MailMessageListDetailViewModel>();
+        private MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel> PreviewSource;
 
         public MailFolderDetailsPage()
         {
             InitializeComponent();
+            Environment.SetEnvironmentVariable("WEBVIEW2_DEFAULT_BACKGROUND_COLOR", "0");
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is MailFolderType Type)
+            if (e.Parameter is MailFolderType Type && e.NavigationMode == NavigationMode.New)
             {
-                MailFolderData Data = await App.Services.GetService<OutlookService>().GetMailFolderAsync(Type, 0, 20);
+                PreviewSource?.Clear();
+                DetailsView.SelectedItem = null;
+                EmptyContentText.Text = "Syncing you email";
 
-                foreach (MailMessageData MessageData in Data.MessageCollection)
+                try
                 {
-                    PreviewSource.Add(new MailMessageListDetailViewModel(MessageData));
+                    OutlookService Service = App.Services.GetService<OutlookService>();
+                    MailFolderData MailFolder = await Service.GetMailFolderAsync(Type);
+
+                    DetailsView.ItemsSource = PreviewSource = new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, MailFolder, (Data) => new MailMessageListDetailViewModel(Data));
+
+                    await foreach (MailMessageData MessageData in Service.GetMailMessageAsync(MailFolder.Id))
+                    {
+                        PreviewSource.Add(new MailMessageListDetailViewModel(MessageData));
+                    }
+
+                    if (PreviewSource.Count == 0)
+                    {
+                        EmptyContentText.Text = "No available email";
+                    }
+                }
+                catch (Exception)
+                {
+                    EmptyContentText.Text = "Sync failed";
                 }
             }
         }
 
-        private async void ListDetailsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void ListDetailsView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (e.AddedItems.SingleOrDefault() is MailMessageListDetailViewModel Model)
+            if ((e.OriginalSource as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
                 if (sender is ListDetailsView View)
                 {
@@ -51,7 +73,17 @@ namespace Mail.Pages
                         {
                             if (View.FindChildOfType<WebView2>() is WebView2 Browser)
                             {
-                                await Browser.EnsureCoreWebView2Async().AsTask().ContinueWith((_) => Browser.NavigateToString(Model.Content), TaskScheduler.FromCurrentSynchronizationContext());
+                                await Browser.EnsureCoreWebView2Async();
+
+                                if (Model.ContentType == MailMessageContentType.Text)
+                                {
+                                    Browser.NavigateToString(@$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Model.Content}</body></html>");
+                                }
+                                else
+                                {
+                                    Browser.NavigateToString(Model.Content);
+                                }
+
                                 break;
                             }
 
@@ -60,6 +92,40 @@ namespace Mail.Pages
                     }
                 }
             }
+        }
+
+        private void ListDetailsView_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is ListDetailsView View)
+            {
+                if (View.FindChildOfType<ListView>() is ListView InnerView)
+                {
+                    InnerView.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
+                    InnerView.IncrementalLoadingThreshold = 3;
+                    InnerView.DataFetchSize = 3;
+                }
+            }
+        }
+
+        private void DetailsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ListDetailsView View)
+            {
+                View.DetailsPaneBackground = new SolidColorBrush(View.SelectedIndex >= 0 ? Colors.White : Colors.Transparent);
+            }
+        }
+
+        private void DetailsViewGoBack_Click(object sender, RoutedEventArgs e)
+        {
+            if (DetailsView.ViewState == ListDetailsViewState.Details)
+            {
+                DetailsView.SelectedItem = null;
+            }
+        }
+
+        private void DetailsView_ViewStateChanged(object sender, ListDetailsViewState e)
+        {
+            DetailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }
