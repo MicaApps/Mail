@@ -1,8 +1,13 @@
 ﻿using CommunityToolkit.Authentication;
+using Mail.Class.Data;
+using Mail.Class.Models;
+using Mail.Enum;
 using Mail.Servives.Interface;
 using Microsoft.Identity.Client;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mail.Servives
@@ -61,5 +66,15 @@ namespace Mail.Servives
         {
             return Task.FromResult(true);
         }
+
+        public abstract Task<MailFolderData> GetMailFolderAsync(string RootFolderId, CancellationToken CancelToken = default);
+
+        public abstract Task<MailFolderData> GetMailFolderAsync(MailFolderType Type, CancellationToken CancelToken = default);
+
+        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
+
+        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
+
+        public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Mail.Class.Models;
+using Mail.Enum;
 using System.Collections.ObjectModel;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;
@@ -17,14 +18,30 @@ namespace Mail.Pages
         {
             InitializeComponent();
 
-            //Test only
+            SetupTitleBar();
+            //Test only and should remove this later
             AccountSource.Add(new AccountModel("TestName", "TestAddress"));
 
+            Loaded += HomePage_Loaded;
+        }
+
+        private void SetupTitleBar()
+        {
             CoreApplicationViewTitleBar SystemBar = CoreApplication.GetCurrentView().TitleBar;
             SystemBar.LayoutMetricsChanged += SystemBar_LayoutMetricsChanged;
             SystemBar.IsVisibleChanged += SystemBar_IsVisibleChanged;
             AppTitleBar.Margin = new Thickness(SystemBar.SystemOverlayLeftInset, AppTitleBar.Margin.Top, SystemBar.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
             Window.Current.SetTitleBar(AppTitleBar);
+        }
+
+        private void HomePage_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (NavView.SettingsItem is NavigationViewItem SettingItem)
+            {
+                SettingItem.SelectsOnInvoked = false;
+            }
+
+            NavigationContent.Navigate(typeof(MailFolderDetailsPage), MailFolderType.Inbox, new DrillInNavigationTransitionInfo());
         }
 
         private void SystemBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
@@ -47,7 +64,7 @@ namespace Mail.Pages
             AppTitleBar.Margin = new Thickness(sender.SystemOverlayLeftInset, AppTitleBar.Margin.Top, sender.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
         }
 
-        private async void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             if (args.IsSettingsInvoked)
             {

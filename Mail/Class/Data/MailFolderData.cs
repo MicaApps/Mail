@@ -5,14 +5,17 @@ namespace Mail.Class.Data
 {
     internal sealed class MailFolderData
     {
+        public string Id { get; }
+
+        public uint MessageCount { get; }
+
         public IReadOnlyList<MailFolderData> ChildFolders { get; }
 
-        public IReadOnlyList<MailMessageData> MessageCollection { get; }
-
-        public MailFolderData(IEnumerable<MailFolderData> ChildFolders, IEnumerable<MailMessageData> MessageCollection)
+        public MailFolderData(string Id, uint MessageCount, IEnumerable<MailFolderData> ChildFolders)
         {
-            this.ChildFolders = ChildFolders.ToArray();
-            this.MessageCollection = MessageCollection.ToArray();
+            this.Id = Id;
+            this.MessageCount = MessageCount;
+            this.ChildFolders = ChildFolders is IReadOnlyList<MailFolderData> ReadOnlyChildFolders ? ReadOnlyChildFolders : ChildFolders.ToArray();
         }
     }
 }
