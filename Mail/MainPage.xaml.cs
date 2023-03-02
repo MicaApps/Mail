@@ -2,6 +2,8 @@
 using Mail.Pages;
 using Mail.Servives;
 using Microsoft.Extensions.DependencyInjection;
+using Windows.UI.ViewManagement;
+using Windows.UI;
 using Windows.UI.Xaml.Controls;
 
 namespace Mail
@@ -11,6 +13,9 @@ namespace Mail
         public MainPage(bool isLogin)
         {
             InitializeComponent();
+            ApplicationViewTitleBar TitleBar = ApplicationView.GetForCurrentView().TitleBar;
+            TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
             App.Services.GetService<OutlookService>().Provider.StateChanged += Provider_StateChanged;
 
             if (isLogin)

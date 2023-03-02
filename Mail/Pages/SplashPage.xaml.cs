@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Core;
@@ -27,7 +26,9 @@ namespace Mail.Pages
         private SplashPage(SplashScreen Splash)
         {
             InitializeComponent();
-
+            ApplicationViewTitleBar TitleBar = ApplicationView.GetForCurrentView().TitleBar;
+            TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
             Window.Current.SetTitleBar(AppTitleBar);
 
             this.Splash = Splash ?? throw new ArgumentNullException(nameof(Splash), "Parameter could not be null");
