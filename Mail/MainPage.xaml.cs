@@ -1,6 +1,6 @@
 ﻿
 using Mail.Pages;
-using Mail.Servives;
+using Mail.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.UI.ViewManagement;
 using Windows.UI;

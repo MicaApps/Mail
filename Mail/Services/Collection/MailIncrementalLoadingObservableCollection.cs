@@ -1,5 +1,4 @@
-﻿using Mail.Class.Data;
-using Mail.Servives.Interface;
+﻿using Mail.Services.Data;
 using Nito.AsyncEx;
 using System;
 using System.Collections.ObjectModel;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml.Data;
 
-namespace Mail.Class
+namespace Mail.Services.Collection
 {
     internal sealed class MailIncrementalLoadingObservableCollection<T> : ObservableCollection<T>, ISupportIncrementalLoading
     {

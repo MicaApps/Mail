@@ -1,7 +1,6 @@
-﻿using Mail.Class.Data;
-using Mail.Enum;
+﻿using Mail.Services.Data;
 
-namespace Mail.Class.Models
+namespace Mail.Models
 {
     internal sealed class MailMessageListDetailViewModel
     {

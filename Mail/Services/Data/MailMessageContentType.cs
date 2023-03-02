@@ -1,4 +1,4 @@
-﻿namespace Mail.Enum
+﻿namespace Mail.Services.Data
 {
     internal enum MailMessageContentType
     {

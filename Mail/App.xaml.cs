@@ -1,5 +1,5 @@
 ﻿using Mail.Pages;
-using Mail.Servives;
+using Mail.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;
 using System;

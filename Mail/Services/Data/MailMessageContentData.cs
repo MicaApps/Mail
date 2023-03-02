@@ -1,6 +1,4 @@
-﻿using Mail.Enum;
-
-namespace Mail.Class.Data
+﻿namespace Mail.Services.Data
 {
     internal sealed class MailMessageContentData
     {

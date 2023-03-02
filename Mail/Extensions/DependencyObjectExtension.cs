@@ -1,28 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml;
 
-namespace Mail.Class
+namespace Mail.Extensions
 {
-    internal static class Extension
+    internal static class DependencyObjectExtension
     {
-        public static void AddRange<T>(this ICollection<T> Collection, IEnumerable<T> InputCollection)
-        {
-            foreach (T Item in InputCollection.ToArray())
-            {
-                Collection.Add(Item);
-            }
-        }
-
-        public static void RemoveRange<T>(this ICollection<T> Collection, IEnumerable<T> InputCollection)
-        {
-            foreach (T Item in InputCollection.ToArray())
-            {
-                Collection.Remove(Item);
-            }
-        }
-
         public static T FindChildOfType<T>(this DependencyObject root) where T : DependencyObject
         {
             Queue<DependencyObject> ObjectQueue = new Queue<DependencyObject>();

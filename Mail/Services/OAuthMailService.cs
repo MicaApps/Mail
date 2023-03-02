@@ -1,8 +1,5 @@
 ﻿using CommunityToolkit.Authentication;
-using Mail.Class.Data;
-using Mail.Class.Models;
-using Mail.Enum;
-using Mail.Servives.Interface;
+using Mail.Services.Data;
 using Microsoft.Identity.Client;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mail.Servives
+namespace Mail.Services
 {
     // TODO: Re-Implement OAuthProvider, PCA and MsalProvider only support Microsoft Account
     internal abstract class OAuthMailService : IMailService

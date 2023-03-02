@@ -1,4 +1,4 @@
-﻿namespace Mail.Class.Models
+﻿namespace Mail.Services.Data
 {
     internal sealed class ContactModel
     {

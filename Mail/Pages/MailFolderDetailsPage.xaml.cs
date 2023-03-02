@@ -1,8 +1,8 @@
-﻿using Mail.Class;
-using Mail.Class.Data;
-using Mail.Class.Models;
-using Mail.Enum;
-using Mail.Servives;
+﻿using Mail.Extensions;
+using Mail.Models;
+using Mail.Services;
+using Mail.Services.Collection;
+using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Microsoft.UI.Xaml.Controls;

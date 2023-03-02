@@ -1,5 +1,4 @@
-﻿using Mail.Class.Models;
-using Mail.Enum;
+﻿using Mail.Services.Data;
 using System.Collections.ObjectModel;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;

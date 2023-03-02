@@ -122,18 +122,19 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Class\Data\MailFolderData.cs" />
-    <Compile Include="Class\Data\MailMessageAttachmentData.cs" />
-    <Compile Include="Class\Data\MailMessageContentData.cs" />
-    <Compile Include="Class\Data\MailMessageData.cs" />
-    <Compile Include="Class\Data\MailMessageRecipientData.cs" />
-    <Compile Include="Class\MailIncrementalLoadingObservableCollection.cs" />
-    <Compile Include="Class\Models\AccountModel.cs" />
-    <Compile Include="Class\Models\ContactModel.cs" />
-    <Compile Include="Class\Extension.cs" />
-    <Compile Include="Class\Models\MailMessageListDetailViewModel.cs" />
-    <Compile Include="Enum\MailFolder.cs" />
-    <Compile Include="Enum\MailMessageContentType.cs" />
+    <Compile Include="Services\Data\MailFolderData.cs" />
+    <Compile Include="Services\Data\MailMessageAttachmentData.cs" />
+    <Compile Include="Services\Data\MailMessageContentData.cs" />
+    <Compile Include="Services\Data\MailMessageData.cs" />
+    <Compile Include="Services\Data\MailMessageRecipientData.cs" />
+    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs" />
+    <Compile Include="Services\Data\AccountModel.cs" />
+    <Compile Include="Services\Data\ContactModel.cs" />
+    <Compile Include="Extensions\DependencyObjectExtension.cs" />
+    <Compile Include="Models\MailMessageListDetailViewModel.cs" />
+    <Compile Include="Services\Data\MailFolderType.cs" />
+    <Compile Include="Services\Data\MailMessageContentType.cs" />
+    <Compile Include="Extensions\ICollectionExtension.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -154,10 +155,10 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Secrect.cs" />
-    <Compile Include="Servives\GmailService.cs" />
-    <Compile Include="Interface\IMailService.cs" />
-    <Compile Include="Servives\OAuthMailService.cs" />
-    <Compile Include="Servives\OutlookService.cs" />
+    <Compile Include="Services\GmailService.cs" />
+    <Compile Include="Services\IMailService.cs" />
+    <Compile Include="Services\OAuthMailService.cs" />
+    <Compile Include="Services\OutlookService.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

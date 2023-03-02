@@ -1,11 +1,9 @@
-﻿using Mail.Class.Data;
-using Mail.Class.Models;
-using Mail.Enum;
+﻿using Mail.Services.Data;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mail.Servives.Interface
+namespace Mail.Services
 {
     internal interface IMailService
     {

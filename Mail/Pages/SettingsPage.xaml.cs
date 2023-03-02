@@ -1,6 +1,6 @@
-﻿using Mail.Class;
-using Mail.Class.Models;
-using Mail.Servives;
+﻿using Mail.Extensions;
+using Mail.Services;
+using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using Windows.UI.Xaml;

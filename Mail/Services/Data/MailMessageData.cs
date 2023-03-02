@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Mail.Class.Data
+namespace Mail.Services.Data
 {
     internal sealed class MailMessageData
     {
