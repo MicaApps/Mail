@@ -2,7 +2,7 @@
 
 Aim at providing UWP Mail for Windows.
 
-![image](https://user-images.githubusercontent.com/6630660/216893484-808cb5ed-4726-42d2-82e0-ac35c53fb7b3.png)
+![image](https://user-images.githubusercontent.com/6630660/222345692-16ca601a-9e86-4d81-a3f4-3c4773e31b88.png)
 
 ## Technology
 1. Azure Active Directory
