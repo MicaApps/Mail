@@ -109,10 +109,10 @@ namespace Mail.Pages
 
         private void DetailsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (sender is ListDetailsView View)
-            {
-                View.DetailsPaneBackground = new SolidColorBrush(View.SelectedIndex >= 0 ? Colors.White : Colors.Transparent);
-            }
+            //if (sender is ListDetailsView View)
+            //{
+                //View.DetailsPaneBackground = new SolidColorBrush(View.SelectedIndex >= 0 ? Colors.White : Colors.Transparent);
+            //}
         }
 
         private void DetailsViewGoBack_Click(object sender, RoutedEventArgs e)

@@ -1,5 +1,10 @@
-﻿using Mail.Services.Data;
+﻿using CommunityToolkit.Authentication;
+using Mail.Services;
+using Mail.Services.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -18,8 +23,18 @@ namespace Mail.Pages
             InitializeComponent();
 
             SetupTitleBar();
+
             //Test only and should remove this later
-            AccountSource.Add(new AccountModel("TestName", "TestAddress"));
+            try
+            {
+                MsalProvider Provider = App.Services.GetService<OutlookService>().Provider as MsalProvider;
+                AccountSource.Add(new AccountModel(Provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value, Provider.Account.Username));
+            }
+            catch
+            {
+                throw;
+            }
+
 
             Loaded += HomePage_Loaded;
         }

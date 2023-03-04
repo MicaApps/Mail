@@ -89,6 +89,7 @@ namespace Mail.Services
                 CancelToken.ThrowIfCancellationRequested();
 
                 yield return new MailMessageData(Message.Subject,
+                                                 Message.SentDateTime,
                                                  new MailMessageRecipientData(Message.Sender.EmailAddress.Name, Message.Sender.EmailAddress.Address),
                                                  Message.ToRecipients.Select((Recipient) => new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
                                                  Message.CcRecipients.Select((Recipient) => new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),

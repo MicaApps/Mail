@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 using System.Linq;
 
 namespace Mail.Services.Data
@@ -6,6 +7,8 @@ namespace Mail.Services.Data
     internal sealed class MailMessageData
     {
         public string Title { get; }
+
+        public DateTimeOffset? SentTime { get; }
 
         public MailMessageRecipientData Sender { get; }
 
@@ -19,9 +22,10 @@ namespace Mail.Services.Data
 
         public MailMessageContentData Content { get; }
 
-        public MailMessageData(string Title, MailMessageRecipientData Sender, IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> CC, IEnumerable<MailMessageRecipientData> Bcc, MailMessageContentData Content, IEnumerable<MailMessageAttachmentData> Attachments)
+        public MailMessageData(string Title, DateTimeOffset? SentTime, MailMessageRecipientData Sender, IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> CC, IEnumerable<MailMessageRecipientData> Bcc, MailMessageContentData Content, IEnumerable<MailMessageAttachmentData> Attachments)
         {
             this.Title = Title;
+            this.SentTime = SentTime;
             this.Sender = Sender;
             this.To = To.ToArray();
             this.CC = CC.ToArray();
