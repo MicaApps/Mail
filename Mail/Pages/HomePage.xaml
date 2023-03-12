@@ -58,7 +58,7 @@
                 Grid.Row="1"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                Background="Transparent"
+                Background="{ThemeResource NavigationViewContentBackground}"
                 BorderBrush="{ThemeResource NavigationViewContentGridBorderBrush}"
                 BorderThickness="0,1,0,0" />
         </Grid>
