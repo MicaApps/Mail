@@ -28,6 +28,20 @@
                     VerticalAlignment="Center"
                     VerticalContentAlignment="Center"
                     PlaceholderText="Search ">
+                    <AutoSuggestBox.Resources>
+                        <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
+                            <LinearGradientBrush.RelativeTransform>
+                                <ScaleTransform ScaleY="-1" CenterY="0.5" />
+                            </LinearGradientBrush.RelativeTransform>
+                            <LinearGradientBrush.GradientStops>
+                                <GradientStop Offset="0.5" Color="{StaticResource ControlStrokeColorSecondary}" />
+                                <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+                            </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                        <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
+                        <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
+
+                    </AutoSuggestBox.Resources>
                     <AutoSuggestBox.QueryIcon>
                         <muxc:AnimatedIcon Width="16" Height="16">
                             <muxc:AnimatedIcon.Source>
