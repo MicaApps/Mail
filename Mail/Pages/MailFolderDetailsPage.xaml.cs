@@ -40,7 +40,7 @@ namespace Mail.Pages
                 try
                 {
                     OutlookService Service = App.Services.GetService<OutlookService>();
-                    MailFolderData MailFolder = await Service.GetMailFolderAsync(Type);
+                    MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(Type);
 
                     DetailsView.ItemsSource = PreviewSource = new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, MailFolder, (Data) => new MailMessageListDetailViewModel(Data));
 

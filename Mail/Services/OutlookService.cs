@@ -32,7 +32,7 @@ namespace Mail.Services
 
         }
 
-        public override async Task<MailFolderData> GetMailFolderAsync(MailFolderType Type, CancellationToken CancelToken = default)
+        public override async Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type, CancellationToken CancelToken = default)
         {
             IMailFolderRequestBuilder Builder = Type switch
             {
@@ -43,24 +43,24 @@ namespace Mail.Services
                 _ => throw new NotSupportedException()
             };
 
-            return await GetMailFolderAsync((await Builder.Request().GetAsync()).Id, CancelToken);
+            return await GetMailFolderDetailAsync((await Builder.Request().GetAsync()).Id, CancelToken);
         }
 
-        public override async Task<MailFolderData> GetMailFolderAsync(string RootFolderId, CancellationToken CancelToken = default)
+        public override async Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId, CancellationToken CancelToken = default)
         {
-            async IAsyncEnumerable<MailFolderData> GenerateSubMailFolderDataBuilder(IMailFolderRequestBuilder Builder, [EnumeratorCancellation] CancellationToken CancelToken = default)
+            async IAsyncEnumerable<MailFolderDetailData> GenerateSubMailFolderDataBuilder(IMailFolderRequestBuilder Builder, [EnumeratorCancellation] CancellationToken CancelToken = default)
             {
                 foreach (MailFolder SubFolder in await Builder.ChildFolders.Request().GetAsync(CancelToken))
                 {
                     CancelToken.ThrowIfCancellationRequested();
                     IMailFolderRequestBuilder SubFolderBuilder = Builder.ChildFolders[SubFolder.Id];
-                    yield return new MailFolderData(SubFolder.Id, Convert.ToUInt32(SubFolder.TotalItemCount), await GenerateSubMailFolderDataBuilder(SubFolderBuilder, CancelToken).ToArrayAsync());
+                    yield return new MailFolderDetailData(SubFolder.Id, Convert.ToUInt32(SubFolder.TotalItemCount), await GenerateSubMailFolderDataBuilder(SubFolderBuilder, CancelToken).ToArrayAsync());
                 }
             }
 
             IMailFolderRequestBuilder Builder = Provider.GetClient().Me.MailFolders[RootFolderId];
             MailFolder MailFolder = await Builder.Request().GetAsync(CancelToken);
-            return new MailFolderData(MailFolder.Id, Convert.ToUInt32(MailFolder.TotalItemCount), await GenerateSubMailFolderDataBuilder(Builder, CancelToken).ToArrayAsync(CancelToken));
+            return new MailFolderDetailData(MailFolder.Id, Convert.ToUInt32(MailFolder.TotalItemCount), await GenerateSubMailFolderDataBuilder(Builder, CancelToken).ToArrayAsync(CancelToken));
         }
 
         public override async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)

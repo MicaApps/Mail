@@ -15,12 +15,12 @@ namespace Mail.Services
 
         }
 
-        public override Task<MailFolderData> GetMailFolderAsync(string RootFolderId, CancellationToken CancelToken = default)
+        public override Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId, CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public override Task<MailFolderData> GetMailFolderAsync(MailFolderType Type, CancellationToken CancelToken = default)
+        public override Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type, CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();
         }

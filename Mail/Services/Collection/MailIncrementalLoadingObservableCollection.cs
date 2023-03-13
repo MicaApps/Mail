@@ -12,7 +12,7 @@ namespace Mail.Services.Collection
 {
     internal sealed class MailIncrementalLoadingObservableCollection<T> : ObservableCollection<T>, ISupportIncrementalLoading
     {
-        private readonly MailFolderData MailFolder;
+        private readonly MailFolderDetailData MailFolder;
         private readonly IMailService Service;
         private readonly Func<MailMessageData, T> Transformer;
         private readonly AsyncLock IncrementalLoadingLocker = new AsyncLock();
@@ -54,7 +54,7 @@ namespace Mail.Services.Collection
             return new LoadMoreItemsResult { Count = LoadCounter };
         }
 
-        public MailIncrementalLoadingObservableCollection(IMailService Service, MailFolderData MailFolder, Func<MailMessageData, T> Transformer, uint MinIncrementalLoadingStep = 30)
+        public MailIncrementalLoadingObservableCollection(IMailService Service, MailFolderDetailData MailFolder, Func<MailMessageData, T> Transformer, uint MinIncrementalLoadingStep = 30)
         {
             this.Service = Service;
             this.MailFolder = MailFolder;
