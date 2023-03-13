@@ -8,9 +8,41 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Mail.Services.Data"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
     mc:Ignorable="d">
 
     <Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <triggers:IsEqualStateTrigger Value="{Binding ElementName=NavView, Path=IsPaneOpen}" To="False" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="listView.ItemTemplate">
+                            <Setter.Value>
+                                <DataTemplate x:DataType="models:AccountModel">
+                                    <Grid Width="28" HorizontalAlignment="Left">
+                                        <PersonPicture HorizontalAlignment="Center"
+                                                    Width="24"
+                                                    Height="24"
+                                                    DisplayName="{x:Bind Name, Mode=OneWay}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Target="listView.ItemContainerStyle">
+                            <Setter.Value>
+                                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                    <Setter Property="Padding" Value="10" />
+                                    <Setter Property="MinWidth" Value="20" />
+                                </Style>
+                            </Setter.Value>
+                        </Setter>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="48" />
@@ -88,10 +120,10 @@
                                     <ColumnDefinition Width="20" />
                                     <ColumnDefinition Width="1*" />
                                 </Grid.ColumnDefinitions>
-                                <Ellipse
+                                <PersonPicture
                                     Width="32"
                                     Height="32"
-                                    Fill="SteelBlue" />
+                                    DisplayName="{x:Bind Name, Mode=OneWay}" />
                                 <StackPanel Grid.Column="2">
                                     <TextBlock FontWeight="SemiBold" Text="{x:Bind Name}" />
                                     <TextBlock
