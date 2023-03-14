@@ -13,6 +13,8 @@ namespace Mail.Services
 
         public Task<bool> InitSeriviceAsync();
 
+        public IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(CancellationToken CancelToken = default);
+
         public Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId, CancellationToken CancelToken = default);
 
         public Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type, CancellationToken CancelToken = default);

@@ -3,8 +3,11 @@
     internal enum MailFolderType
     {
         Inbox,
-        Deleted,
         SentItems,
-        Drafts
+        Drafts,
+        Junk,
+        Archive,
+        Deleted,
+        Other
     }
 }

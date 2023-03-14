@@ -64,6 +64,8 @@ namespace Mail.Services
             return Task.FromResult(true);
         }
 
+        public abstract IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(CancellationToken CancelToken = default);
+
         public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId, CancellationToken CancelToken = default);
 
         public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type, CancellationToken CancelToken = default);

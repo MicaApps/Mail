@@ -3,14 +3,16 @@ using Mail.Services;
 using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Navigation;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
-using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 
 namespace Mail.Pages
 {
@@ -18,13 +20,15 @@ namespace Mail.Pages
     {
         private readonly ObservableCollection<AccountModel> AccountSource = new ObservableCollection<AccountModel>();
 
+        private readonly ObservableCollection<object> MailFolderSource = new ObservableCollection<object>();
+
         public HomePage()
         {
             InitializeComponent();
 
             SetupTitleBar();
 
-            //Test only and should remove this later
+            //TODO: Test only and should remove this later
             try
             {
                 MsalProvider Provider = App.Services.GetService<OutlookService>().Provider as MsalProvider;
@@ -54,8 +58,26 @@ namespace Mail.Pages
             {
                 SettingItem.SelectsOnInvoked = false;
             }
+        }
 
-            NavigationContent.Navigate(typeof(MailFolderDetailsPage), MailFolderType.Inbox, new DrillInNavigationTransitionInfo());
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            if (e.NavigationMode == NavigationMode.New)
+            {
+                MailFolderSource.Add(0);
+                var isFirstOther = true;
+                await foreach(var item in App.Services.GetService<OutlookService>().GetMailFoldersAsync().OrderBy(item => item.Type))
+                {
+                    if (item.Type == MailFolderType.Other && isFirstOther)
+                    {
+                        MailFolderSource.Add(1);
+                        isFirstOther = false;
+                    }
+                    MailFolderSource.Add(item);
+                }
+                NavView.SelectedItem = MailFolderSource.FirstOrDefault(item => item is MailFolderData);
+            }
         }
 
         private void SystemBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
@@ -78,16 +100,63 @@ namespace Mail.Pages
             AppTitleBar.Margin = new Thickness(sender.SystemOverlayLeftInset, AppTitleBar.Margin.Top, sender.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
         }
 
-        private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        private void NavView_SelectionChanged(NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
-            if (args.IsSettingsInvoked)
+            if (args.IsSettingsSelected)
             {
                 NavigationContent.Navigate(typeof(SettingsPage), null, new DrillInNavigationTransitionInfo());
             }
-            else
+            else if (args.SelectedItem is MailFolderData data)
             {
-                NavigationContent.Navigate(typeof(MailFolderDetailsPage), args.InvokedItemContainer.Tag, new DrillInNavigationTransitionInfo());
+                NavigationContent.Navigate(typeof(MailFolderDetailsPage), data, new DrillInNavigationTransitionInfo());
             }
         }
+    }
+
+    class FolderIconConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is MailFolderType folderType)
+            {
+                return folderType switch
+                {
+                    MailFolderType.Inbox => "\uE10F",
+                    MailFolderType.Deleted => "\uE107",
+                    MailFolderType.Drafts => "\uEC87",
+                    MailFolderType.SentItems => "\uE122",
+                    MailFolderType.Junk => "\uE107",
+                    MailFolderType.Archive => "\uE7B8",
+                    MailFolderType.Other => "\uE8B7",
+                    _ => "\uE8B7"
+                };
+            }
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class MailFolderNavigationDataTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate Divider { get; set; }
+
+        public DataTemplate Content { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item)
+        {
+            if (item is MailFolderData)
+            {
+                return Content;
+            }
+            else
+            {
+                return Divider;
+            }
+        }
+
     }
 }

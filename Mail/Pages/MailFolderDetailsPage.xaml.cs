@@ -9,11 +9,9 @@ using Microsoft.UI.Xaml.Controls;
 using Nito.AsyncEx;
 using System;
 using System.Threading.Tasks;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace Mail.Pages
@@ -31,7 +29,7 @@ namespace Mail.Pages
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is MailFolderType Type && e.NavigationMode == NavigationMode.New)
+            if (e.Parameter is MailFolderData data && e.NavigationMode == NavigationMode.New)
             {
                 PreviewSource?.Clear();
                 DetailsView.SelectedItem = null;
@@ -40,7 +38,7 @@ namespace Mail.Pages
                 try
                 {
                     OutlookService Service = App.Services.GetService<OutlookService>();
-                    MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(Type);
+                    MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(data.Id);
 
                     DetailsView.ItemsSource = PreviewSource = new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, MailFolder, (Data) => new MailMessageListDetailViewModel(Data));
 

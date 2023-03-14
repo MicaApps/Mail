@@ -32,6 +32,64 @@ namespace Mail.Services
 
         }
 
+        public override async IAsyncEnumerable<MailFolderData> GetMailFoldersAsync([EnumeratorCancellation] CancellationToken CancelToken = default)
+        {
+            var client = Provider.GetClient();
+
+            var folders = await client.Me.MailFolders.Request().GetAsync(CancelToken);
+            //TODO: Remove this code when Graph beta API which include wellknown-name property become stable.
+            var inbox = await client.Me.MailFolders["inbox"].Request().GetAsync(CancelToken);
+            var archive = await client.Me.MailFolders["archive"].Request().GetAsync(CancelToken);
+            var drafts = await client.Me.MailFolders["drafts"].Request().GetAsync(CancelToken);
+            var deleted = await client.Me.MailFolders["deleteditems"].Request().GetAsync(CancelToken);
+            var junkEmail = await client.Me.MailFolders["junkemail"].Request().GetAsync(CancelToken);
+            var sentItems = await client.Me.MailFolders["sentitems"].Request().GetAsync(CancelToken);
+            var syncIssues = await client.Me.MailFolders["syncissues"].Request().GetAsync(CancelToken);
+            folders.Remove(folders.First(item => item.Id == syncIssues.Id));
+            var hasDeleted = false;
+            foreach (var folder in folders.CurrentPage)
+            {
+                if (folder.Id == inbox.Id)
+                {
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Inbox);
+                }
+                else if (folder.Id == archive.Id)
+                {
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Archive);
+                }
+                else if (folder.Id == deleted.Id)
+                {
+                    hasDeleted = true;
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Deleted);
+                }
+                else if (folder.Id == sentItems.Id)
+                {
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.SentItems);
+                }
+                else if (folder.Id == junkEmail.Id)
+                {
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Junk);
+                }
+                else if (folder.Id == drafts.Id)
+                {
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Drafts);
+                } 
+                else if (folder.Id == syncIssues.Id) 
+                {
+                    // Skip add SyncIssues folder.
+                }
+                else
+                {
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Other);
+                }
+                
+            }
+            if (!hasDeleted)
+            {
+                yield return new MailFolderData(deleted.Id, deleted.DisplayName, MailFolderType.Deleted);
+            }
+        }
+
         public override async Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type, CancellationToken CancelToken = default)
         {
             IMailFolderRequestBuilder Builder = Type switch

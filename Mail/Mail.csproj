@@ -122,6 +122,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Services\Data\MailFolderData.cs" />
     <Compile Include="Services\Data\MailFolderDetailData.cs" />
     <Compile Include="Services\Data\MailMessageAttachmentData.cs" />
     <Compile Include="Services\Data\MailMessageContentData.cs" />

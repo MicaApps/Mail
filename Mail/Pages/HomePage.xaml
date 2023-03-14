@@ -9,8 +9,11 @@
     xmlns:models="using:Mail.Services.Data"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
+    xmlns:local="using:Mail.Pages"
     mc:Ignorable="d">
-
+    <Page.Resources>
+        <local:FolderIconConverter x:Key="FolderIconConverter" />
+    </Page.Resources>
     <Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
@@ -98,9 +101,10 @@
             x:Name="NavView"
             IsBackButtonVisible="Collapsed"
             IsTitleBarAutoPaddingEnabled="False"
-            ItemInvoked="NavigationView_ItemInvoked"
+            SelectionChanged="NavView_SelectionChanged"
             OpenPaneLength="250"
             OverflowLabelMode="MoreLabel"
+            MenuItemsSource="{x:Bind MailFolderSource}"
             PaneDisplayMode="Left">
             <muxc:NavigationView.Resources>
                 <Thickness x:Key="NavigationViewContentMargin">0,50,0,0</Thickness>
@@ -138,76 +142,24 @@
                 </ListView>
             </muxc:NavigationView.PaneCustomContent>
 
-            <muxc:NavigationView.MenuItems>
-                <muxc:NavigationViewItemSeparator />
-                <muxc:NavigationViewItem
-                    x:Name="Inbox"
-                    Content="Inbox"
-                    IsSelected="True"
-                    Tag="{x:Bind enum:MailFolderType.Inbox}">
-                    <muxc:NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Download" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-
-                <muxc:NavigationViewItem
-                    x:Name="Sent"
-                    Content="Sent"
-                    Tag="{x:Bind enum:MailFolderType.SentItems}">
-                    <muxc:NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Upload" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-
-                <muxc:NavigationViewItem
-                    x:Name="Deleted"
-                    Content="Deleted"
-                    Tag="{x:Bind enum:MailFolderType.Deleted}">
-                    <muxc:NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Delete" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-
-                <muxc:NavigationViewItem
-                    x:Name="Draft"
-                    Content="Draft"
-                    Tag="{x:Bind enum:MailFolderType.Drafts}">
-                    <muxc:NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Edit" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-
-                <muxc:NavigationViewItem
-                    x:Name="Junk"
-                    Content="Junk"
-                    Tag="Junk">
-                    <muxc:NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Delete" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-                <muxc:NavigationViewItemSeparator />
-                <muxc:NavigationViewItem Content="Folder1">
-                    <muxc:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xe8b7;" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Content="Folder2">
-                    <muxc:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xe8b7;" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Content="Folder3">
-                    <muxc:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xe8b7;" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Content="Folder4">
-                    <muxc:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xe8b7;" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-            </muxc:NavigationView.MenuItems>
-
+            <muxc:NavigationView.MenuItemTemplateSelector>
+                <local:MailFolderNavigationDataTemplateSelector>
+                    <local:MailFolderNavigationDataTemplateSelector.Divider>
+                        <DataTemplate>
+                            <muxc:NavigationViewItemSeparator />
+                        </DataTemplate>
+                    </local:MailFolderNavigationDataTemplateSelector.Divider>
+                    <local:MailFolderNavigationDataTemplateSelector.Content>
+                        <DataTemplate x:DataType="models:MailFolderData">
+                            <muxc:NavigationViewItem Content="{x:Bind Name}" >
+                                <muxc:NavigationViewItem.Icon>
+                                    <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
+                                </muxc:NavigationViewItem.Icon>
+                            </muxc:NavigationViewItem>
+                        </DataTemplate>
+                    </local:MailFolderNavigationDataTemplateSelector.Content>
+                </local:MailFolderNavigationDataTemplateSelector>
+            </muxc:NavigationView.MenuItemTemplateSelector>
             <muxc:NavigationView.Content>
                 <Frame x:Name="NavigationContent" />
             </muxc:NavigationView.Content>
