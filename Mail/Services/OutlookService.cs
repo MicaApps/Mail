@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Mail.Services
 {
-    internal class OutlookService : OAuthMailService
+    internal class OutlookService : OAuthMailService, IMailService.IFocusFilterSupport
     {
         protected override string[] Scopes { get; } = new string[]
         {
@@ -161,6 +161,38 @@ namespace Mail.Services
         {
             IUserContactsCollectionPage Contacts = await Provider.GetClient().Me.Contacts.Request().GetAsync(CancelToken);
             return Contacts.Select((Contact) => Contact.EmailAddresses.LastOrDefault()).OfType<EmailAddress>().Select((Address) => new ContactModel(Address.Address, Address.Name)).ToArray();
+        }
+
+        public async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, bool focused, uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
+        {
+            string type;
+            if (focused)
+            {
+                type = "Focused";
+            } else
+            {
+                type = "Other";
+            }
+            IMailFolderMessagesCollectionRequestBuilder Builder = Provider.GetClient().Me.MailFolders[RootFolderId].Messages;
+            var request = Builder.Request()
+                .Filter($"sentDateTime ge 1900-01-01T00:00:00Z and inferenceClassification eq '{type}'")
+                .OrderBy("sentDateTime desc")
+                .Skip((int)StartIndex)
+                .Top((int)Count)
+                .GetAsync(CancelToken);
+            foreach (Message Message in await request)
+            {
+                CancelToken.ThrowIfCancellationRequested();
+
+                yield return new MailMessageData(Message.Subject,
+                                                 Message.SentDateTime,
+                                                 new MailMessageRecipientData(Message.Sender.EmailAddress.Name, Message.Sender.EmailAddress.Address),
+                                                 Message.ToRecipients.Select((Recipient) => new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                                                 Message.CcRecipients.Select((Recipient) => new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                                                 Message.BccRecipients.Select((Recipient) => new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                                                 new MailMessageContentData(Message.Body.Content, Message.BodyPreview, (MailMessageContentType)Message.Body.ContentType),
+                                                 Message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name, Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size), Attachment.LastModifiedDateTime.GetValueOrDefault())) ?? Enumerable.Empty<MailMessageAttachmentData>());
+            }
         }
     }
 }

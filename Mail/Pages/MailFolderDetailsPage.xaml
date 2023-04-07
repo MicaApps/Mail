@@ -29,14 +29,18 @@
             <controls:ListDetailsView.ListHeader>
                 <Grid>
                     <muxc:NavigationView
+                        x:Name="NavigationTab"
                         IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="False"
+                        SelectionChanged="NavigationView_SelectionChanged"
+                        Visibility="Collapsed"
                         PaneDisplayMode="Top">
                         <muxc:NavigationView.MenuItems>
-                            <muxc:NavigationViewItem Content="Focusd" />
-                            <muxc:NavigationViewItem Content="Other" />
+                            <muxc:NavigationViewItem Content="Focusd" x:Name="FocusedTab"/>
+                            <muxc:NavigationViewItem Content="Other" x:Name="OtherTab"/>
                         </muxc:NavigationView.MenuItems>
                     </muxc:NavigationView>
+                    <TextBlock x:Name="FolderName" Style="{ThemeResource SubtitleTextBlockStyle}" Visibility="Collapsed" VerticalAlignment="Center" />
                     <Button
                         Margin="5"
                         HorizontalAlignment="Right"

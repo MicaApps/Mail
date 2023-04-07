@@ -24,5 +24,11 @@ namespace Mail.Services
         public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
 
         public Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
+
+        interface IFocusFilterSupport
+        {
+            public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, bool focused, uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
+
+        }
     }
 }

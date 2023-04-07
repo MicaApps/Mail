@@ -8,6 +8,7 @@ using Microsoft.Toolkit.Uwp.UI.Controls;
 using Microsoft.UI.Xaml.Controls;
 using Nito.AsyncEx;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -20,6 +21,8 @@ namespace Mail.Pages
     {
         private readonly AsyncLock SelectionChangeLocker = new AsyncLock();
         private MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel> PreviewSource;
+        private MailFolderData navigationData;
+        private bool IsFocusedTab { get; set; } = true;
 
         public MailFolderDetailsPage()
         {
@@ -31,31 +34,66 @@ namespace Mail.Pages
         {
             if (e.Parameter is MailFolderData data && e.NavigationMode == NavigationMode.New)
             {
-                PreviewSource?.Clear();
-                DetailsView.SelectedItem = null;
-                EmptyContentText.Text = "Syncing you email";
-
-                try
+                navigationData = data;
+                FolderName.Text = data.Name;
+                IMailService Service = App.Services.GetService<OutlookService>();
+                if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport)
                 {
-                    OutlookService Service = App.Services.GetService<OutlookService>();
-                    MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(data.Id);
-
-                    DetailsView.ItemsSource = PreviewSource = new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, MailFolder, (Data) => new MailMessageListDetailViewModel(Data));
-
-                    await foreach (MailMessageData MessageData in Service.GetMailMessageAsync(MailFolder.Id))
-                    {
-                        PreviewSource.Add(new MailMessageListDetailViewModel(MessageData));
-                    }
-
-                    if (PreviewSource.Count == 0)
-                    {
-                        EmptyContentText.Text = "No available email";
-                    }
+                    NavigationTab.Visibility = Visibility.Visible;
+                    FolderName.Visibility = Visibility.Collapsed;
+                    FocusedTab.IsSelected = true;
+                    await RefreshData();
                 }
-                catch (Exception)
+                else
                 {
-                    EmptyContentText.Text = "Sync failed";
+                    NavigationTab.Visibility = Visibility.Collapsed;
+                    FolderName.Visibility = Visibility.Visible;
+                    await RefreshData();
                 }
+                
+            }
+            else
+            {
+                navigationData = null;
+            }
+        }
+
+        private async Task RefreshData()
+        {
+            PreviewSource?.Clear();
+            DetailsView.SelectedItem = null;
+            EmptyContentText.Text = "Syncing you email";
+            var data = navigationData;
+            if (data == null) return;
+            try
+            {
+                IMailService Service = App.Services.GetService<OutlookService>();
+                MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(data.Id);
+
+                DetailsView.ItemsSource = PreviewSource = new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, data.Type, MailFolder, (Data) => new MailMessageListDetailViewModel(Data), IsFocusTab: IsFocusedTab);
+
+                IAsyncEnumerable<MailMessageData> dataSet;
+                if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport FilterService)
+                {
+                    dataSet = FilterService.GetMailMessageAsync(data.Id, IsFocusedTab);
+                }
+                else
+                {
+                    dataSet = Service.GetMailMessageAsync(MailFolder.Id);
+                }
+                await foreach (MailMessageData MessageData in dataSet)
+                {
+                    PreviewSource.Add(new MailMessageListDetailViewModel(MessageData));
+                }
+
+                if (PreviewSource.Count == 0)
+                {
+                    EmptyContentText.Text = "No available email";
+                }
+            }
+            catch (Exception)
+            {
+                EmptyContentText.Text = "Sync failed";
             }
         }
 
@@ -124,6 +162,12 @@ namespace Mail.Pages
         private void DetailsView_ViewStateChanged(object sender, ListDetailsViewState e)
         {
             DetailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private async void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        {
+            IsFocusedTab = args.SelectedItemContainer == FocusedTab;
+            await RefreshData();
         }
     }
 }
