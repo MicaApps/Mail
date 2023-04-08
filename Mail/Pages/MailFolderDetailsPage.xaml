@@ -283,22 +283,6 @@
                     </AppBarButton>
                 </CommandBar>
             </controls:ListDetailsView.ListCommandBar>
-            <controls:ListDetailsView.DetailsCommandBar>
-                <CommandBar
-                    Background="{ThemeResource SystemControlAcrylicElementBrush}"
-                    ClosedDisplayMode="Compact"
-                    IsDynamicOverflowEnabled="False"
-                    OverflowButtonVisibility="Collapsed">
-                    <AppBarButton
-                        x:Name="DetailsViewGoBack"
-                        Click="DetailsViewGoBack_Click"
-                        Icon="Back"
-                        Label="Back" />
-                    <AppBarButton Icon="MailReply" Label="Reply" />
-                    <AppBarButton Icon="MailReplyAll" Label="Reply All" />
-                    <AppBarButton Icon="MailForward" Label="Forward" />
-                </CommandBar>
-            </controls:ListDetailsView.DetailsCommandBar>
         </controls:ListDetailsView>
     </Grid>
 </Page>
