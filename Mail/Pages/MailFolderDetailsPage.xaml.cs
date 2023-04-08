@@ -41,8 +41,12 @@ namespace Mail.Pages
                 {
                     NavigationTab.Visibility = Visibility.Visible;
                     FolderName.Visibility = Visibility.Collapsed;
+                    var isPreviousSelected = FocusedTab.IsSelected;
                     FocusedTab.IsSelected = true;
+                    if (isPreviousSelected)
+                    {
                     await RefreshData();
+                }
                 }
                 else
                 {
@@ -161,7 +165,10 @@ namespace Mail.Pages
 
         private void DetailsView_ViewStateChanged(object sender, ListDetailsViewState e)
         {
+            if (sender is ListDetailsView View && View.FindChildOfName<Button>("DetailsViewGoBack") is Button DetailsViewGoBack)
+            {
             DetailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details ? Visibility.Visible : Visibility.Collapsed;
+        }
         }
 
         private async void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)

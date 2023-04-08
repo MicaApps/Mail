@@ -40,7 +40,7 @@
                             <muxc:NavigationViewItem Content="Other" x:Name="OtherTab"/>
                         </muxc:NavigationView.MenuItems>
                     </muxc:NavigationView>
-                    <TextBlock x:Name="FolderName" Style="{ThemeResource SubtitleTextBlockStyle}" Visibility="Collapsed" VerticalAlignment="Center" />
+                    <TextBlock x:Name="FolderName" FontWeight="Bold" Visibility="Collapsed" VerticalAlignment="Center" />
                     <Button
                         Margin="5"
                         HorizontalAlignment="Right"
@@ -82,12 +82,19 @@
                         <StackPanel Grid.Column="1">
                             <TextBlock
                                 FontWeight="Bold"
-                                Text="{x:Bind Title}"
+                                Text="{x:Bind SenderName}"
                                 TextTrimming="CharacterEllipsis" />
                             <TextBlock
                                 FontSize="12"
                                 Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                MaxLines="2"
+                                MaxLines="1"
+                                Text="{x:Bind Title}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="WrapWholeWords" />
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                MaxLines="1"
                                 Text="{x:Bind PreviewText}"
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="WrapWholeWords" />
@@ -247,17 +254,33 @@
                                     VerticalAlignment="Stretch" />
                             </StackPanel>
                         </ScrollViewer>
+                        <Button 
+                            x:Name="DetailsViewGoBack" 
+                            VerticalAlignment="Top" 
+                            Style="{ThemeResource NavigationBackButtonNormalStyle}"
+                            Visibility="Collapsed"
+                            Click="DetailsViewGoBack_Click" />
                     </Grid>
                 </DataTemplate>
             </controls:ListDetailsView.DetailsTemplate>
             <controls:ListDetailsView.ListCommandBar>
                 <CommandBar
-                    Background="{ThemeResource SystemControlAcrylicElementBrush}"
+                    Background="Transparent"
                     ClosedDisplayMode="Compact"
                     IsDynamicOverflowEnabled="False"
                     OverflowButtonVisibility="Collapsed">
-                    <AppBarButton Icon="Back" Label="Back" />
-                    <AppBarButton Icon="Forward" Label="Forward" />
+                    <CommandBar.Resources>
+                        <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
+                            <Setter Property="Width" Value="43" />
+                        </Style>
+                    </CommandBar.Resources>
+                    <AppBarButton Icon="Filter" Label="Filter" />
+                    <AppBarButton Icon="Refresh" Label="Refresh" />
+                    <AppBarButton Label="MultiSelect" >
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xE762;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                 </CommandBar>
             </controls:ListDetailsView.ListCommandBar>
             <controls:ListDetailsView.DetailsCommandBar>
