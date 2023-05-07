@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mail.Services
 {
-    internal class GmailService : OAuthMailService
+    abstract class GmailService : OAuthMailService
     {
         protected override string[] Scopes { get; } = new string[] { "" };
 
