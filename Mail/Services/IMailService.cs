@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage.Streams;
 
 namespace Mail.Services
 {
@@ -22,6 +23,8 @@ namespace Mail.Services
         public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
 
         public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
+
+        public Task<byte[]> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
         public Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 

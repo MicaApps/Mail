@@ -8,6 +8,8 @@ namespace Mail.Services.Data
     {
         public string Title { get; }
 
+        public string Id { get; }
+
         public DateTimeOffset? SentTime { get; }
 
         public MailMessageRecipientData Sender { get; }
@@ -22,9 +24,10 @@ namespace Mail.Services.Data
 
         public MailMessageContentData Content { get; }
 
-        public MailMessageData(string Title, DateTimeOffset? SentTime, MailMessageRecipientData Sender, IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> CC, IEnumerable<MailMessageRecipientData> Bcc, MailMessageContentData Content, IEnumerable<MailMessageAttachmentData> Attachments)
+        public MailMessageData(string Title, string Id, DateTimeOffset? SentTime, MailMessageRecipientData Sender, IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> CC, IEnumerable<MailMessageRecipientData> Bcc, MailMessageContentData Content, IEnumerable<MailMessageAttachmentData> Attachments)
         {
             this.Title = Title;
+            this.Id = Id;
             this.SentTime = SentTime;
             this.Sender = Sender;
             this.To = To.ToArray();

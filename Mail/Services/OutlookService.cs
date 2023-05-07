@@ -5,10 +5,13 @@ using Mail.Services.Data;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage.Streams;
 
 namespace Mail.Services
 {
@@ -147,6 +150,7 @@ namespace Mail.Services
                 CancelToken.ThrowIfCancellationRequested();
 
                 yield return new MailMessageData(Message.Subject,
+                                                 Message.Id,
                                                  Message.SentDateTime,
                                                  new MailMessageRecipientData(Message.Sender.EmailAddress.Name, Message.Sender.EmailAddress.Address),
                                                  Message.ToRecipients.Select((Recipient) => new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
@@ -155,6 +159,34 @@ namespace Mail.Services
                                                  new MailMessageContentData(Message.Body.Content, Message.BodyPreview, (MailMessageContentType)Message.Body.ContentType),
                                                  Message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name, Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size), Attachment.LastModifiedDateTime.GetValueOrDefault())) ?? Enumerable.Empty<MailMessageAttachmentData>());
             }
+        }
+
+        public override async Task<byte[]> GetMailMessageFileAttachmentContent(string messageId, string attachmentId)
+        {
+            var attachments = await Provider.GetClient().Me.Messages[messageId]
+                .Request()
+                .Expand("attachments")
+                .GetAsync();
+            Trace.WriteLine($"getMessage: {attachmentId}");
+
+            var attachmentItem = attachments.Attachments.FirstOrDefault(item => item is FileAttachment file && file.ContentId == attachmentId);
+
+            if (attachmentItem == null)
+            {
+                return null;
+            }
+            
+            var attachment = await Provider.GetClient().Me.Messages[messageId].Attachments[attachmentItem.Id]
+                .Request()
+                .GetAsync();
+            Trace.WriteLine($"attaments:");
+            Trace.WriteLine(JsonSerializer.Serialize(attachment));
+            
+            if (attachment is FileAttachment fileAttachment)
+            {
+                return fileAttachment.ContentBytes;
+            }
+            return null;
         }
 
         public override async Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default)
@@ -185,6 +217,7 @@ namespace Mail.Services
                 CancelToken.ThrowIfCancellationRequested();
 
                 yield return new MailMessageData(Message.Subject,
+                                                 Message.Id,
                                                  Message.SentDateTime,
                                                  new MailMessageRecipientData(Message.Sender.EmailAddress.Name, Message.Sender.EmailAddress.Address),
                                                  Message.ToRecipients.Select((Recipient) => new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),

@@ -7,6 +7,8 @@ namespace Mail.Models
     {
         public string Title => InnerData.Title;
 
+        public string Id => InnerData.Id;
+
         public string PreviewText => InnerData.Content.ContentPreview;
 
         public string SenderName => InnerData.Sender.Name;
