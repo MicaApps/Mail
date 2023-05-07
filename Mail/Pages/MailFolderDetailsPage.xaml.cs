@@ -5,15 +5,17 @@ using Mail.Services.Collection;
 using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.UI.Controls;
-using Microsoft.UI.Xaml.Controls;
 using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
+using Windows.Web.Http;
 
 namespace Mail.Pages
 {
@@ -27,7 +29,6 @@ namespace Mail.Pages
         public MailFolderDetailsPage()
         {
             InitializeComponent();
-            Environment.SetEnvironmentVariable("WEBVIEW2_DEFAULT_BACKGROUND_COLOR", "0");
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -45,8 +46,8 @@ namespace Mail.Pages
                     FocusedTab.IsSelected = true;
                     if (isPreviousSelected)
                     {
-                    await RefreshData();
-                }
+                        await RefreshData();
+                    }
                 }
                 else
                 {
@@ -111,17 +112,16 @@ namespace Mail.Pages
                     {
                         for (int Retry = 0; Retry < 10; Retry++)
                         {
-                            if (View.FindChildOfType<WebView2>() is WebView2 Browser)
+                            if (View.FindChildOfType<WebView>() is WebView Browser)
                             {
-                                await Browser.EnsureCoreWebView2Async();
-
+                                Browser.Height = 100;
                                 if (Model.ContentType == MailMessageContentType.Text)
                                 {
-                                    Browser.NavigateToString(@$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Model.Content}</body></html>");
+                                    Browser.NavigateToString(@$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Model.Content.Replace("cid:", "http://cid.resource.application/")}</body></html>");
                                 }
                                 else
                                 {
-                                    Browser.NavigateToString(Model.Content);
+                                    Browser.NavigateToString(Model.Content.Replace("cid:", "http://cid.resource.application/"));
                                 }
 
                                 break;
@@ -132,6 +132,20 @@ namespace Mail.Pages
                     }
                 }
             }
+        }
+
+        private async Task SetWebviewHeight(WebView webView)
+        {
+            var heightString = await webView.InvokeScriptAsync("eval", new[] { "document.body.scrollHeight.toString()" });
+            if (int.TryParse(heightString, out int height))
+            {
+                webView.Height = height + 50;
+            }
+        }
+
+        private async void Browser_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        {
+            await SetWebviewHeight((WebView)sender);
         }
 
         private void ListDetailsView_Loaded(object sender, RoutedEventArgs e)
@@ -167,14 +181,62 @@ namespace Mail.Pages
         {
             if (sender is ListDetailsView View && View.FindChildOfName<Button>("DetailsViewGoBack") is Button DetailsViewGoBack)
             {
-            DetailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details ? Visibility.Visible : Visibility.Collapsed;
-        }
+                DetailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private async void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             IsFocusedTab = args.SelectedItemContainer == FocusedTab;
             await RefreshData();
+        }
+
+        private async void WebView_WebResourceRequested(WebView sender, WebViewWebResourceRequestedEventArgs args)
+        {
+            var deferral = args.GetDeferral();
+            IMailService Service = App.Services.GetService<OutlookService>();
+            var uri = args.Request.RequestUri.AbsoluteUri;
+            Trace.WriteLine($"web resource uri: {uri}");
+            if (uri.StartsWith("http://cid.resource.application/"))
+            {
+
+                MailMessageListDetailViewModel Model = null;
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    if (sender.DataContext is MailMessageListDetailViewModel model)
+                    {
+                        Model = model;
+                    }
+                });
+                if (Model == null)
+                {
+                    Trace.WriteLine("model is null");
+                    deferral.Complete();
+                    return;
+                }
+                var resourceContent = await Service.GetMailMessageFileAttachmentContent(Model.Id, uri.Replace("http://cid.resource.application/", ""));
+                if (resourceContent == null)
+                {
+                    deferral.Complete();
+                } 
+                else
+                {
+                    await sender.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    {
+                        args.Response = new Windows.Web.Http.HttpResponseMessage()
+                        {
+                            Content = new HttpBufferContent(resourceContent.AsBuffer())
+                        };
+                    });
+                    
+                    deferral.Complete();
+                }
+                
+            } else
+            {
+                deferral.Complete();
+            }
+            
         }
     }
 }

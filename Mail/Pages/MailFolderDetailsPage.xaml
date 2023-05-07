@@ -248,9 +248,13 @@
                                         </CommandBar.SecondaryCommands>
                                     </CommandBar>
                                 </Grid>
-                                <muxc:WebView2
-                                    Height="500"
+                                <WebView
+                                    MinHeight="500"
+                                    Height="Auto"
                                     HorizontalAlignment="Stretch"
+                                    NavigationCompleted="Browser_NavigationCompleted"
+                                    DefaultBackgroundColor="Transparent"
+                                    WebResourceRequested="WebView_WebResourceRequested"
                                     VerticalAlignment="Stretch" />
                             </StackPanel>
                         </ScrollViewer>

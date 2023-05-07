@@ -167,7 +167,6 @@ namespace Mail.Services
                 .Request()
                 .Expand("attachments")
                 .GetAsync();
-            Trace.WriteLine($"getMessage: {attachmentId}");
 
             var attachmentItem = attachments.Attachments.FirstOrDefault(item => item is FileAttachment file && file.ContentId == attachmentId);
 
@@ -179,8 +178,6 @@ namespace Mail.Services
             var attachment = await Provider.GetClient().Me.Messages[messageId].Attachments[attachmentItem.Id]
                 .Request()
                 .GetAsync();
-            Trace.WriteLine($"attaments:");
-            Trace.WriteLine(JsonSerializer.Serialize(attachment));
             
             if (attachment is FileAttachment fileAttachment)
             {
