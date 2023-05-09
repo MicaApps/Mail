@@ -21,6 +21,7 @@
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Use64BitCompiler>true</Use64BitCompiler>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
