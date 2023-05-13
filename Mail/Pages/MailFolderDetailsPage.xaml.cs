@@ -1,12 +1,4 @@
-﻿using Mail.Extensions;
-using Mail.Models;
-using Mail.Services;
-using Mail.Services.Collection;
-using Mail.Services.Data;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using Nito.AsyncEx;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -16,6 +8,14 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
 using Windows.Web.Http;
+using Mail.Extensions;
+using Mail.Models;
+using Mail.Services;
+using Mail.Services.Collection;
+using Mail.Services.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Uwp.UI.Controls;
+using Nito.AsyncEx;
 
 namespace Mail.Pages
 {
@@ -55,7 +55,6 @@ namespace Mail.Pages
                     FolderName.Visibility = Visibility.Visible;
                     await RefreshData();
                 }
-                
             }
             else
             {
@@ -75,7 +74,9 @@ namespace Mail.Pages
                 IMailService Service = App.Services.GetService<OutlookService>();
                 MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(data.Id);
 
-                DetailsView.ItemsSource = PreviewSource = new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, data.Type, MailFolder, (Data) => new MailMessageListDetailViewModel(Data), IsFocusTab: IsFocusedTab);
+                DetailsView.ItemsSource = PreviewSource =
+                    new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, data.Type,
+                        MailFolder, (Data) => new MailMessageListDetailViewModel(Data), IsFocusTab: IsFocusedTab);
 
                 IAsyncEnumerable<MailMessageData> dataSet;
                 if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport FilterService)
@@ -86,6 +87,7 @@ namespace Mail.Pages
                 {
                     dataSet = Service.GetMailMessageAsync(MailFolder.Id);
                 }
+
                 await foreach (MailMessageData MessageData in dataSet)
                 {
                     PreviewSource.Add(new MailMessageListDetailViewModel(MessageData));
@@ -117,11 +119,13 @@ namespace Mail.Pages
                                 Browser.Height = 100;
                                 if (Model.ContentType == MailMessageContentType.Text)
                                 {
-                                    Browser.NavigateToString(@$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Model.Content.Replace("cid:", "http://cid.resource.application/")}</body></html>");
+                                    Browser.NavigateToString(
+                                        @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Model.Content.Replace("cid:", "http://cid.resource.application/")}</body></html>");
                                 }
                                 else
                                 {
-                                    Browser.NavigateToString(Model.Content.Replace("cid:", "http://cid.resource.application/"));
+                                    Browser.NavigateToString(Model.Content.Replace("cid:",
+                                        "http://cid.resource.application/"));
                                 }
 
                                 break;
@@ -136,7 +140,8 @@ namespace Mail.Pages
 
         private async Task SetWebviewHeight(WebView webView)
         {
-            var heightString = await webView.InvokeScriptAsync("eval", new[] { "document.body.scrollHeight.toString()" });
+            var heightString =
+                await webView.InvokeScriptAsync("eval", new[] { "document.body.scrollHeight.toString()" });
             if (int.TryParse(heightString, out int height))
             {
                 webView.Height = height + 50;
@@ -165,7 +170,7 @@ namespace Mail.Pages
         {
             //if (sender is ListDetailsView View)
             //{
-                //View.DetailsPaneBackground = new SolidColorBrush(View.SelectedIndex >= 0 ? Colors.White : Colors.Transparent);
+            //View.DetailsPaneBackground = new SolidColorBrush(View.SelectedIndex >= 0 ? Colors.White : Colors.Transparent);
             //}
         }
 
@@ -179,13 +184,17 @@ namespace Mail.Pages
 
         private void DetailsView_ViewStateChanged(object sender, ListDetailsViewState e)
         {
-            if (sender is ListDetailsView View && View.FindChildOfName<Button>("DetailsViewGoBack") is Button DetailsViewGoBack)
+            if (sender is ListDetailsView View &&
+                View.FindChildOfName<Button>("DetailsViewGoBack") is Button DetailsViewGoBack)
             {
-                DetailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details ? Visibility.Visible : Visibility.Collapsed;
+                DetailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
             }
         }
 
-        private async void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        private async void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender,
+            Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             IsFocusedTab = args.SelectedItemContainer == FocusedTab;
             await RefreshData();
@@ -199,7 +208,6 @@ namespace Mail.Pages
             Trace.WriteLine($"web resource uri: {uri}");
             if (uri.StartsWith("http://cid.resource.application/"))
             {
-
                 MailMessageListDetailViewModel Model = null;
                 await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
@@ -214,11 +222,13 @@ namespace Mail.Pages
                     deferral.Complete();
                     return;
                 }
-                var resourceContent = await Service.GetMailMessageFileAttachmentContent(Model.Id, uri.Replace("http://cid.resource.application/", ""));
+
+                var resourceContent = await Service.GetMailMessageFileAttachmentContent(Model.Id,
+                    uri.Replace("http://cid.resource.application/", ""));
                 if (resourceContent == null)
                 {
                     deferral.Complete();
-                } 
+                }
                 else
                 {
                     await sender.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
@@ -228,15 +238,25 @@ namespace Mail.Pages
                             Content = new HttpBufferContent(resourceContent.AsBuffer())
                         };
                     });
-                    
+
                     deferral.Complete();
                 }
-                
-            } else
+            }
+            else
             {
                 deferral.Complete();
             }
-            
+        }
+
+        private async void WebView_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
+        {
+            Trace.WriteLine($"WebViewNavigationStartingEventArgs: {args.Uri}");
+            // 捕获WebView中发生的点击导航事件
+            if (args.Uri?.ToString().Contains("click?") is not true) return;
+
+            args.Cancel = true;
+            // 委托系统浏览器访问
+            await Windows.System.Launcher.LaunchUriAsync(args.Uri);
         }
     }
 }

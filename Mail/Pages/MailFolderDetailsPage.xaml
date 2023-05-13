@@ -5,7 +5,6 @@
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:data="using:Mail.Services.Data"
-    xmlns:local="using:Mail.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Mail.Models"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
@@ -255,6 +254,7 @@
                                     NavigationCompleted="Browser_NavigationCompleted"
                                     DefaultBackgroundColor="Transparent"
                                     WebResourceRequested="WebView_WebResourceRequested"
+                                    NavigationStarting="WebView_OnNavigationStarting"
                                     VerticalAlignment="Stretch" />
                             </StackPanel>
                         </ScrollViewer>
