@@ -1,12 +1,13 @@
-﻿using CommunityToolkit.Authentication;
-using Mail.Services.Data;
-using Microsoft.Identity.Client;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Storage.Streams;
+using CommunityToolkit.Authentication;
+using Mail.Models;
+using Mail.Services.Data;
+using Microsoft.Graph;
+using Microsoft.Identity.Client;
 
 namespace Mail.Services
 {
@@ -67,16 +68,23 @@ namespace Mail.Services
 
         public abstract IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(CancellationToken CancelToken = default);
 
-        public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId, CancellationToken CancelToken = default);
+        public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
+            CancellationToken CancelToken = default);
 
-        public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type, CancellationToken CancelToken = default);
+        public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type,
+            CancellationToken CancelToken = default);
 
-        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
+        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, uint StartIndex = 0,
+            uint Count = 30, CancellationToken CancelToken = default);
 
-        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
+        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0,
+            uint Count = 30, CancellationToken CancelToken = default);
 
         public abstract Task<byte[]> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
         public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
+
+        public abstract Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(
+            MailMessageListDetailViewModel model);
     }
 }

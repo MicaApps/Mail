@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
 using CommunityToolkit.Graph.Extensions;
+using Mail.Models;
 using Mail.Services.Data;
 using Microsoft.Graph;
 
@@ -256,6 +257,18 @@ namespace Mail.Services
                         Attachment.LastModifiedDateTime.GetValueOrDefault())) ??
                     Enumerable.Empty<MailMessageAttachmentData>());
             }
+        }
+
+        public override async Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(
+            MailMessageListDetailViewModel currentMailModel)
+        {
+            var Message = await Provider.GetClient().Me.Messages[currentMailModel.Id]
+                .Request()
+                .Expand("attachments")
+                .GetAsync();
+            var MessageAttachments = Message.Attachments;
+
+            return MessageAttachments;
         }
     }
 }

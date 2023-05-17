@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
@@ -14,6 +15,7 @@ using Mail.Services;
 using Mail.Services.Collection;
 using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Graph;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
 
@@ -21,9 +23,9 @@ namespace Mail.Pages
 {
     public sealed partial class MailFolderDetailsPage : Page
     {
-        private readonly AsyncLock SelectionChangeLocker = new AsyncLock();
-        private MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel> PreviewSource;
-        private MailFolderData navigationData;
+        private readonly AsyncLock SelectionChangeLocker = new();
+        private MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>? PreviewSource;
+        private MailFolderData? NavigationData;
         private bool IsFocusedTab { get; set; } = true;
 
         public MailFolderDetailsPage()
@@ -35,9 +37,9 @@ namespace Mail.Pages
         {
             if (e.Parameter is MailFolderData data && e.NavigationMode == NavigationMode.New)
             {
-                navigationData = data;
+                NavigationData = data;
                 FolderName.Text = data.Name;
-                IMailService Service = App.Services.GetService<OutlookService>();
+                IMailService Service = App.Services.GetService<OutlookService>()!;
                 if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport)
                 {
                     NavigationTab.Visibility = Visibility.Visible;
@@ -58,7 +60,7 @@ namespace Mail.Pages
             }
             else
             {
-                navigationData = null;
+                NavigationData = null;
             }
         }
 
@@ -67,11 +69,11 @@ namespace Mail.Pages
             PreviewSource?.Clear();
             DetailsView.SelectedItem = null;
             EmptyContentText.Text = "Syncing you email";
-            var data = navigationData;
+            var data = NavigationData;
             if (data == null) return;
             try
             {
-                IMailService Service = App.Services.GetService<OutlookService>();
+                IMailService Service = App.Services.GetService<OutlookService>()!;
                 MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(data.Id);
 
                 DetailsView.ItemsSource = PreviewSource =
@@ -203,7 +205,7 @@ namespace Mail.Pages
         private async void WebView_WebResourceRequested(WebView sender, WebViewWebResourceRequestedEventArgs args)
         {
             var deferral = args.GetDeferral();
-            IMailService Service = App.Services.GetService<OutlookService>();
+            IMailService Service = App.Services.GetService<OutlookService>()!;
             var uri = args.Request.RequestUri.AbsoluteUri;
             Trace.WriteLine($"web resource uri: {uri}");
             if (uri.StartsWith("http://cid.resource.application/"))
@@ -257,6 +259,55 @@ namespace Mail.Pages
             args.Cancel = true;
             // 委托系统浏览器访问
             await Windows.System.Launcher.LaunchUriAsync(args.Uri);
+        }
+
+        /// <summary>
+        /// lock
+        /// TODO refresh data be ignore
+        /// </summary>
+        private string CurrentMailMessageId = "";
+
+        private async void AttachmentsListBox_OnDataContextChanged(FrameworkElement sender,
+            DataContextChangedEventArgs args)
+        {
+            if (args.NewValue is not MailMessageListDetailViewModel Model) return;
+            if (CurrentMailMessageId.Equals(Model.Id)) return;
+
+            CurrentMailMessageId = Model.Id;
+            Trace.WriteLine($"DataContextChanged: {Model.Title}");
+            if (sender is not ListBox ListBox) return;
+
+            IMailService Service = App.Services.GetService<OutlookService>()!;
+            // TODO abstract result support other mail
+            var MessageAttachmentsCollectionPage = await Service.GetMailAttachmentFileAsync(Model);
+
+            var ListBoxItems = ListBox.Items!;
+            foreach (var Attachment in MessageAttachmentsCollectionPage)
+            {
+                var ListBoxItem = new ListBoxItem
+                {
+                    Content = $"{Attachment.Name}\r\nSize: {Attachment.Size} Byte",
+                    DataContext = Attachment
+                };
+                ListBoxItem.GotFocus += ListBoxItemOnGotFocus;
+
+                ListBoxItems.Add(ListBoxItem);
+            }
+        }
+
+        private void ListBoxItemOnGotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ListBoxItem ListBoxItem) return;
+            // TODO FileAttachment not abstract
+            if (ListBoxItem.DataContext is not FileAttachment Attachment) return;
+            // TODO tips be overwritten
+            // TODO user select path
+            using var Fs =
+                System.IO.File.Open(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) +
+                    $"\\Downloads\\{Attachment.Name}", FileMode.Create);
+            Fs.WriteAsync(Attachment.ContentBytes, 0, Attachment.ContentBytes.Length);
+            Fs.FlushAsync();
         }
     }
 }
