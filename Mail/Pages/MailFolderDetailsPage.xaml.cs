@@ -110,34 +110,30 @@ namespace Mail.Pages
 
         private async void ListDetailsView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if ((e.OriginalSource as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
+            if ((e.OriginalSource as FrameworkElement)?.DataContext is not MailMessageListDetailViewModel Model) return;
+            if (sender is not ListDetailsView View) return;
+            using (await SelectionChangeLocker.LockAsync())
             {
-                if (sender is ListDetailsView View)
+                for (int Retry = 0; Retry < 10; Retry++)
                 {
-                    using (await SelectionChangeLocker.LockAsync())
+                    if (View.FindChildOfType<WebView>() is WebView Browser)
                     {
-                        for (int Retry = 0; Retry < 10; Retry++)
+                        Browser.Height = 100;
+                        if (Model.ContentType == MailMessageContentType.Text)
                         {
-                            if (View.FindChildOfType<WebView>() is WebView Browser)
-                            {
-                                Browser.Height = 100;
-                                if (Model.ContentType == MailMessageContentType.Text)
-                                {
-                                    Browser.NavigateToString(
-                                        @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Model.Content.Replace("cid:", "http://cid.resource.application/")}</body></html>");
-                                }
-                                else
-                                {
-                                    Browser.NavigateToString(Model.Content.Replace("cid:",
-                                        "http://cid.resource.application/"));
-                                }
-
-                                break;
-                            }
-
-                            await Task.Delay(300);
+                            Browser.NavigateToString(
+                                @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Model.Content.Replace("cid:", "http://cid.resource.application/")}</body></html>");
                         }
+                        else
+                        {
+                            Browser.NavigateToString(Model.Content.Replace("cid:",
+                                "http://cid.resource.application/"));
+                        }
+
+                        break;
                     }
+
+                    await Task.Delay(300);
                 }
             }
         }
@@ -301,10 +297,9 @@ namespace Mail.Pages
 
         private async void MailFileAttachmentDownload(object sender, RoutedEventArgs e)
         {
-            if (sender is not FrameworkElement Element) return;
             // TODO FileAttachment not abstract
-            if (Element.DataContext is not FileAttachment Attachment) return;
-
+            if ((sender as FrameworkElement)?
+                .DataContext is not FileAttachment Attachment) return;
             var FolderPicker = new FolderPicker
             {
                 SuggestedStartLocation = PickerLocationId.Downloads,
