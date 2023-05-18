@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -276,38 +278,47 @@ namespace Mail.Pages
             CurrentMailMessageId = Model.Id;
             Trace.WriteLine($"DataContextChanged: {Model.Title}");
             if (sender is not ListBox ListBox) return;
+            var ListBoxItems = ListBox.Items!;
+            ListBoxItems.Clear();
 
             IMailService Service = App.Services.GetService<OutlookService>()!;
             // TODO abstract result support other mail
             var MessageAttachmentsCollectionPage = await Service.GetMailAttachmentFileAsync(Model);
 
-            var ListBoxItems = ListBox.Items!;
             foreach (var Attachment in MessageAttachmentsCollectionPage)
             {
-                var ListBoxItem = new ListBoxItem
+                // TODO Style
+                var ListBoxItem = new Button()
                 {
                     Content = $"{Attachment.Name}\r\nSize: {Attachment.Size} Byte",
                     DataContext = Attachment
                 };
-                ListBoxItem.GotFocus += ListBoxItemOnGotFocus;
-
+                ListBoxItem.Click += MailFileAttachmentDownload;
                 ListBoxItems.Add(ListBoxItem);
             }
         }
 
-        private void ListBoxItemOnGotFocus(object sender, RoutedEventArgs e)
+
+        private async void MailFileAttachmentDownload(object sender, RoutedEventArgs e)
         {
-            if (sender is not ListBoxItem ListBoxItem) return;
+            if (sender is not FrameworkElement Element) return;
             // TODO FileAttachment not abstract
-            if (ListBoxItem.DataContext is not FileAttachment Attachment) return;
-            // TODO tips be overwritten
-            // TODO user select path
-            using var Fs =
-                System.IO.File.Open(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) +
-                    $"\\Downloads\\{Attachment.Name}", FileMode.Create);
-            Fs.WriteAsync(Attachment.ContentBytes, 0, Attachment.ContentBytes.Length);
-            Fs.FlushAsync();
+            if (Element.DataContext is not FileAttachment Attachment) return;
+
+            var FolderPicker = new FolderPicker
+            {
+                SuggestedStartLocation = PickerLocationId.Downloads,
+            };
+            var StorageFolder = await FolderPicker.PickSingleFolderAsync();
+            if (StorageFolder == null) return;
+
+            // TODO tips file be overwritten need user confirm 
+            var StorageFile = await StorageFolder.CreateFileAsync(Attachment.Name,
+                CreationCollisionOption.ReplaceExisting);
+            using var Result = await StorageFile.OpenStreamForWriteAsync();
+
+            await Result.WriteAsync(Attachment.ContentBytes, 0, Attachment.ContentBytes.Length);
+            await Result.FlushAsync();
         }
     }
 }
