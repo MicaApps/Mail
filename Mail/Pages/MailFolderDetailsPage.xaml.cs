@@ -160,6 +160,7 @@ namespace Mail.Pages
 
         private string ReplaceWord(Capture match)
         {
+            // TODO 写死的PNG, 需要修改并且支持其他类型
             return "data:image/png;base64," + MemoryCache.Get<string>(match.Value);
         }
 
