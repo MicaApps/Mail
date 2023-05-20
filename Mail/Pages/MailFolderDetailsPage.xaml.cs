@@ -114,7 +114,7 @@ namespace Mail.Pages
             if (sender is not ListDetailsView View) return;
             using (await SelectionChangeLocker.LockAsync())
             {
-                await CacheImageAsync(Model);
+                await LoadImageAndCacheAsync(Model);
                 for (int Retry = 0; Retry < 10; Retry++)
                 {
                     if (View.FindChildOfType<WebView>() is WebView Browser)
@@ -146,7 +146,7 @@ namespace Mail.Pages
         private readonly Regex Rgx = new("cid:[^\"]+");
         private readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
 
-        private async Task CacheImageAsync(MailMessageListDetailViewModel model)
+        private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model)
         {
             IMailService Service = App.Services.GetService<OutlookService>()!;
             var MatchCollection = Rgx.Matches(model.Content);
