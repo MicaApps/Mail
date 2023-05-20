@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph;
 using Microsoft.Identity.Client;
 
@@ -15,6 +16,7 @@ namespace Mail.Services
     internal abstract class OAuthMailService : IMailService
     {
         private readonly IPublicClientApplication ClientApplication;
+        public static readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
 
         public BaseProvider Provider { get; }
 
@@ -61,6 +63,11 @@ namespace Mail.Services
             await Provider.SignOutAsync();
         }
 
+        MemoryCache IMailService.GetCache()
+        {
+            return MemoryCache;
+        }
+
         public virtual Task<bool> InitSeriviceAsync()
         {
             return Task.FromResult(true);
@@ -86,5 +93,7 @@ namespace Mail.Services
 
         public abstract Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model);
+
+        public abstract Task LoadAttachmentsAndCacheAsync(string messageId);
     }
 }

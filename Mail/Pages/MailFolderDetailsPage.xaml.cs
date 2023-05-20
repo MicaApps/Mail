@@ -115,7 +115,7 @@ namespace Mail.Pages
             using (await SelectionChangeLocker.LockAsync())
             {
                 await LoadImageAndCacheAsync(Model);
-                for (int Retry = 0; Retry < 10; Retry++)
+                for (var Retry = 0; Retry < 10; Retry++)
                 {
                     if (View.FindChildOfType<WebView>() is WebView Browser)
                     {
@@ -139,29 +139,21 @@ namespace Mail.Pages
         }
 
         private readonly Regex Rgx = new("cid:[^\"]+");
-        private readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
 
-        private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model)
+        private static async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model)
         {
             IMailService Service = App.Services.GetService<OutlookService>()!;
-            var MatchCollection = Rgx.Matches(model.Content);
-            foreach (Match cid in MatchCollection)
-            {
-                if (MemoryCache.Get<string>(cid.Value) is not null) continue;
-
-                var resourceContent =
-                    await Service.GetMailMessageFileAttachmentContent(CurrentMailMessageId,
-                        cid.Value.Replace("cid:", ""));
-
-                if (resourceContent == null) continue;
-                MemoryCache.Set(cid.Value, Convert.ToBase64String(resourceContent));
-            }
+            await Service.LoadAttachmentsAndCacheAsync(model.Id);
         }
 
         private string ReplaceWord(Capture match)
         {
-            // TODO 写死的PNG, 需要修改并且支持其他类型
-            return "data:image/png;base64," + MemoryCache.Get<string>(match.Value);
+            IMailService Service = App.Services.GetService<OutlookService>()!;
+
+            var FileAttachment = Service.GetCache().Get<FileAttachment>(match.Value.Replace("cid:", ""));
+            return FileAttachment is null
+                ? match.Value
+                : $"data:{FileAttachment.ContentType};base64,{Convert.ToBase64String(FileAttachment.ContentBytes)}";
         }
 
         private async Task SetWebviewHeight(WebView webView)
@@ -176,20 +168,17 @@ namespace Mail.Pages
 
         private async void Browser_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
-            await SetWebviewHeight((WebView)sender);
+            await SetWebviewHeight(sender);
         }
 
         private void ListDetailsView_Loaded(object sender, RoutedEventArgs e)
         {
-            if (sender is ListDetailsView View)
-            {
-                if (View.FindChildOfType<ListView>() is ListView InnerView)
-                {
-                    InnerView.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
-                    InnerView.IncrementalLoadingThreshold = 3;
-                    InnerView.DataFetchSize = 3;
-                }
-            }
+            if (sender is not ListDetailsView View) return;
+            if (View.FindChildOfType<ListView>() is not ListView InnerView) return;
+
+            InnerView.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
+            InnerView.IncrementalLoadingThreshold = 3;
+            InnerView.DataFetchSize = 3;
         }
 
         private void DetailsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -259,13 +248,13 @@ namespace Mail.Pages
             CurrentMailMessageId = Model.Id;
             Trace.WriteLine($"DataContextChanged: {Model.Title}");
             if (sender is not ListBox ListBox) return;
-            var ListBoxItems = ListBox.Items!;
-            ListBoxItems.Clear();
 
             IMailService Service = App.Services.GetService<OutlookService>()!;
             // TODO abstract result support other mail
             var MessageAttachmentsCollectionPage = await Service.GetMailAttachmentFileAsync(Model);
 
+            var ListBoxItems = ListBox.Items!;
+            ListBoxItems.Clear();
             foreach (var Attachment in MessageAttachmentsCollectionPage)
             {
                 // TODO Style

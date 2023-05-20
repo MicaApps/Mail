@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Mail.Models;
 using Mail.Services.Data;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph;
 
 namespace Mail.Services
@@ -12,6 +13,7 @@ namespace Mail.Services
         public bool IsSupported { get; }
 
         public bool IsSignIn { get; }
+        MemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
 
@@ -40,5 +42,6 @@ namespace Mail.Services
         }
 
         public Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(MailMessageListDetailViewModel model);
+        Task LoadAttachmentsAndCacheAsync(string messageId);
     }
 }

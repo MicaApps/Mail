@@ -55,5 +55,10 @@ namespace Mail.Services
         {
             throw new System.NotImplementedException();
         }
+
+        public override Task LoadAttachmentsAndCacheAsync(string messageId)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

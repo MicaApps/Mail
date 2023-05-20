@@ -8,6 +8,7 @@ using CommunityToolkit.Authentication;
 using CommunityToolkit.Graph.Extensions;
 using Mail.Models;
 using Mail.Services.Data;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph;
 
 namespace Mail.Services
@@ -180,10 +181,7 @@ namespace Mail.Services
 
         public override async Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId)
         {
-            var attachments = await Provider.GetClient().Me.Messages[messageId]
-                .Request()
-                .Expand("attachments")
-                .GetAsync();
+            var attachments = await GetMailMessageAttachmentsAsync(messageId);
 
             var attachmentItem =
                 attachments.Attachments.FirstOrDefault(item =>
@@ -204,6 +202,33 @@ namespace Mail.Services
             }
 
             return null;
+        }
+
+        private static readonly SemaphoreSlim GetMailMessageAttachmentsLock = new(1);
+
+        private async Task<Message> GetMailMessageAttachmentsAsync(string messageId)
+        {
+            var ConcurrentReading = MemoryCache.Get<Message>(messageId);
+            if (ConcurrentReading != null) return ConcurrentReading;
+
+            await GetMailMessageAttachmentsLock.WaitAsync();
+            try
+            {
+                var Msg = MemoryCache.Get<Message>(messageId);
+                if (Msg != null) return Msg;
+
+                var Message = await Provider.GetClient().Me.Messages[messageId]
+                    .Request()
+                    .Expand("attachments")
+                    .GetAsync();
+                MemoryCache.Set(messageId, Message);
+
+                return Message;
+            }
+            finally
+            {
+                GetMailMessageAttachmentsLock.Release();
+            }
         }
 
         public override async Task<IReadOnlyList<ContactModel>> GetContactsAsync(
@@ -262,13 +287,23 @@ namespace Mail.Services
         public override async Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel currentMailModel)
         {
-            var Message = await Provider.GetClient().Me.Messages[currentMailModel.Id]
-                .Request()
-                .Expand("attachments")
-                .GetAsync();
+            var Message = await GetMailMessageAttachmentsAsync(currentMailModel.Id);
+
             var MessageAttachments = Message.Attachments;
 
             return MessageAttachments;
+        }
+
+        public override async Task LoadAttachmentsAndCacheAsync(string messageId)
+        {
+            var MailMessageAttachmentsAsync = await GetMailMessageAttachmentsAsync(messageId);
+            foreach (var Attachment in MailMessageAttachmentsAsync.Attachments)
+            {
+                if (Attachment is not FileAttachment { ContentId: not null } Fa) continue;
+                if (MemoryCache.Get(Fa.Id) is not null) continue;
+
+                MemoryCache.Set(Fa.ContentId, Fa);
+            }
         }
     }
 }
