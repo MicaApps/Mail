@@ -125,16 +125,11 @@ namespace Mail.Pages
 
                         if (Model.ContentType == MailMessageContentType.Text)
                         {
-                            var Text =
+                            Replace =
                                 @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Replace}</body></html>";
-
-                            Browser.NavigateToString(Text);
-                        }
-                        else
-                        {
-                            Browser.NavigateToString(Replace);
                         }
 
+                        Browser.NavigateToString(Replace);
                         break;
                     }
 
@@ -233,41 +228,8 @@ namespace Mail.Pages
         private async void WebView_WebResourceRequested(WebView sender, WebViewWebResourceRequestedEventArgs args)
         {
             var deferral = args.GetDeferral();
-            IMailService Service = App.Services.GetService<OutlookService>()!;
-            var uri = args.Request.RequestUri.AbsoluteUri;
-            Trace.WriteLine($"web resource uri: {uri}");
-            if (uri.StartsWith("http://cid.resource.application/"))
-            {
-                MailMessageListDetailViewModel Model = null;
-                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                {
-                    if (sender.DataContext is MailMessageListDetailViewModel model)
-                    {
-                        Model = model;
-                    }
-                });
-                if (Model == null)
-                {
-                    Trace.WriteLine("model is null");
-                    deferral.Complete();
-                    return;
-                }
-
-                var resourceContent = await Service.GetMailMessageFileAttachmentContent(Model.Id,
-                    uri.Replace("http://cid.resource.application/", ""));
-                if (resourceContent == null)
-                {
-                    deferral.Complete();
-                }
-                else
-                {
-                    deferral.Complete();
-                }
-            }
-            else
-            {
-                deferral.Complete();
-            }
+            // TODO 这个方法是不是不需要了
+            deferral.Complete();
         }
 
         private async void WebView_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
