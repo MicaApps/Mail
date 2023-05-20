@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -10,12 +10,12 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
-using Windows.Web.Http;
 using Mail.Extensions;
 using Mail.Models;
 using Mail.Services;
 using Mail.Services.Collection;
 using Mail.Services.Data;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
 using Microsoft.Toolkit.Uwp.UI.Controls;
@@ -114,20 +114,25 @@ namespace Mail.Pages
             if (sender is not ListDetailsView View) return;
             using (await SelectionChangeLocker.LockAsync())
             {
+                await CacheImageAsync(Model);
                 for (int Retry = 0; Retry < 10; Retry++)
                 {
                     if (View.FindChildOfType<WebView>() is WebView Browser)
                     {
                         Browser.Height = 100;
+
+                        var Replace = Rgx.Replace(Model.Content, ReplaceWord);
+
                         if (Model.ContentType == MailMessageContentType.Text)
                         {
-                            Browser.NavigateToString(
-                                @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Model.Content.Replace("cid:", "http://cid.resource.application/")}</body></html>");
+                            var Text =
+                                @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Replace}</body></html>";
+
+                            Browser.NavigateToString(Text);
                         }
                         else
                         {
-                            Browser.NavigateToString(Model.Content.Replace("cid:",
-                                "http://cid.resource.application/"));
+                            Browser.NavigateToString(Replace);
                         }
 
                         break;
@@ -136,6 +141,31 @@ namespace Mail.Pages
                     await Task.Delay(300);
                 }
             }
+        }
+
+        private readonly Regex Rgx = new("cid:[^\"]+");
+        private readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
+
+        private async Task CacheImageAsync(MailMessageListDetailViewModel model)
+        {
+            IMailService Service = App.Services.GetService<OutlookService>()!;
+            var MatchCollection = Rgx.Matches(model.Content);
+            foreach (Match cid in MatchCollection)
+            {
+                if (MemoryCache.Get<string>(cid.Value) is not null) continue;
+
+                var resourceContent =
+                    await Service.GetMailMessageFileAttachmentContent(CurrentMailMessageId,
+                        cid.Value.Replace("cid:", ""));
+
+                if (resourceContent == null) continue;
+                MemoryCache.Set(cid.Value, Convert.ToBase64String(resourceContent));
+            }
+        }
+
+        private string ReplaceWord(Capture match)
+        {
+            return "data:image/png;base64," + MemoryCache.Get<string>(match.Value);
         }
 
         private async Task SetWebviewHeight(WebView webView)
@@ -231,14 +261,6 @@ namespace Mail.Pages
                 }
                 else
                 {
-                    await sender.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                    {
-                        args.Response = new Windows.Web.Http.HttpResponseMessage()
-                        {
-                            Content = new HttpBufferContent(resourceContent.AsBuffer())
-                        };
-                    });
-
                     deferral.Complete();
                 }
             }

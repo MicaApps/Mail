@@ -80,7 +80,7 @@ namespace Mail.Services
         public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0,
             uint Count = 30, CancellationToken CancelToken = default);
 
-        public abstract Task<byte[]> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
+        public abstract Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
         public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 

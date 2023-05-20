@@ -178,7 +178,7 @@ namespace Mail.Services
             }
         }
 
-        public override async Task<byte[]> GetMailMessageFileAttachmentContent(string messageId, string attachmentId)
+        public override async Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId)
         {
             var attachments = await Provider.GetClient().Me.Messages[messageId]
                 .Request()
