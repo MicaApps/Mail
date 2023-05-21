@@ -80,7 +80,8 @@ namespace Mail.Pages
 
                 DetailsView.ItemsSource = PreviewSource =
                     new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, data.Type,
-                        MailFolder, (Data) => new MailMessageListDetailViewModel(Data), IsFocusTab: IsFocusedTab);
+                        MailFolder, (messageData) => new MailMessageListDetailViewModel(messageData),
+                        IsFocusTab: IsFocusedTab);
 
                 IAsyncEnumerable<MailMessageData> dataSet;
                 if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport FilterService)
@@ -119,6 +120,7 @@ namespace Mail.Pages
                     if (View.FindChildOfType<WebView>() is WebView Browser)
                     {
                         LoadImageAndCacheAsync(Model, Browser);
+                        LoadAttachmentsList(View.FindChildOfName<ListBox>("AttachmentsListBox"), Model);
                         Browser.Height = 100;
 
                         var Replace = Model.Content;
@@ -231,13 +233,6 @@ namespace Mail.Pages
             await RefreshData();
         }
 
-        private async void WebView_WebResourceRequested(WebView sender, WebViewWebResourceRequestedEventArgs args)
-        {
-            var deferral = args.GetDeferral();
-            // TODO 这个方法是不是不需要了
-            deferral.Complete();
-        }
-
         private async void WebView_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
         {
             Trace.WriteLine($"WebViewNavigationStartingEventArgs: {args.Uri}");
@@ -255,27 +250,27 @@ namespace Mail.Pages
         /// </summary>
         private string CurrentMailAttachmentsListBoxMessageId = "";
 
-        private async void AttachmentsListBox_OnDataContextChanged(FrameworkElement sender,
-            DataContextChangedEventArgs args)
+        /// <summary>
+        /// 加载附件列表
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="model"></param>
+        private async Task LoadAttachmentsList(ItemsControl sender, MailMessageListDetailViewModel model)
         {
-            if (args.NewValue is not MailMessageListDetailViewModel Model) return;
-            if (CurrentMailAttachmentsListBoxMessageId.Equals(Model.Id)) return;
+            if (CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
 
-            CurrentMailAttachmentsListBoxMessageId = Model.Id;
-            Trace.WriteLine($"DataContextChanged: {Model.Title}");
-            if (sender is not ListBox ListBox) return;
-
-            IMailService Service = App.Services.GetService<OutlookService>()!;
-            // TODO abstract result support other mail
-            var MessageAttachmentsCollectionPage = await Service.GetMailAttachmentFileAsync(Model);
-            if (!CurrentMailAttachmentsListBoxMessageId.Equals(Model.Id)) return;
-
-            var ListBoxItems = ListBox.Items!;
+            CurrentMailAttachmentsListBoxMessageId = model.Id;
+            Trace.WriteLine($"DataContextChanged: {model.Title}");
+            var ListBoxItems = sender.Items!;
             ListBoxItems.Clear();
+            IMailService Service = App.Services.GetService<OutlookService>()!;
+            var MessageAttachmentsCollectionPage = await Service.GetMailAttachmentFileAsync(model);
+            // 如果当前邮件id不相等, 说明邮件已经切换.
+            if (!CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
             foreach (var Attachment in MessageAttachmentsCollectionPage)
             {
                 // TODO Style
-                var ListBoxItem = new Button()
+                var ListBoxItem = new Button
                 {
                     Content = $"{Attachment.Name}\r\nSize: {Attachment.Size} Byte",
                     DataContext = Attachment
@@ -288,7 +283,6 @@ namespace Mail.Pages
 
         private async void MailFileAttachmentDownload(object sender, RoutedEventArgs e)
         {
-            // TODO FileAttachment not abstract
             if ((sender as FrameworkElement)?
                 .DataContext is not AttachmentDataModel Attachment) return;
             var FolderPicker = new FolderPicker
