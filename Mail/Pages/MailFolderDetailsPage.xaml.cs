@@ -218,9 +218,9 @@ namespace Mail.Pages
         private void DetailsView_ViewStateChanged(object sender, ListDetailsViewState e)
         {
             if (sender is ListDetailsView View &&
-                View.FindChildOfName<Button>("DetailsViewGoBack") is Button DetailsViewGoBack)
+                View.FindChildOfName<Button>("DetailsViewGoBack") is Button detailsViewGoBack)
             {
-                DetailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details
+                detailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details
                     ? Visibility.Visible
                     : Visibility.Collapsed;
             }
@@ -259,45 +259,41 @@ namespace Mail.Pages
         {
             if (CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
             CurrentMailAttachmentsListBoxMessageId = model.Id;
-            IMailService Service = App.Services.GetService<OutlookService>()!;
-            // TODO abstract result support other mail
-            var MessageAttachmentsCollectionPage = Service.GetMailAttachmentFileAsync(Model);
-// 如果当前邮件id不相等, 说明邮件已经切换.
-            if (!CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
-            var ListBoxItems = sender.Items!;
-            ListBoxItems.Clear();
-            await foreach (var Attachment in MessageAttachmentsCollectionPage)
+            IMailService service = App.Services.GetService<OutlookService>()!;
+            var messageAttachmentsCollectionPage = service.GetMailAttachmentFileAsync(model);
+            var listBoxItems = sender.Items!;
+            listBoxItems.Clear();
+            await foreach (var attachment in messageAttachmentsCollectionPage)
             {
                 // TODO Style
                 var ListBoxItem = new Button
                 {
-                    Content = $"{Attachment.Name}\r\nSize: {Attachment.AttachmentSize} Byte",
-                    DataContext = Attachment
+                    Content = $"{attachment.Name}\r\nSize: {attachment.AttachmentSize} Byte",
+                    DataContext = attachment
                 };
                 ListBoxItem.Click += MailFileAttachmentDownload;
-                ListBoxItems.Add(ListBoxItem);
+                listBoxItems.Add(ListBoxItem);
             }
         }
-
 
         private async void MailFileAttachmentDownload(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?
-                .DataContext is not MailMessageFileAttachmentData Attachment) return;
-            var FolderPicker = new FolderPicker
+                .DataContext is not MailMessageFileAttachmentData attachment) return;
+            var folderPicker = new FolderPicker
             {
                 SuggestedStartLocation = PickerLocationId.Downloads,
             };
-            var StorageFolder = await FolderPicker.PickSingleFolderAsync();
-            if (StorageFolder == null) return;
+            var storageFolder = await folderPicker.PickSingleFolderAsync();
+            if (storageFolder == null) return;
 
-            // TODO tips file be overwritten need user confirm 
-            var StorageFile = await StorageFolder.CreateFileAsync(Attachment.Name,
+            // TODO tips file be overwritten need user confirm
+            var storageFile = await storageFolder.CreateFileAsync(attachment.Name,
                 CreationCollisionOption.ReplaceExisting);
-            using var Result = await StorageFile.OpenStreamForWriteAsync();
+            using var result = await storageFile.OpenStreamForWriteAsync();
 
-            await Result.WriteAsync(Attachment.ContentBytes, 0, Attachment.ContentBytes.Length);
-            await Result.FlushAsync();
+            await result.WriteAsync(attachment.ContentBytes, 0, attachment.ContentBytes.Length);
+            await result.FlushAsync();
         }
     }
 }

@@ -257,8 +257,7 @@
                                     
                                     <ListBox Grid.Column="1" 
                                              Grid.Row="1" 
-                                             x:Name="AttachmentsListBox" 
-                                             DataContext="{Binding}"
+                                             x:Name="AttachmentsListBox" DataContext="{Binding}"
                                     />
                                 </Grid>
                                 <WebView

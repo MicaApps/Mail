@@ -49,13 +49,13 @@ namespace Mail.Services
             throw new System.NotImplementedException();
         }
 
-        public override Task<IEnumerable<AttachmentDataModel>> GetMailAttachmentFileAsync(
-            MailMessageListDetailViewModel model)
+        public override IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
+            MailMessageListDetailViewModel model, CancellationToken cancelToken)
         {
             throw new System.NotImplementedException();
         }
 
-        public override Task LoadAttachmentsAndCacheAsync(string messageId)
+        public override Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken cancelToken)
         {
             throw new System.NotImplementedException();
         }
