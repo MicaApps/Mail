@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -113,14 +114,14 @@ namespace Mail.Pages
             if (sender is not ListDetailsView View) return;
             using (await SelectionChangeLocker.LockAsync())
             {
-                await LoadImageAndCacheAsync(Model);
                 for (var Retry = 0; Retry < 10; Retry++)
                 {
                     if (View.FindChildOfType<WebView>() is WebView Browser)
                     {
+                        LoadImageAndCacheAsync(Model, Browser);
                         Browser.Height = 100;
 
-                        var Replace = Rgx.Replace(Model.Content, ReplaceWord);
+                        var Replace = Model.Content;
 
                         if (Model.ContentType == MailMessageContentType.Text)
                         {
@@ -139,10 +140,26 @@ namespace Mail.Pages
 
         private readonly Regex Rgx = new("cid:[^\"]+");
 
-        private static async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model)
+        private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model, WebView browser)
         {
             IMailService Service = App.Services.GetService<OutlookService>()!;
-            await Service.LoadAttachmentsAndCacheAsync(model.Id);
+            if (Service.GetCache().Get(model.Id) is null)
+            {
+                await Service.LoadAttachmentsAndCacheAsync(model.Id);
+            }
+
+            if (browser.DataContext is not MailMessageListDetailViewModel Context) return;
+            if (!Context.Id.Equals(model.Id)) return;
+
+            var Replace = Rgx.Replace(model.Content, ReplaceWord);
+
+            if (model.ContentType == MailMessageContentType.Text)
+            {
+                Replace =
+                    @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Replace}</body></html>";
+            }
+
+            await Dispatcher.RunAsync(CoreDispatcherPriority.High, () => browser.NavigateToString(Replace));
         }
 
         private string ReplaceWord(Capture match)
