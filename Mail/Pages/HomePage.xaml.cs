@@ -1,9 +1,4 @@
-﻿using CommunityToolkit.Authentication;
-using Mail.Services;
-using Mail.Services.Data;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Identity.Client;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.ApplicationModel.Core;
@@ -12,6 +7,11 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
+using CommunityToolkit.Authentication;
+using Mail.Services;
+using Mail.Services.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 
 namespace Mail.Pages
@@ -32,7 +32,9 @@ namespace Mail.Pages
             try
             {
                 MsalProvider Provider = App.Services.GetService<OutlookService>().Provider as MsalProvider;
-                AccountSource.Add(new AccountModel(Provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value, Provider.Account.Username));
+                AccountSource.Add(new AccountModel(
+                    Provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value,
+                    Provider.Account.Username));
             }
             catch
             {
@@ -48,7 +50,8 @@ namespace Mail.Pages
             CoreApplicationViewTitleBar SystemBar = CoreApplication.GetCurrentView().TitleBar;
             SystemBar.LayoutMetricsChanged += SystemBar_LayoutMetricsChanged;
             SystemBar.IsVisibleChanged += SystemBar_IsVisibleChanged;
-            AppTitleBar.Margin = new Thickness(SystemBar.SystemOverlayLeftInset, AppTitleBar.Margin.Top, SystemBar.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
+            AppTitleBar.Margin = new Thickness(SystemBar.SystemOverlayLeftInset, AppTitleBar.Margin.Top,
+                SystemBar.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
             Window.Current.SetTitleBar(AppTitleBar);
         }
 
@@ -67,15 +70,27 @@ namespace Mail.Pages
             {
                 MailFolderSource.Add(0);
                 var isFirstOther = true;
-                await foreach(var item in App.Services.GetService<OutlookService>().GetMailFoldersAsync().OrderBy(item => item.Type))
+                try
                 {
-                    if (item.Type == MailFolderType.Other && isFirstOther)
+                    // TODO 新账号会引发异常
+                    // the specified folder could not be found in the store
+                    await foreach (var item in App.Services.GetService<OutlookService>().GetMailFoldersAsync()
+                                       .OrderBy(item => item.Type))
                     {
-                        MailFolderSource.Add(1);
-                        isFirstOther = false;
+                        if (item.Type == MailFolderType.Other && isFirstOther)
+                        {
+                            MailFolderSource.Add(1);
+                            isFirstOther = false;
+                        }
+
+                        MailFolderSource.Add(item);
                     }
-                    MailFolderSource.Add(item);
                 }
+                catch (Exception Exception)
+                {
+                    //Console.WriteLine(Exception);
+                }
+
                 NavView.SelectedItem = MailFolderSource.FirstOrDefault(item => item is MailFolderData);
             }
         }
@@ -97,10 +112,12 @@ namespace Mail.Pages
         private void SystemBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
         {
             AppTitleBar.Height = sender.Height;
-            AppTitleBar.Margin = new Thickness(sender.SystemOverlayLeftInset, AppTitleBar.Margin.Top, sender.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
+            AppTitleBar.Margin = new Thickness(sender.SystemOverlayLeftInset, AppTitleBar.Margin.Top,
+                sender.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
         }
 
-        private void NavView_SelectionChanged(NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        private void NavView_SelectionChanged(NavigationView sender,
+            Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             if (args.IsSettingsSelected)
             {
@@ -131,6 +148,7 @@ namespace Mail.Pages
                     _ => "\uE8B7"
                 };
             }
+
             return null;
         }
 
@@ -157,6 +175,5 @@ namespace Mail.Pages
                 return Divider;
             }
         }
-
     }
 }

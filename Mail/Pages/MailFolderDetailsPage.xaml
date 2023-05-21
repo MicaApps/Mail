@@ -5,7 +5,6 @@
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:data="using:Mail.Services.Data"
-    xmlns:local="using:Mail.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Mail.Models"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
@@ -36,8 +35,8 @@
                         Visibility="Collapsed"
                         PaneDisplayMode="Top">
                         <muxc:NavigationView.MenuItems>
-                            <muxc:NavigationViewItem Content="Focusd" x:Name="FocusedTab"/>
-                            <muxc:NavigationViewItem Content="Other" x:Name="OtherTab"/>
+                            <muxc:NavigationViewItem Content="Focusd" x:Name="FocusedTab" />
+                            <muxc:NavigationViewItem Content="Other" x:Name="OtherTab" />
                         </muxc:NavigationView.MenuItems>
                     </muxc:NavigationView>
                     <TextBlock x:Name="FolderName" FontWeight="Bold" Visibility="Collapsed" VerticalAlignment="Center" />
@@ -64,6 +63,8 @@
                         FontSize="16" />
                 </Grid>
             </controls:ListDetailsView.ListPaneEmptyContent>
+            
+            <!--Current Folder All Mail PreView-->
             <controls:ListDetailsView.ItemTemplate>
                 <DataTemplate x:DataType="models:MailMessageListDetailViewModel">
                     <Grid Padding="2.5,10,12.5,10">
@@ -153,7 +154,8 @@
                                                 Padding="0"
                                                 ItemsSource="{x:Bind To}">
                                                 <ListView.ItemContainerStyle>
-                                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}"
+                                                           TargetType="ListViewItem">
                                                         <Setter Property="Padding" Value="0" />
                                                         <Setter Property="Template">
                                                             <Setter.Value>
@@ -197,18 +199,22 @@
                                     </StackPanel>
                                 </StackPanel>
                                 <Grid Margin="0,55,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <PersonPicture
-                                        Width="32"
-                                        Height="32"
-                                        Margin="5,5,15,5"
-                                        VerticalAlignment="Top"
-                                        DisplayName="{x:Bind SenderName}" />
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <PersonPicture Grid.Row="0"
+                                                   Width="32"
+                                                   Height="32"
+                                                   Margin="5,5,15,5"
+                                                   VerticalAlignment="Top"
+                                                   DisplayName="{x:Bind SenderName}" />
+                                    <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock
                                             FontWeight="SemiBold"
                                             Text="{x:Bind Sender.Name}"
@@ -220,13 +226,14 @@
                                             Text="{x:Bind Sender.Address}"
                                             TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
-                                    <CommandBar
+                                    <CommandBar Grid.Row="0"
                                         Grid.Column="2"
                                         Background="Transparent"
                                         DefaultLabelPosition="Collapsed"
                                         IsOpen="False">
                                         <CommandBar.Resources>
-                                            <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
+                                            <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}"
+                                                   TargetType="AppBarButton">
                                                 <Setter Property="Width" Value="43" />
                                             </Style>
                                         </CommandBar.Resources>
@@ -247,6 +254,13 @@
                                             </AppBarButton>
                                         </CommandBar.SecondaryCommands>
                                     </CommandBar>
+                                    
+                                    <ListBox Grid.Column="1" 
+                                             Grid.Row="1" 
+                                             x:Name="AttachmentsListBox" 
+                                             DataContext="{Binding}"
+                                             DataContextChanged="AttachmentsListBox_OnDataContextChanged"
+                                    />
                                 </Grid>
                                 <WebView
                                     MinHeight="500"
@@ -255,12 +269,13 @@
                                     NavigationCompleted="Browser_NavigationCompleted"
                                     DefaultBackgroundColor="Transparent"
                                     WebResourceRequested="WebView_WebResourceRequested"
+                                    NavigationStarting="WebView_OnNavigationStarting"
                                     VerticalAlignment="Stretch" />
                             </StackPanel>
                         </ScrollViewer>
-                        <Button 
-                            x:Name="DetailsViewGoBack" 
-                            VerticalAlignment="Top" 
+                        <Button
+                            x:Name="DetailsViewGoBack"
+                            VerticalAlignment="Top"
                             Style="{ThemeResource NavigationBackButtonNormalStyle}"
                             Visibility="Collapsed"
                             Click="DetailsViewGoBack_Click" />
@@ -280,7 +295,7 @@
                     </CommandBar.Resources>
                     <AppBarButton Icon="Filter" Label="Filter" />
                     <AppBarButton Icon="Refresh" Label="Refresh" />
-                    <AppBarButton Label="MultiSelect" >
+                    <AppBarButton Label="MultiSelect">
                         <AppBarButton.Icon>
                             <FontIcon Glyph="&#xE762;" />
                         </AppBarButton.Icon>
