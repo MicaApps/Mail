@@ -20,7 +20,7 @@ namespace Mail.Services.Data
 
         public IReadOnlyList<MailMessageRecipientData> Bcc { get; }
 
-        public IReadOnlyList<MailMessageAttachmentData> Attachments { get; }
+        public IReadOnlyList<IMailMessageAttachmentData> Attachments { get; }
 
         public MailMessageContentData Content { get; }
 

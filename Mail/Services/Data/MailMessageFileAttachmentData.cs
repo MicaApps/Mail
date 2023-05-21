@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Mail.Services.Data
 {
-    internal sealed class MailMessageAttachmentData : IMailMessageAttachmentData
+    internal class MailMessageFileAttachmentData : IMailMessageAttachmentData
     {
         public string Name { get; }
 
@@ -14,13 +18,16 @@ namespace Mail.Services.Data
 
         public DateTimeOffset LastModifiedDate { get; }
 
-        public MailMessageAttachmentData(string Name, string Id, string ContentType = null, ulong AttachmentSize = 0, DateTimeOffset LastModifiedDate = default)
+        public byte[] ContentBytes { get; }
+
+        public MailMessageFileAttachmentData(string Name, string Id, string ContentType = null, ulong AttachmentSize = 0, DateTimeOffset LastModifiedDate = default, byte[] ContentBytes = null)
         {
             this.Name = Name;
             this.Id = Id;
             this.ContentType = ContentType;
             this.AttachmentSize = AttachmentSize;
             this.LastModifiedDate = LastModifiedDate;
+            this.ContentBytes = ContentBytes;
         }
     }
 }

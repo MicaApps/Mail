@@ -168,7 +168,7 @@ namespace Mail.Pages
         {
             IMailService Service = App.Services.GetService<OutlookService>()!;
 
-            var FileAttachment = Service.GetCache().Get<AttachmentDataModel>(match.Value.Replace("cid:", ""));
+            var FileAttachment = Service.GetCache().Get<MailMessageFileAttachmentData>(match.Value.Replace("cid:", ""));
             return FileAttachment is null
                 ? match.Value
                 : $"data:{FileAttachment.ContentType};base64,{Convert.ToBase64String(FileAttachment.ContentBytes)}";
@@ -258,21 +258,20 @@ namespace Mail.Pages
         private async Task LoadAttachmentsList(ItemsControl sender, MailMessageListDetailViewModel model)
         {
             if (CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
-
             CurrentMailAttachmentsListBoxMessageId = model.Id;
-            Trace.WriteLine($"DataContextChanged: {model.Title}");
+            IMailService Service = App.Services.GetService<OutlookService>()!;
+            // TODO abstract result support other mail
+            var MessageAttachmentsCollectionPage = Service.GetMailAttachmentFileAsync(Model);
+// 如果当前邮件id不相等, 说明邮件已经切换.
+            if (!CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
             var ListBoxItems = sender.Items!;
             ListBoxItems.Clear();
-            IMailService Service = App.Services.GetService<OutlookService>()!;
-            var MessageAttachmentsCollectionPage = await Service.GetMailAttachmentFileAsync(model);
-            // 如果当前邮件id不相等, 说明邮件已经切换.
-            if (!CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
-            foreach (var Attachment in MessageAttachmentsCollectionPage)
+            await foreach (var Attachment in MessageAttachmentsCollectionPage)
             {
                 // TODO Style
                 var ListBoxItem = new Button
                 {
-                    Content = $"{Attachment.Name}\r\nSize: {Attachment.Size} Byte",
+                    Content = $"{Attachment.Name}\r\nSize: {Attachment.AttachmentSize} Byte",
                     DataContext = Attachment
                 };
                 ListBoxItem.Click += MailFileAttachmentDownload;
@@ -284,7 +283,7 @@ namespace Mail.Pages
         private async void MailFileAttachmentDownload(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?
-                .DataContext is not AttachmentDataModel Attachment) return;
+                .DataContext is not MailMessageFileAttachmentData Attachment) return;
             var FolderPicker = new FolderPicker
             {
                 SuggestedStartLocation = PickerLocationId.Downloads,

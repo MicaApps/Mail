@@ -40,7 +40,8 @@ namespace Mail.Services
                 uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
         }
 
-        public Task<IEnumerable<AttachmentDataModel>> GetMailAttachmentFileAsync(MailMessageListDetailViewModel model);
-        Task LoadAttachmentsAndCacheAsync(string messageId);
+        public IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
+
+        Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
     }
 }
