@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
-using Microsoft.Graph;
 
 namespace Mail.Services
 {
@@ -50,7 +49,7 @@ namespace Mail.Services
             throw new System.NotImplementedException();
         }
 
-        public override Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(
+        public override Task<IEnumerable<AttachmentDataModel>> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model)
         {
             throw new System.NotImplementedException();

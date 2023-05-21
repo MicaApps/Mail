@@ -17,7 +17,6 @@ using Mail.Services.Collection;
 using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Graph;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
 
@@ -150,7 +149,7 @@ namespace Mail.Pages
         {
             IMailService Service = App.Services.GetService<OutlookService>()!;
 
-            var FileAttachment = Service.GetCache().Get<FileAttachment>(match.Value.Replace("cid:", ""));
+            var FileAttachment = Service.GetCache().Get<AttachmentDataModel>(match.Value.Replace("cid:", ""));
             return FileAttachment is null
                 ? match.Value
                 : $"data:{FileAttachment.ContentType};base64,{Convert.ToBase64String(FileAttachment.ContentBytes)}";
@@ -274,7 +273,7 @@ namespace Mail.Pages
         {
             // TODO FileAttachment not abstract
             if ((sender as FrameworkElement)?
-                .DataContext is not FileAttachment Attachment) return;
+                .DataContext is not AttachmentDataModel Attachment) return;
             var FolderPicker = new FolderPicker
             {
                 SuggestedStartLocation = PickerLocationId.Downloads,

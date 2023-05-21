@@ -7,7 +7,6 @@ using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Graph;
 using Microsoft.Identity.Client;
 
 namespace Mail.Services
@@ -91,7 +90,7 @@ namespace Mail.Services
 
         public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 
-        public abstract Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(
+        public abstract Task<IEnumerable<AttachmentDataModel>> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model);
 
         public abstract Task LoadAttachmentsAndCacheAsync(string messageId);

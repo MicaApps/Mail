@@ -284,14 +284,20 @@ namespace Mail.Services
             }
         }
 
-        public override async Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(
+        public override async Task<IEnumerable<AttachmentDataModel>> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel currentMailModel)
         {
             var Message = await GetMailMessageAttachmentsAsync(currentMailModel.Id);
+            var AttachmentDataModels = new List<AttachmentDataModel>();
 
             var MessageAttachments = Message.Attachments;
+            foreach (var Attachment in MessageAttachments)
+            {
+                if (Attachment is not FileAttachment MessageAttachment) continue;
+                AttachmentDataModels.Add(ToAttachmentDataModel(MessageAttachment));
+            }
 
-            return MessageAttachments;
+            return AttachmentDataModels;
         }
 
         public override async Task LoadAttachmentsAndCacheAsync(string messageId)
@@ -302,8 +308,15 @@ namespace Mail.Services
                 if (Attachment is not FileAttachment { ContentId: not null } Fa) continue;
                 if (MemoryCache.Get(Fa.Id) is not null) continue;
 
-                MemoryCache.Set(Fa.ContentId, Fa);
+                MemoryCache.Set(Fa.ContentId, ToAttachmentDataModel(Fa));
             }
         }
+
+        private static AttachmentDataModel ToAttachmentDataModel(FileAttachment file) => new(
+            file.Id,
+            file.Name,
+            file.ContentBytes,
+            file.Size ?? 0,
+            file.ContentType);
     }
 }
