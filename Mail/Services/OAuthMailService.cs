@@ -91,9 +91,8 @@ namespace Mail.Services
 
         public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 
-        public abstract Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(
-            MailMessageListDetailViewModel model);
+        public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
-        public abstract Task LoadAttachmentsAndCacheAsync(string messageId);
+        public abstract Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
     }
 }

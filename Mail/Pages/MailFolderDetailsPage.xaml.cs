@@ -17,7 +17,6 @@ using Mail.Services.Collection;
 using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Graph;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
 
@@ -150,7 +149,7 @@ namespace Mail.Pages
         {
             IMailService Service = App.Services.GetService<OutlookService>()!;
 
-            var FileAttachment = Service.GetCache().Get<FileAttachment>(match.Value.Replace("cid:", ""));
+            var FileAttachment = Service.GetCache().Get<MailMessageFileAttachmentData>(match.Value.Replace("cid:", ""));
             return FileAttachment is null
                 ? match.Value
                 : $"data:{FileAttachment.ContentType};base64,{Convert.ToBase64String(FileAttachment.ContentBytes)}";
@@ -251,16 +250,16 @@ namespace Mail.Pages
 
             IMailService Service = App.Services.GetService<OutlookService>()!;
             // TODO abstract result support other mail
-            var MessageAttachmentsCollectionPage = await Service.GetMailAttachmentFileAsync(Model);
+            var MessageAttachmentsCollectionPage = Service.GetMailAttachmentFileAsync(Model);
 
             var ListBoxItems = ListBox.Items!;
             ListBoxItems.Clear();
-            foreach (var Attachment in MessageAttachmentsCollectionPage)
+            await foreach (var Attachment in MessageAttachmentsCollectionPage)
             {
                 // TODO Style
                 var ListBoxItem = new Button()
                 {
-                    Content = $"{Attachment.Name}\r\nSize: {Attachment.Size} Byte",
+                    Content = $"{Attachment.Name}\r\nSize: {Attachment.AttachmentSize} Byte",
                     DataContext = Attachment
                 };
                 ListBoxItem.Click += MailFileAttachmentDownload;
@@ -273,7 +272,7 @@ namespace Mail.Pages
         {
             // TODO FileAttachment not abstract
             if ((sender as FrameworkElement)?
-                .DataContext is not FileAttachment Attachment) return;
+                .DataContext is not MailMessageFileAttachmentData Attachment) return;
             var FolderPicker = new FolderPicker
             {
                 SuggestedStartLocation = PickerLocationId.Downloads,

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Mail.Models;
 using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Graph;
 
 namespace Mail.Services
 {
@@ -41,7 +40,8 @@ namespace Mail.Services
                 uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
         }
 
-        public Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(MailMessageListDetailViewModel model);
-        Task LoadAttachmentsAndCacheAsync(string messageId);
+        public IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
+
+        Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
     }
 }

@@ -49,16 +49,5 @@ namespace Mail.Services
         {
             throw new System.NotImplementedException();
         }
-
-        public override Task<IMessageAttachmentsCollectionPage> GetMailAttachmentFileAsync(
-            MailMessageListDetailViewModel model)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override Task LoadAttachmentsAndCacheAsync(string messageId)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }
