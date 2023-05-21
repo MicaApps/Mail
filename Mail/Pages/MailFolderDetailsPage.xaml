@@ -270,6 +270,7 @@
                                     DefaultBackgroundColor="Transparent"
                                     WebResourceRequested="WebView_WebResourceRequested"
                                     NavigationStarting="WebView_OnNavigationStarting"
+                                    DataContext="{Binding}"
                                     VerticalAlignment="Stretch" />
                             </StackPanel>
                         </ScrollViewer>

@@ -252,6 +252,7 @@ namespace Mail.Pages
             IMailService Service = App.Services.GetService<OutlookService>()!;
             // TODO abstract result support other mail
             var MessageAttachmentsCollectionPage = await Service.GetMailAttachmentFileAsync(Model);
+            if (!CurrentMailMessageId.Equals(Model.Id)) return;
 
             var ListBoxItems = ListBox.Items!;
             ListBoxItems.Clear();
