@@ -12,6 +12,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph.Models;
 using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.MailFolders.Item.Messages;
+using Mail.Extensions;
 
 namespace Mail.Services
 {
@@ -49,62 +50,90 @@ namespace Mail.Services
             return Provider.GetClient().Me.MailFolders[FolderString];
         }
 
+        private async Task<MailFolder> CatchMailFolder(MailFolderItemRequestBuilder Builder, CancellationToken CancelToken = default)
+        {
+            return await RunCatch.GetOrDefault(async () => await Builder.GetAsync(default, CancelToken));
+        }
+
         public override async IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
             var client = Provider.GetClient();
 
-            var folders = (await client.Me.MailFolders.GetAsync(requestOptions => requestOptions.QueryParameters.IncludeHiddenFolders = "true" , CancelToken)).Value;
             //TODO: Remove this code when Graph beta API which include wellknown-name property become stable.
-            var inbox = await client.Me.MailFolders["inbox"].GetAsync(default, CancelToken);
-            var archive = await client.Me.MailFolders["archive"].GetAsync(default, CancelToken);
-            var drafts = await client.Me.MailFolders["drafts"].GetAsync(default, CancelToken);
-            var deleted = await client.Me.MailFolders["deleteditems"].GetAsync(default, CancelToken);
-            var junkEmail = await client.Me.MailFolders["junkemail"].GetAsync(default, CancelToken);
-            var sentItems = await client.Me.MailFolders["sentitems"].GetAsync(default, CancelToken);
-            var syncIssues = await client.Me.MailFolders["syncissues"].GetAsync(default, CancelToken);
-            var hasDeleted = false;
-            foreach (var folder in folders)
-            {
-                if (folder.Id == inbox.Id)
-                {
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Inbox);
-                }
-                else if (folder.Id == archive.Id)
-                {
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Archive);
-                }
-                else if (folder.Id == deleted.Id)
-                {
-                    hasDeleted = true;
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Deleted);
-                }
-                else if (folder.Id == sentItems.Id)
-                {
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.SentItems);
-                }
-                else if (folder.Id == junkEmail.Id)
-                {
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Junk);
-                }
-                else if (folder.Id == drafts.Id)
-                {
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Drafts);
-                }
-                else if (folder.Id == syncIssues.Id)
-                {
-                    // Skip add SyncIssues folder.
-                }
-                else
-                {
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, MailFolderType.Other);
-                }
-            }
+            var inbox = await CatchMailFolder(client.Me.MailFolders["inbox"], CancelToken);
+            var archive = await CatchMailFolder(client.Me.MailFolders["archive"], CancelToken);
+            var drafts = await CatchMailFolder(client.Me.MailFolders["drafts"], CancelToken);
+            var deleted = await CatchMailFolder(client.Me.MailFolders["deleteditems"], CancelToken);
+            var junkEmail = await CatchMailFolder(client.Me.MailFolders["junkemail"], CancelToken);
+            var sentItems = await CatchMailFolder(client.Me.MailFolders["sentitems"], CancelToken);
+            var syncIssues = await CatchMailFolder(client.Me.MailFolders["syncissues"], CancelToken);
 
-            if (!hasDeleted)
+            MailFolderCollectionResponse folders = null;
+            var count = 0;
+            async IAsyncEnumerable<MailFolderData> GenerateSubMailFolderDataBuilder(
+                MailFolderItemRequestBuilder Builder, [EnumeratorCancellation] CancellationToken CancelToken = default)
             {
-                yield return new MailFolderData(deleted.Id, deleted.DisplayName, MailFolderType.Deleted);
+                var subFolderCount = 0;
+                MailFolderCollectionResponse subFolders = null;
+                do
+                {
+                    subFolders = (await Builder.ChildFolders.GetAsync(requestConfiguration =>
+                    {
+                        requestConfiguration.QueryParameters.Skip = subFolderCount;
+                    }, CancelToken));
+                    subFolderCount += subFolders.Value.Count;
+                    foreach (MailFolder SubFolder in subFolders.Value)
+                    {
+                        CancelToken.ThrowIfCancellationRequested();
+                        var SubFolderBuilder = client.Me.MailFolders[SubFolder.Id];
+                        yield return new MailFolderData(SubFolder.Id, SubFolder.DisplayName, MailFolderType.Other, await GenerateSubMailFolderDataBuilder(SubFolderBuilder, CancelToken).ToArrayAsync());
+                    }
+                } while (subFolders.OdataNextLink != null);
             }
+            do
+            {
+                folders = (await client.Me.MailFolders.GetAsync(requestOptions =>
+                {
+                    requestOptions.QueryParameters.IncludeHiddenFolders = "true";
+                    requestOptions.QueryParameters.Skip = count;
+                }, CancelToken));
+
+                foreach (var folder in folders.Value)
+                {
+                    MailFolderType FolderType = MailFolderType.Other;
+                    if (folder.Id == inbox.Id)
+                    {
+                        FolderType = MailFolderType.Inbox;
+                    }
+                    else if (folder.Id == archive.Id)
+                    {
+                        FolderType = MailFolderType.Archive;
+                    }
+                    else if (folder.Id == deleted.Id)
+                    {
+                        FolderType = MailFolderType.Deleted;
+                    }
+                    else if (folder.Id == sentItems.Id)
+                    {
+                        FolderType = MailFolderType.SentItems;
+                    }
+                    else if (folder.Id == junkEmail.Id)
+                    {
+                        FolderType = MailFolderType.Junk;
+                    }
+                    else if (folder.Id == drafts.Id)
+                    {
+                        FolderType = MailFolderType.Drafts;
+                    }
+                    else if (folder.Id == syncIssues.Id)
+                    {
+                        continue;
+                    }
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, FolderType, await GenerateSubMailFolderDataBuilder(client.Me.MailFolders[folder.Id]).ToArrayAsync());
+                }
+                count += folders.Value.Count;
+            } while (folders.OdataNextLink != null);
         }
 
 
@@ -157,9 +186,9 @@ namespace Mail.Services
             foreach (Message Message in (await Builder
                          .GetAsync(requestOptions =>
                          {
-                             requestOptions.QueryParameters.Skip = (int) StartIndex;
-                             requestOptions.QueryParameters.Top = (int) Count;
-                         },CancelToken)).Value)
+                             requestOptions.QueryParameters.Skip = (int)StartIndex;
+                             requestOptions.QueryParameters.Top = (int)Count;
+                         }, CancelToken)).Value)
             {
                 CancelToken.ThrowIfCancellationRequested();
 
@@ -223,7 +252,7 @@ namespace Mail.Services
                 if (Msg != null) return Msg;
 
                 var Message = await Provider.GetClient().Me.Messages[messageId]
-                    .GetAsync(requestOptions => requestOptions.QueryParameters.Expand = new string[] { "attachments" } );
+                    .GetAsync(requestOptions => requestOptions.QueryParameters.Expand = new string[] { "attachments" });
                 MemoryCache.Set(messageId, Message);
 
                 return Message;

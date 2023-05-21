@@ -158,6 +158,15 @@
                             </muxc:NavigationViewItem>
                         </DataTemplate>
                     </local:MailFolderNavigationDataTemplateSelector.Content>
+                    <local:MailFolderNavigationDataTemplateSelector.ContentWithChild>
+                        <DataTemplate x:DataType="models:MailFolderData">
+                            <muxc:NavigationViewItem Content="{x:Bind Name}" MenuItemsSource="{x:Bind ChildFolders}">
+                                <muxc:NavigationViewItem.Icon>
+                                    <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
+                                </muxc:NavigationViewItem.Icon>
+                            </muxc:NavigationViewItem>
+                        </DataTemplate>
+                    </local:MailFolderNavigationDataTemplateSelector.ContentWithChild>
                 </local:MailFolderNavigationDataTemplateSelector>
             </muxc:NavigationView.MenuItemTemplateSelector>
             <muxc:NavigationView.Content>
