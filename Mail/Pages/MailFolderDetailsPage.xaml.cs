@@ -237,22 +237,22 @@ namespace Mail.Pages
         /// lock
         /// TODO refresh data be ignore
         /// </summary>
-        private string CurrentMailMessageId = "";
+        private string CurrentMailAttachmentsListBoxMessageId = "";
 
         private async void AttachmentsListBox_OnDataContextChanged(FrameworkElement sender,
             DataContextChangedEventArgs args)
         {
             if (args.NewValue is not MailMessageListDetailViewModel Model) return;
-            if (CurrentMailMessageId.Equals(Model.Id)) return;
+            if (CurrentMailAttachmentsListBoxMessageId.Equals(Model.Id)) return;
 
-            CurrentMailMessageId = Model.Id;
+            CurrentMailAttachmentsListBoxMessageId = Model.Id;
             Trace.WriteLine($"DataContextChanged: {Model.Title}");
             if (sender is not ListBox ListBox) return;
 
             IMailService Service = App.Services.GetService<OutlookService>()!;
             // TODO abstract result support other mail
             var MessageAttachmentsCollectionPage = await Service.GetMailAttachmentFileAsync(Model);
-            if (!CurrentMailMessageId.Equals(Model.Id)) return;
+            if (!CurrentMailAttachmentsListBoxMessageId.Equals(Model.Id)) return;
 
             var ListBoxItems = ListBox.Items!;
             ListBoxItems.Clear();
