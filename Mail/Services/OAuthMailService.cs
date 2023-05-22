@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
@@ -46,10 +45,7 @@ namespace Mail.Services
 
         public async Task SignInAsync()
         {
-            //Workaround for MsalProvider sign-in not pop up
-            var account = (await ClientApplication.GetAccountsAsync()).FirstOrDefault();
-            await ClientApplication.AcquireTokenInteractive(Scopes).WithAccount(account).ExecuteAsync();
-            await Provider.TrySilentSignInAsync();
+            await Provider.SignInAsync();
         }
 
         public async Task<bool> SignInSilentAsync()
