@@ -22,26 +22,37 @@
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Page.Resources>
-    <StackPanel Orientation="Vertical"
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Border x:Name="AppTitleBar"
+                HorizontalAlignment="Stretch"
+                Background="Transparent" />
+        <StackPanel Orientation="Vertical"
+                Grid.RowSpan="2"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 MaxWidth="800"
                 Padding="32"
                 Spacing="8">
-        <TextBlock Text="{StaticResource ResourceKey=WelcomeIcon}"
+            <TextBlock Text="{StaticResource ResourceKey=WelcomeIcon}"
                    Height="100"
                    HorizontalAlignment="Center" />
-        <ctkl:SettingsCard Header="Outlook"
+            <ctkl:SettingsCard Header="Outlook"
                            IsClickEnabled="True"
                            Click="Outlook_Click" />
-        <ctkl:SettingsCard Header="Google"
+            <ctkl:SettingsCard Header="Google"
                            IsClickEnabled="True"
                            IsEnabled="False" />
-        <ctkl:SettingsCard Header="POP3"
+            <ctkl:SettingsCard Header="POP3"
                            IsClickEnabled="True"
                            IsEnabled="False" />
-        <ctkl:SettingsCard Header="IMAP"
+            <ctkl:SettingsCard Header="IMAP"
                            IsClickEnabled="True"
                            IsEnabled="False" />
-    </StackPanel>
+        </StackPanel>
+    </Grid>
+
 </Page>
