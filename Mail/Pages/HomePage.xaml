@@ -54,60 +54,71 @@
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="48" />
-                <RowDefinition Height="1*" />
-            </Grid.RowDefinitions>
-            <Grid
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Border
+                Grid.ColumnSpan="3"
                 x:Name="AppTitleBar"
                 HorizontalAlignment="Stretch"
                 Background="Transparent" />
-            <Grid>
-                <AutoSuggestBox
+        <Grid Grid.ColumnSpan="3">
+            <AutoSuggestBox
                     Grid.Column="2"
                     Width="350"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     VerticalContentAlignment="Center"
                     PlaceholderText="Search ">
-                    <AutoSuggestBox.Resources>
-                        <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
-                            <LinearGradientBrush.RelativeTransform>
-                                <ScaleTransform ScaleY="-1" CenterY="0.5" />
-                            </LinearGradientBrush.RelativeTransform>
-                            <LinearGradientBrush.GradientStops>
-                                <GradientStop Offset="0.5" Color="{StaticResource ControlStrokeColorSecondary}" />
-                                <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
-                            </LinearGradientBrush.GradientStops>
-                        </LinearGradientBrush>
-                        <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
-                        <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
+                <AutoSuggestBox.Resources>
+                    <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
+                        <LinearGradientBrush.RelativeTransform>
+                            <ScaleTransform ScaleY="-1" CenterY="0.5" />
+                        </LinearGradientBrush.RelativeTransform>
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Offset="0.5" Color="{StaticResource ControlStrokeColorSecondary}" />
+                            <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                    <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
+                    <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
 
-                    </AutoSuggestBox.Resources>
-                    <AutoSuggestBox.QueryIcon>
-                        <muxc:AnimatedIcon Width="16" Height="16">
-                            <muxc:AnimatedIcon.Source>
-                                <animatedvisuals:AnimatedFindVisualSource />
-                            </muxc:AnimatedIcon.Source>
-                            <muxc:AnimatedIcon.FallbackIconSource>
-                                <muxc:SymbolIconSource Symbol="Find" />
-                            </muxc:AnimatedIcon.FallbackIconSource>
-                        </muxc:AnimatedIcon>
-                    </AutoSuggestBox.QueryIcon>
-                </AutoSuggestBox>
-            </Grid>
-            <Border
+                </AutoSuggestBox.Resources>
+                <AutoSuggestBox.QueryIcon>
+                    <muxc:AnimatedIcon Width="16" Height="16">
+                        <muxc:AnimatedIcon.Source>
+                            <animatedvisuals:AnimatedFindVisualSource />
+                        </muxc:AnimatedIcon.Source>
+                        <muxc:AnimatedIcon.FallbackIconSource>
+                            <muxc:SymbolIconSource Symbol="Find" />
+                        </muxc:AnimatedIcon.FallbackIconSource>
+                    </muxc:AnimatedIcon>
+                </AutoSuggestBox.QueryIcon>
+            </AutoSuggestBox>
+        </Grid>
+        <Button x:Name="PaneToggleButton" Style="{ThemeResource PaneToggleButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Left" Click="PaneToggleButton_Click" />
+
+        <Border
                 Grid.Row="1"
+                Grid.ColumnSpan="3"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="{ThemeResource NavigationViewContentBackground}"
                 BorderBrush="{ThemeResource NavigationViewContentGridBorderBrush}"
                 BorderThickness="0,1,0,0" />
-        </Grid>
+
         <muxc:NavigationView
             x:Name="NavView"
             IsBackButtonVisible="Collapsed"
+            IsPaneToggleButtonVisible="False"
+            Grid.Row="1"
+            Grid.ColumnSpan="3"
             IsTitleBarAutoPaddingEnabled="False"
             SelectionChanged="NavView_SelectionChanged"
             OpenPaneLength="250"
@@ -115,14 +126,14 @@
             MenuItemsSource="{x:Bind MailFolderSource}"
             PaneDisplayMode="Left">
             <muxc:NavigationView.Resources>
-                <Thickness x:Key="NavigationViewContentMargin">0,50,0,0</Thickness>
+                <!--<Thickness x:Key="NavigationViewContentMargin">0,50,0,0</Thickness>-->
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
             </muxc:NavigationView.Resources>
             <muxc:NavigationView.PaneCustomContent>
                 <ListView
                     x:Name="listView"
-                    Margin="0,7.5,0,0"
+                    Margin="0,0,0,0"
                     ItemsSource="{x:Bind AccountSource}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:AccountModel">

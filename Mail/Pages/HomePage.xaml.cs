@@ -13,6 +13,7 @@ using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
+using Mail.Extensions;
 
 namespace Mail.Pages
 {
@@ -28,6 +29,8 @@ namespace Mail.Pages
 
             SetupTitleBar();
 
+            SetupPaneToggleButton();
+            
             //TODO: Test only and should remove this later
             try
             {
@@ -50,9 +53,14 @@ namespace Mail.Pages
             CoreApplicationViewTitleBar SystemBar = CoreApplication.GetCurrentView().TitleBar;
             SystemBar.LayoutMetricsChanged += SystemBar_LayoutMetricsChanged;
             SystemBar.IsVisibleChanged += SystemBar_IsVisibleChanged;
-            AppTitleBar.Margin = new Thickness(SystemBar.SystemOverlayLeftInset, AppTitleBar.Margin.Top,
-                SystemBar.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
             Window.Current.SetTitleBar(AppTitleBar);
+        }
+
+        private void SetupPaneToggleButton()
+        {
+            PaneToggleButton.ApplyTemplate();
+            var content = PaneToggleButton.FindChildOfName<ContentPresenter>("ContentPresenter");
+            content.Visibility = Visibility.Collapsed;
         }
 
         private void HomePage_Loaded(object sender, RoutedEventArgs e)
@@ -112,8 +120,6 @@ namespace Mail.Pages
         private void SystemBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
         {
             AppTitleBar.Height = sender.Height;
-            AppTitleBar.Margin = new Thickness(sender.SystemOverlayLeftInset, AppTitleBar.Margin.Top,
-                sender.SystemOverlayRightInset, AppTitleBar.Margin.Bottom);
         }
 
         private void NavView_SelectionChanged(NavigationView sender,
@@ -127,6 +133,11 @@ namespace Mail.Pages
             {
                 NavigationContent.Navigate(typeof(MailFolderDetailsPage), data, new DrillInNavigationTransitionInfo());
             }
+        }
+
+        private void PaneToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavView.IsPaneOpen = !NavView.IsPaneOpen;
         }
     }
 
