@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
+using Mail.Extensions;
 using Mail.Extensions.Graph;
 using Mail.Models;
 using Mail.Services.Data;
@@ -49,7 +50,8 @@ namespace Mail.Services
             return Provider.GetClient().Me.MailFolders[FolderString];
         }
 
-        private async Task<MailFolder> CatchMailFolder(MailFolderItemRequestBuilder Builder, CancellationToken CancelToken = default)
+        private async Task<MailFolder> CatchMailFolder(MailFolderItemRequestBuilder Builder,
+            CancellationToken CancelToken = default)
         {
             return await RunCatch.GetOrDefault(async () => await Builder.GetAsync(default, CancelToken));
         }
@@ -70,6 +72,7 @@ namespace Mail.Services
 
             MailFolderCollectionResponse folders = null;
             var count = 0;
+
             async IAsyncEnumerable<MailFolderData> GenerateSubMailFolderDataBuilder(
                 MailFolderItemRequestBuilder Builder, [EnumeratorCancellation] CancellationToken CancelToken = default)
             {
@@ -77,19 +80,20 @@ namespace Mail.Services
                 MailFolderCollectionResponse subFolders = null;
                 do
                 {
-                    subFolders = (await Builder.ChildFolders.GetAsync(requestConfiguration =>
-                    {
-                        requestConfiguration.QueryParameters.Skip = subFolderCount;
-                    }, CancelToken));
+                    subFolders = (await Builder.ChildFolders.GetAsync(
+                        requestConfiguration => { requestConfiguration.QueryParameters.Skip = subFolderCount; },
+                        CancelToken));
                     subFolderCount += subFolders.Value.Count;
                     foreach (MailFolder SubFolder in subFolders.Value)
                     {
                         CancelToken.ThrowIfCancellationRequested();
                         var SubFolderBuilder = client.Me.MailFolders[SubFolder.Id];
-                        yield return new MailFolderData(SubFolder.Id, SubFolder.DisplayName, MailFolderType.Other, await GenerateSubMailFolderDataBuilder(SubFolderBuilder, CancelToken).ToArrayAsync());
+                        yield return new MailFolderData(SubFolder.Id, SubFolder.DisplayName, MailFolderType.Other,
+                            await GenerateSubMailFolderDataBuilder(SubFolderBuilder, CancelToken).ToArrayAsync());
                     }
                 } while (subFolders.OdataNextLink != null);
             }
+
             do
             {
                 folders = (await client.Me.MailFolders.GetAsync(requestOptions =>
@@ -129,8 +133,11 @@ namespace Mail.Services
                     {
                         continue;
                     }
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, FolderType, await GenerateSubMailFolderDataBuilder(client.Me.MailFolders[folder.Id]).ToArrayAsync());
+
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, FolderType,
+                        await GenerateSubMailFolderDataBuilder(client.Me.MailFolders[folder.Id]).ToArrayAsync());
                 }
+
                 count += folders.Value.Count;
             } while (folders.OdataNextLink != null);
         }
