@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -79,7 +80,8 @@ namespace Mail.Pages
 
                 DetailsView.ItemsSource = PreviewSource =
                     new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, data.Type,
-                        MailFolder, (Data) => new MailMessageListDetailViewModel(Data), IsFocusTab: IsFocusedTab);
+                        MailFolder, (messageData) => new MailMessageListDetailViewModel(messageData),
+                        IsFocusTab: IsFocusedTab);
 
                 IAsyncEnumerable<MailMessageData> dataSet;
                 if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport FilterService)
@@ -113,14 +115,15 @@ namespace Mail.Pages
             if (sender is not ListDetailsView View) return;
             using (await SelectionChangeLocker.LockAsync())
             {
-                await LoadImageAndCacheAsync(Model);
                 for (var Retry = 0; Retry < 10; Retry++)
                 {
                     if (View.FindChildOfType<WebView>() is WebView Browser)
                     {
+                        LoadImageAndCacheAsync(Model, Browser);
+                        LoadAttachmentsList(View.FindChildOfName<ListBox>("AttachmentsListBox"), Model);
                         Browser.Height = 100;
 
-                        var Replace = Rgx.Replace(Model.Content, ReplaceWord);
+                        var Replace = Model.Content;
 
                         if (Model.ContentType == MailMessageContentType.Text)
                         {
@@ -139,10 +142,26 @@ namespace Mail.Pages
 
         private readonly Regex Rgx = new("cid:[^\"]+");
 
-        private static async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model)
+        private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model, WebView browser)
         {
             IMailService Service = App.Services.GetService<OutlookService>()!;
-            await Service.LoadAttachmentsAndCacheAsync(model.Id);
+            if (Service.GetCache().Get(model.Id) is null)
+            {
+                await Service.LoadAttachmentsAndCacheAsync(model.Id);
+            }
+
+            if (browser.DataContext is not MailMessageListDetailViewModel Context) return;
+            if (!Context.Id.Equals(model.Id)) return;
+
+            var Replace = Rgx.Replace(model.Content, ReplaceWord);
+
+            if (model.ContentType == MailMessageContentType.Text)
+            {
+                Replace =
+                    @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Replace}</body></html>";
+            }
+
+            await Dispatcher.RunAsync(CoreDispatcherPriority.High, () => browser.NavigateToString(Replace));
         }
 
         private string ReplaceWord(Capture match)
@@ -199,9 +218,9 @@ namespace Mail.Pages
         private void DetailsView_ViewStateChanged(object sender, ListDetailsViewState e)
         {
             if (sender is ListDetailsView View &&
-                View.FindChildOfName<Button>("DetailsViewGoBack") is Button DetailsViewGoBack)
+                View.FindChildOfName<Button>("DetailsViewGoBack") is Button detailsViewGoBack)
             {
-                DetailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details
+                detailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details
                     ? Visibility.Visible
                     : Visibility.Collapsed;
             }
@@ -212,13 +231,6 @@ namespace Mail.Pages
         {
             IsFocusedTab = args.SelectedItemContainer == FocusedTab;
             await RefreshData();
-        }
-
-        private async void WebView_WebResourceRequested(WebView sender, WebViewWebResourceRequestedEventArgs args)
-        {
-            var deferral = args.GetDeferral();
-            // TODO 这个方法是不是不需要了
-            deferral.Complete();
         }
 
         private async void WebView_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
@@ -236,57 +248,52 @@ namespace Mail.Pages
         /// lock
         /// TODO refresh data be ignore
         /// </summary>
-        private string CurrentMailMessageId = "";
+        private string CurrentMailAttachmentsListBoxMessageId = "";
 
-        private async void AttachmentsListBox_OnDataContextChanged(FrameworkElement sender,
-            DataContextChangedEventArgs args)
+        /// <summary>
+        /// 加载附件列表
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="model"></param>
+        private async Task LoadAttachmentsList(ItemsControl sender, MailMessageListDetailViewModel model)
         {
-            if (args.NewValue is not MailMessageListDetailViewModel Model) return;
-            if (CurrentMailMessageId.Equals(Model.Id)) return;
-
-            CurrentMailMessageId = Model.Id;
-            Trace.WriteLine($"DataContextChanged: {Model.Title}");
-            if (sender is not ListBox ListBox) return;
-
-            IMailService Service = App.Services.GetService<OutlookService>()!;
-            // TODO abstract result support other mail
-            var MessageAttachmentsCollectionPage = Service.GetMailAttachmentFileAsync(Model);
-
-            var ListBoxItems = ListBox.Items!;
-            ListBoxItems.Clear();
-            await foreach (var Attachment in MessageAttachmentsCollectionPage)
+            if (CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
+            CurrentMailAttachmentsListBoxMessageId = model.Id;
+            IMailService service = App.Services.GetService<OutlookService>()!;
+            var messageAttachmentsCollectionPage = service.GetMailAttachmentFileAsync(model);
+            var listBoxItems = sender.Items!;
+            listBoxItems.Clear();
+            await foreach (var attachment in messageAttachmentsCollectionPage)
             {
                 // TODO Style
-                var ListBoxItem = new Button()
+                var ListBoxItem = new Button
                 {
-                    Content = $"{Attachment.Name}\r\nSize: {Attachment.AttachmentSize} Byte",
-                    DataContext = Attachment
+                    Content = $"{attachment.Name}\r\nSize: {attachment.AttachmentSize} Byte",
+                    DataContext = attachment
                 };
                 ListBoxItem.Click += MailFileAttachmentDownload;
-                ListBoxItems.Add(ListBoxItem);
+                listBoxItems.Add(ListBoxItem);
             }
         }
 
-
         private async void MailFileAttachmentDownload(object sender, RoutedEventArgs e)
         {
-            // TODO FileAttachment not abstract
             if ((sender as FrameworkElement)?
-                .DataContext is not MailMessageFileAttachmentData Attachment) return;
-            var FolderPicker = new FolderPicker
+                .DataContext is not MailMessageFileAttachmentData attachment) return;
+            var folderPicker = new FolderPicker
             {
                 SuggestedStartLocation = PickerLocationId.Downloads,
             };
-            var StorageFolder = await FolderPicker.PickSingleFolderAsync();
-            if (StorageFolder == null) return;
+            var storageFolder = await folderPicker.PickSingleFolderAsync();
+            if (storageFolder == null) return;
 
-            // TODO tips file be overwritten need user confirm 
-            var StorageFile = await StorageFolder.CreateFileAsync(Attachment.Name,
+            // TODO tips file be overwritten need user confirm
+            var storageFile = await storageFolder.CreateFileAsync(attachment.Name,
                 CreationCollisionOption.ReplaceExisting);
-            using var Result = await StorageFile.OpenStreamForWriteAsync();
+            using var result = await storageFile.OpenStreamForWriteAsync();
 
-            await Result.WriteAsync(Attachment.ContentBytes, 0, Attachment.ContentBytes.Length);
-            await Result.FlushAsync();
+            await result.WriteAsync(attachment.ContentBytes, 0, attachment.ContentBytes.Length);
+            await result.FlushAsync();
         }
     }
 }

@@ -5,14 +5,14 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
+using Mail.Extensions;
 using Mail.Extensions.Graph;
 using Mail.Models;
 using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Graph.Models;
 using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.MailFolders.Item.Messages;
-using Mail.Extensions;
+using Microsoft.Graph.Models;
 
 namespace Mail.Services
 {
@@ -50,7 +50,8 @@ namespace Mail.Services
             return Provider.GetClient().Me.MailFolders[FolderString];
         }
 
-        private async Task<MailFolder> CatchMailFolder(MailFolderItemRequestBuilder Builder, CancellationToken CancelToken = default)
+        private async Task<MailFolder> CatchMailFolder(MailFolderItemRequestBuilder Builder,
+            CancellationToken CancelToken = default)
         {
             return await RunCatch.GetOrDefault(async () => await Builder.GetAsync(default, CancelToken));
         }
@@ -71,6 +72,7 @@ namespace Mail.Services
 
             MailFolderCollectionResponse folders = null;
             var count = 0;
+
             async IAsyncEnumerable<MailFolderData> GenerateSubMailFolderDataBuilder(
                 MailFolderItemRequestBuilder Builder, [EnumeratorCancellation] CancellationToken CancelToken = default)
             {
@@ -78,19 +80,20 @@ namespace Mail.Services
                 MailFolderCollectionResponse subFolders = null;
                 do
                 {
-                    subFolders = (await Builder.ChildFolders.GetAsync(requestConfiguration =>
-                    {
-                        requestConfiguration.QueryParameters.Skip = subFolderCount;
-                    }, CancelToken));
+                    subFolders = (await Builder.ChildFolders.GetAsync(
+                        requestConfiguration => { requestConfiguration.QueryParameters.Skip = subFolderCount; },
+                        CancelToken));
                     subFolderCount += subFolders.Value.Count;
                     foreach (MailFolder SubFolder in subFolders.Value)
                     {
                         CancelToken.ThrowIfCancellationRequested();
                         var SubFolderBuilder = client.Me.MailFolders[SubFolder.Id];
-                        yield return new MailFolderData(SubFolder.Id, SubFolder.DisplayName, MailFolderType.Other, await GenerateSubMailFolderDataBuilder(SubFolderBuilder, CancelToken).ToArrayAsync());
+                        yield return new MailFolderData(SubFolder.Id, SubFolder.DisplayName, MailFolderType.Other,
+                            await GenerateSubMailFolderDataBuilder(SubFolderBuilder, CancelToken).ToArrayAsync());
                     }
                 } while (subFolders.OdataNextLink != null);
             }
+
             do
             {
                 folders = (await client.Me.MailFolders.GetAsync(requestOptions =>
@@ -130,24 +133,28 @@ namespace Mail.Services
                     {
                         continue;
                     }
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, FolderType, await GenerateSubMailFolderDataBuilder(client.Me.MailFolders[folder.Id]).ToArrayAsync());
+
+                    yield return new MailFolderData(folder.Id, folder.DisplayName, FolderType,
+                        await GenerateSubMailFolderDataBuilder(client.Me.MailFolders[folder.Id]).ToArrayAsync());
                 }
+
                 count += folders.Value.Count;
             } while (folders.OdataNextLink != null);
         }
 
 
-
         public override async Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type,
             CancellationToken CancelToken = default)
         {
-            return await GetMailFolderDetailAsync((await GetDefatultMailFolderBuilder(Type).GetAsync()).Id, CancelToken);
+            return await GetMailFolderDetailAsync((await GetDefatultMailFolderBuilder(Type).GetAsync()).Id,
+                CancelToken);
         }
 
         public override async Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default)
         {
             var client = Provider.GetClient();
+
             async IAsyncEnumerable<MailFolderDetailData> GenerateSubMailFolderDataBuilder(
                 MailFolderItemRequestBuilder Builder, [EnumeratorCancellation] CancellationToken CancelToken = default)
             {
@@ -169,11 +176,11 @@ namespace Mail.Services
         public override async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type,
             uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
-
-            await foreach (MailMessageData Data in GetMailMessageAsync(
-                               (await GetDefatultMailFolderBuilder(Type).GetAsync(default, CancelToken)).Id, StartIndex, Count, CancelToken))
+            await foreach (var data in GetMailMessageAsync(
+                               (await GetDefatultMailFolderBuilder(Type).GetAsync(default, CancelToken)).Id, StartIndex,
+                               Count, CancelToken))
             {
-                yield return Data;
+                yield return data;
             }
         }
 
@@ -290,7 +297,8 @@ namespace Mail.Services
             var request = Builder.GetAsync(requestConfiguration =>
             {
                 var queryParameters = requestConfiguration.QueryParameters;
-                queryParameters.Filter = $"sentDateTime ge 1900-01-01T00:00:00Z and inferenceClassification eq '{type}'";
+                queryParameters.Filter =
+                    $"sentDateTime ge 1900-01-01T00:00:00Z and inferenceClassification eq '{type}'";
                 queryParameters.Orderby = new string[] { "sentDateTime desc" };
                 queryParameters.Skip = (int)StartIndex;
                 queryParameters.Top = (int)Count;
@@ -321,7 +329,7 @@ namespace Mail.Services
         public override async IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel currentMailModel,
             [EnumeratorCancellation] CancellationToken CancellationToken
-            )
+        )
         {
             var Message = await GetMailMessageAttachmentsAsync(currentMailModel.Id);
 
@@ -331,12 +339,15 @@ namespace Mail.Services
                 CancellationToken.ThrowIfCancellationRequested();
                 if (Attachment is FileAttachment fileAttachment && fileAttachment.IsInline != true)
                 {
-                    yield return new MailMessageFileAttachmentData(fileAttachment.Name, fileAttachment.Id, fileAttachment.ContentType, (ulong)fileAttachment.ContentBytes.Length, default, fileAttachment.ContentBytes);
+                    yield return new MailMessageFileAttachmentData(fileAttachment.Name, fileAttachment.Id,
+                        fileAttachment.ContentType, (ulong)fileAttachment.ContentBytes.Length, default,
+                        fileAttachment.ContentBytes);
                 }
             }
         }
 
-        public override async Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default)
+        public override async Task LoadAttachmentsAndCacheAsync(string messageId,
+            CancellationToken CancelToken = default)
         {
             var MailMessageAttachmentsAsync = await GetMailMessageAttachmentsAsync(messageId);
             foreach (var Attachment in MailMessageAttachmentsAsync.Attachments)
@@ -345,7 +356,9 @@ namespace Mail.Services
                 if (Attachment is not FileAttachment { ContentId: not null } Fa) continue;
                 if (MemoryCache.Get(Fa.Id) is not null) continue;
 
-                MemoryCache.Set(Fa.ContentId, new MailMessageFileAttachmentData(Fa.Name, Fa.Id, Fa.ContentType, (ulong)Fa.ContentBytes.Length, default, Fa.ContentBytes));
+                MemoryCache.Set(Fa.ContentId,
+                    new MailMessageFileAttachmentData(Fa.Name, Fa.Id, Fa.ContentType, (ulong)Fa.ContentBytes.Length,
+                        default, Fa.ContentBytes));
             }
         }
     }
