@@ -30,6 +30,14 @@
                                                     Width="24"
                                                     Height="24"
                                                     DisplayName="{x:Bind Name, Mode=OneWay}" />
+
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock>
+                                        <Run Text="{x:Bind Name}" FontWeight="Bold"/>
+                                        <LineBreak />
+                                        <Run Text="{x:Bind Address}" />
+                                            </TextBlock>
+                                        </ToolTipService.ToolTip>
                                     </Grid>
                                 </DataTemplate>
                             </Setter.Value>
@@ -119,6 +127,13 @@
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:AccountModel">
                             <Grid Padding="0,10">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock>
+                                        <Run Text="{x:Bind Name}" FontWeight="Bold"/>
+                                        <LineBreak />
+                                        <Run Text="{x:Bind Address}" />
+                                    </TextBlock>
+                                </ToolTipService.ToolTip>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="20" />
