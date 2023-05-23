@@ -257,9 +257,7 @@
                                     
                                     <ListBox Grid.Column="1" 
                                              Grid.Row="1" 
-                                             x:Name="AttachmentsListBox" 
-                                             DataContext="{Binding}"
-                                             DataContextChanged="AttachmentsListBox_OnDataContextChanged"
+                                             x:Name="AttachmentsListBox" DataContext="{Binding}"
                                     />
                                 </Grid>
                                 <WebView
@@ -268,8 +266,8 @@
                                     HorizontalAlignment="Stretch"
                                     NavigationCompleted="Browser_NavigationCompleted"
                                     DefaultBackgroundColor="Transparent"
-                                    WebResourceRequested="WebView_WebResourceRequested"
                                     NavigationStarting="WebView_OnNavigationStarting"
+                                    DataContext="{Binding}"
                                     VerticalAlignment="Stretch" />
                             </StackPanel>
                         </ScrollViewer>

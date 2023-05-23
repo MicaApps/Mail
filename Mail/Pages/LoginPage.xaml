@@ -23,7 +23,15 @@
         </ResourceDictionary>
     </Page.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Border x:Name="AppTitleBar"
+                HorizontalAlignment="Stretch"
+                Background="Transparent" />
         <StackPanel Orientation="Vertical"
+                Grid.RowSpan="2"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 MaxWidth="800"
@@ -46,6 +54,6 @@
                            IsEnabled="False" />
             
         </StackPanel>
-        <muxc:InfoBar x:Name="ErrorMessageBar" Title="Error" IsIconVisible="False" Severity="Error" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" MaxWidth="736"  Margin="32"/>
+        <muxc:InfoBar Grid.Row="1"  x:Name="ErrorMessageBar" Title="Error" IsIconVisible="False" Severity="Error" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" MaxWidth="736"  Margin="32"/>
     </Grid>
 </Page>
