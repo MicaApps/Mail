@@ -1,6 +1,8 @@
 ﻿using Mail.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Uwp;
 using System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -19,9 +21,14 @@ namespace Mail.Pages
             {
                 await App.Services.GetService<OutlookService>().SignInAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Handle login failure
+                await CoreWindow.GetForCurrentThread().DispatcherQueue.EnqueueAsync(() =>
+                {
+                    ErrorMessageBar.IsOpen = true;
+                    ErrorMessageBar.Message = ex.Message;
+                });
+                
             }
         }
     }
