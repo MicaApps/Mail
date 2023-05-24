@@ -182,17 +182,17 @@
                 </StackPanel>
                 <controls:DockPanel Grid.Row="1" Margin="16,0" Height="32">
                     <TextBlock Text="收件人" controls:DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,16,0"/>
-                    <TextBox Text="{Binding EditInfo.Sender,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                    <TextBox Text="{x:Bind EditInfo.Sender,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
                 </controls:DockPanel>
                 <controls:DockPanel Grid.Row="2" Margin="16,0" Height="32">
                     <TextBlock Text="抄送" controls:DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,30,0"/>
-                    <TextBox Text="{Binding EditInfo.Receiver,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                    <TextBox Text="{x:Bind EditInfo.Receiver,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
                 </controls:DockPanel>
                 <controls:DockPanel Grid.Row="3" Margin="16,0" Height="32">
                     <TextBlock Text="主题" controls:DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,30,0"/>
-                    <TextBox Text="{Binding EditInfo.Title,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                    <TextBox Text="{x:Bind EditInfo.Title,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
                 </controls:DockPanel>
-                <TextBox Grid.Row="4" Text="{Binding EditInfo.Content,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" TextWrapping="Wrap"
+                <TextBox Grid.Row="4" Text="{x:Bind EditInfo.Content,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" TextWrapping="Wrap"
                          Margin="16" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" AcceptsReturn="True"/>
             </Grid>
         </DataTemplate>
@@ -234,7 +234,8 @@
                         Margin="5"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        Style="{ThemeResource AlternateCloseButtonStyle}">
+                        Style="{ThemeResource AlternateCloseButtonStyle}"
+                        Click="CreateMail_Click">
                         <FontIcon FontSize="16" Glyph="&#xe710;" />
                     </Button>
                 </Grid>
