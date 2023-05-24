@@ -407,28 +407,28 @@
             </MenuFlyout>-->
         
         <MenuFlyout x:Key="MailDetailItemMenuFlyout">
-            <MenuFlyoutItem Margin="4" Text="存档" >
+            <MenuFlyoutItem Margin="2" Text="存档" >
                 <MenuFlyoutItem.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7B8;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
-            <MenuFlyoutItem  Margin="4" Text="删除" Icon="Delete"/>
-            <MenuFlyoutItem  Margin="4"  Text="移动">
+            <MenuFlyoutItem  Margin="2" Text="删除" Icon="Delete"/>
+            <MenuFlyoutItem  Margin="2"  Text="移动">
                 <MenuFlyoutItem.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
-            <MenuFlyoutItem  Margin="4" Text="设置标记" Icon="Flag"/>
-            <MenuFlyoutItem  Margin="4" Text="标记为已读" Icon="Read"/>
-            <MenuFlyoutItem  Margin="4" Text="忽略" Icon="Delete"/>
+            <MenuFlyoutItem  Margin="2" Text="设置标记" Icon="Flag"/>
+            <MenuFlyoutItem  Margin="2" Text="标记为已读" Icon="Read"/>
+            <MenuFlyoutItem  Margin="2" Text="忽略" Icon="Delete"/>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem  Margin="4" Text="标记为垃圾邮件" Icon="Mail"/>
-            <MenuFlyoutItem  Margin="4" Text="移动到其他收件箱" >
+            <MenuFlyoutItem  Margin="2" Text="标记为垃圾邮件" Icon="Mail"/>
+            <MenuFlyoutItem  Margin="2" Text="移动到其他收件箱" >
                 <MenuFlyoutItem.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
-            <MenuFlyoutItem  Margin="4" Text="总是移动到其他收件箱" >
+            <MenuFlyoutItem  Margin="2" Text="总是移动到其他收件箱" >
                 <MenuFlyoutItem.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
                 </MenuFlyoutItem.Icon>
