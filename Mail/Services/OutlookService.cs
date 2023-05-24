@@ -56,6 +56,11 @@ namespace Mail.Services
             return await RunCatch.GetOrDefault(async () => await Builder.GetAsync(default, CancelToken));
         }
 
+        public override IEnumerable<AccountModel> GetCurrentLoginAccount()
+        {
+            throw new NotImplementedException();
+        }
+
         public override async IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {

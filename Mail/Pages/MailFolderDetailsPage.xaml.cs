@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Core;
+using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
 using Mail.Extensions;
@@ -20,8 +23,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
-using System.Linq;
-using Windows.UI.Xaml.Data;
 
 namespace Mail.Pages
 {
@@ -304,19 +305,34 @@ namespace Mail.Pages
         private void CreateMail_Click(object sender, RoutedEventArgs e)
         {
             if (PreviewSource is null) return;
-
             var newItem = PreviewSource.FirstOrDefault();
             if (newItem is not { IsEmpty: true })
             {
-                PreviewSource.Insert(0, MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty)));
+                PreviewSource.Insert(0,
+                    MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty)));
             }
+
             DetailsView.SelectedIndex = 0;
+        }
+
+        private async void CreateWindow(object Sender, RoutedEventArgs RoutedEventArgs)
+        {
+            var appWindow = await AppWindow.TryCreateAsync();
+            if (appWindow is null)
+            {
+                return;
+            }
+
+            var appWindowContentFrame = new Frame();
+            appWindowContentFrame.Navigate(typeof(EditMail));
+            ElementCompositionPreview.SetAppWindowContent(appWindow, appWindowContentFrame);
+            await appWindow.TryShowAsync();
         }
 
         private void SendMail_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?
-              .DataContext is not MailMessageListDetailViewModel { IsEmpty: true } Model) return;
+                .DataContext is not MailMessageListDetailViewModel { IsEmpty: true } Model) return;
 
             var info = Model.EditInfo;
 

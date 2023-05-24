@@ -68,6 +68,9 @@ namespace Mail.Services
             return Task.FromResult(true);
         }
 
+        public abstract IEnumerable<AccountModel> GetCurrentLoginAccount();
+
+
         public abstract IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(CancellationToken CancelToken = default);
 
         public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
@@ -86,7 +89,8 @@ namespace Mail.Services
 
         public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 
-        public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
+        public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
+            MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
         public abstract Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
     }

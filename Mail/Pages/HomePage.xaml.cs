@@ -8,20 +8,20 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 using CommunityToolkit.Authentication;
+using Mail.Extensions;
 using Mail.Services;
 using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
-using Mail.Extensions;
 
 namespace Mail.Pages
 {
     public sealed partial class HomePage : Page
     {
-        private readonly ObservableCollection<AccountModel> AccountSource = new ObservableCollection<AccountModel>();
+        private readonly ObservableCollection<AccountModel> AccountSource = new();
 
-        private readonly ObservableCollection<object> MailFolderSource = new ObservableCollection<object>();
+        private readonly ObservableCollection<object> MailFolderSource = new();
 
         public HomePage()
         {
@@ -30,14 +30,15 @@ namespace Mail.Pages
             SetupTitleBar();
 
             SetupPaneToggleButton();
-            
+
             //TODO: Test only and should remove this later
             try
             {
                 MsalProvider Provider = App.Services.GetService<OutlookService>().Provider as MsalProvider;
-                AccountSource.Add(new AccountModel(
+                var model = new AccountModel(
                     Provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value,
-                    Provider.Account.Username));
+                    Provider.Account.Username);
+                AccountSource.Add(model);
             }
             catch
             {

@@ -15,6 +15,11 @@ namespace Mail.Services
         {
         }
 
+        public override IEnumerable<AccountModel> GetCurrentLoginAccount()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public override IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();
