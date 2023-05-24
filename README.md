@@ -28,6 +28,8 @@ namespace Mail
 }
 
 ```
+### 3. Warming pfx not matching
+https://www.cnblogs.com/kljzndx/p/14381823.html
 
 ## Contribution
 You should not develop and commit code directly based on the `main` branch, but instead create your own branch, submit a `Pull Request` after the code is completed, and merge into the `main` branch after `Code Review` by others.
