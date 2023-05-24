@@ -7,15 +7,15 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="f80e38f8-7af1-4bb4-871d-2fddaeb6d787"
-    Publisher="CN=sanlorng"
-    Version="1.0.0.0" />
+    Name="49014Shompinice.42317376306EA"
+    Publisher="CN=DiskTools Team"
+    Version="0.1.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="f80e38f8-7af1-4bb4-871d-2fddaeb6d787" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="8c0ed1cb-89ff-4e9e-939c-54eac45e83f3" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Mail</DisplayName>
-    <PublisherDisplayName>sanlorng</PublisherDisplayName>
+    <DisplayName>电邮</DisplayName>
+    <PublisherDisplayName>Shompinice</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -32,7 +32,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="Mail.App">
       <uap:VisualElements
-        DisplayName="Mail"
+        DisplayName="电邮"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
         Description="Mail"
