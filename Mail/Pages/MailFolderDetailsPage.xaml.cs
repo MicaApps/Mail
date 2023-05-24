@@ -19,6 +19,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
+using System.Linq;
+using Windows.UI.Xaml.Data;
 
 namespace Mail.Pages
 {
@@ -70,7 +72,7 @@ namespace Mail.Pages
             PreviewSource?.Clear();
             DetailsView.SelectedItem = null;
             EmptyContentText.Text = "Syncing you email";
-            var data = NavigationData;
+            MailFolderData data = NavigationData;
             if (data == null) return;
             try
             {
@@ -110,7 +112,9 @@ namespace Mail.Pages
         private async void ListDetailsView_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if ((e.OriginalSource as FrameworkElement)?.DataContext is not MailMessageListDetailViewModel Model) return;
+            if (Model.IsEmpty) return;
             if (sender is not ListDetailsView View) return;
+
             using (await SelectionChangeLocker.LockAsync())
             {
                 await LoadImageAndCacheAsync(Model);
@@ -242,6 +246,7 @@ namespace Mail.Pages
             DataContextChangedEventArgs args)
         {
             if (args.NewValue is not MailMessageListDetailViewModel Model) return;
+            if (Model.IsEmpty) return;
             if (CurrentMailMessageId.Equals(Model.Id)) return;
 
             CurrentMailMessageId = Model.Id;
@@ -287,6 +292,45 @@ namespace Mail.Pages
 
             await Result.WriteAsync(Attachment.ContentBytes, 0, Attachment.ContentBytes.Length);
             await Result.FlushAsync();
+        }
+
+        private void CreateMail_Click(object sender, RoutedEventArgs e)
+        {
+            if (PreviewSource is null) return;
+
+            var newItem = PreviewSource.FirstOrDefault();
+            if (newItem is not { IsEmpty: true })
+            {
+                PreviewSource.Insert(0, MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty)));
+            }
+            DetailsView.SelectedIndex = 0;
+        }
+
+        private void SendMail_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?
+              .DataContext is not MailMessageListDetailViewModel { IsEmpty: true } Model) return;
+
+            var info = Model.EditInfo;
+
+            //TODO combine information and send email
+        }
+    }
+
+    public class DetailsSelector : DataTemplateSelector
+    {
+        public DataTemplate EditTemplate { get; set; }
+
+        public DataTemplate DefaultTemplate { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item is MailMessageListDetailViewModel { IsEmpty: true })
+            {
+                return EditTemplate;
+            }
+
+            return DefaultTemplate;
         }
     }
 }

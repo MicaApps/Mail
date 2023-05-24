@@ -2,7 +2,7 @@
 {
     internal sealed class MailMessageContentData
     {
-        public string Content { get; }
+        public string Content { get; set; }
 
         public string ContentPreview { get; }
 
@@ -13,6 +13,11 @@
             this.Content = Content;
             this.ContentPreview = ContentPreview;
             this.ContentType = ContentType;
+        }
+
+        public static MailMessageContentData Empty()
+        {
+            return new MailMessageContentData(string.Empty, string.Empty, MailMessageContentType.Text);
         }
     }
 }

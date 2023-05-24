@@ -12,6 +12,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph.Models;
 using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.MailFolders.Item.Messages;
+using System.Diagnostics;
 
 namespace Mail.Services
 {
@@ -64,6 +65,7 @@ namespace Mail.Services
             var sentItems = await client.Me.MailFolders["sentitems"].GetAsync(default, CancelToken);
             var syncIssues = await client.Me.MailFolders["syncissues"].GetAsync(default, CancelToken);
             var hasDeleted = false;
+            Trace.WriteLine(System.Text.Json.JsonSerializer.Serialize(folders));
             foreach (var folder in folders)
             {
                 if (folder.Id == inbox.Id)
