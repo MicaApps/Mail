@@ -14,5 +14,10 @@
             this.ContentPreview = ContentPreview;
             this.ContentType = ContentType;
         }
+
+        public static MailMessageContentData Empty()
+        {
+            return new MailMessageContentData(string.Empty, string.Empty, MailMessageContentType.Text);
+        }
     }
 }

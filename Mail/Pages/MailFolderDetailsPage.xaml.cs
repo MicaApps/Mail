@@ -20,6 +20,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
+using System.Linq;
 
 namespace Mail.Pages
 {
@@ -294,6 +295,45 @@ namespace Mail.Pages
 
             await result.WriteAsync(attachment.ContentBytes, 0, attachment.ContentBytes.Length);
             await result.FlushAsync();
+        }
+
+        private void CreateMail_Click(object sender, RoutedEventArgs e)
+        {
+            if (PreviewSource is null) return;
+
+            var newItem = PreviewSource.FirstOrDefault();
+            if (newItem is not { IsEmpty: true })
+            {
+                PreviewSource.Insert(0, MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty)));
+            }
+            DetailsView.SelectedIndex = 0;
+        }
+
+        private void SendMail_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?
+              .DataContext is not MailMessageListDetailViewModel { IsEmpty: true } Model) return;
+
+            var info = Model.EditInfo;
+
+            //TODO combine information and send email
+        }
+    }
+
+    public class DetailsSelector : DataTemplateSelector
+    {
+        public DataTemplate EditTemplate { get; set; }
+
+        public DataTemplate DefaultTemplate { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item is MailMessageListDetailViewModel { IsEmpty: true })
+            {
+                return EditTemplate;
+            }
+
+            return DefaultTemplate;
         }
     }
 }

@@ -8,9 +8,198 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Mail.Models"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:pages="using:Mail.Pages"
     Background="Transparent"
     NavigationCacheMode="Required"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <DataTemplate x:Key="DefaultTemplate" x:DataType="models:MailMessageListDetailViewModel">
+            <Grid>
+                <ScrollViewer>
+                    <StackPanel Margin="50">
+                        <StackPanel>
+                            <TextBlock
+                                        FontSize="20"
+                                        FontWeight="Bold"
+                                        Text="{x:Bind Title}"
+                                        TextWrapping="WrapWholeWords" />
+                            <StackPanel Margin="0,30,0,0" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock FontWeight="Bold" Text="From:" />
+                                    <StackPanel Margin="10,0,0,0">
+                                        <TextBlock FontWeight="SemiBold" Text="{x:Bind Sender.Name}" />
+                                        <TextBlock
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                                    Text="{x:Bind Sender.Address}" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Margin="55,0,0,0" Orientation="Horizontal">
+                                    <TextBlock FontWeight="Bold" Text="To:" />
+                                    <ListView
+                                                Margin="10,-2.05,0,0"
+                                                Padding="0"
+                                                ItemsSource="{x:Bind To}">
+                                        <ListView.ItemContainerStyle>
+                                            <Style BasedOn="{StaticResource DefaultListViewItemStyle}"
+                                                           TargetType="ListViewItem">
+                                                <Setter Property="Padding" Value="0" />
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListViewItem">
+                                                            <Grid>
+                                                                <Border
+                                                                            Height="{TemplateBinding Height}"
+                                                                            Background="{TemplateBinding Background}"
+                                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            CornerRadius="5">
+                                                                    <ContentPresenter
+                                                                                Height="{TemplateBinding Height}"
+                                                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                                                </Border>
+                                                            </Grid>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="data:MailMessageRecipientData">
+                                                <StackPanel>
+                                                    <TextBlock
+                                                                FontWeight="SemiBold"
+                                                                Text="{x:Bind Name}"
+                                                                TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock
+                                                                FontSize="12"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                                                Text="{x:Bind Address}"
+                                                                TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                        <Grid Margin="0,55,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <PersonPicture Grid.Row="0"
+                                                   Width="32"
+                                                   Height="32"
+                                                   Margin="5,5,15,5"
+                                                   VerticalAlignment="Top"
+                                                   DisplayName="{x:Bind SenderName}" />
+                            <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock
+                                            FontWeight="SemiBold"
+                                            Text="{x:Bind Sender.Name}"
+                                            TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                            FontSize="12"
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                            Text="{x:Bind Sender.Address}"
+                                            TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <CommandBar Grid.Row="0"
+                                        Grid.Column="2"
+                                        Background="Transparent"
+                                        DefaultLabelPosition="Collapsed"
+                                        IsOpen="False">
+                                <CommandBar.Resources>
+                                    <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}"
+                                                   TargetType="AppBarButton">
+                                        <Setter Property="Width" Value="43" />
+                                    </Style>
+                                </CommandBar.Resources>
+                                <AppBarButton>
+                                    <AppBarButton.Icon>
+                                        <FontIcon Glyph="&#xe793;" />
+                                    </AppBarButton.Icon>
+                                </AppBarButton>
+                                <AppBarButton Icon="MailReply" />
+                                <AppBarButton Icon="MailReplyAll" />
+                                <AppBarButton Icon="MailForward" />
+                                <AppBarButton Icon="Delete" />
+                                <CommandBar.SecondaryCommands>
+                                    <AppBarButton Icon="Setting" Label="Settings">
+                                        <AppBarButton.KeyboardAccelerators>
+                                            <KeyboardAccelerator Key="I" Modifiers="Control" />
+                                        </AppBarButton.KeyboardAccelerators>
+                                    </AppBarButton>
+                                </CommandBar.SecondaryCommands>
+                            </CommandBar>
+
+                            <ListBox Grid.Column="1" 
+                                             Grid.Row="1" 
+                                             x:Name="AttachmentsListBox" 
+                                             DataContext="{Binding}" />
+                        </Grid>
+                        <WebView
+                                    MinHeight="500"
+                                    Height="Auto"
+                                    HorizontalAlignment="Stretch"
+                                    NavigationCompleted="Browser_NavigationCompleted"
+                                    DefaultBackgroundColor="Transparent"
+                                    NavigationStarting="WebView_OnNavigationStarting"
+                                    VerticalAlignment="Stretch" />
+                    </StackPanel>
+                </ScrollViewer>
+                <Button
+                            x:Name="DetailsViewGoBack"
+                            VerticalAlignment="Top"
+                            Style="{ThemeResource NavigationBackButtonNormalStyle}"
+                            Visibility="Collapsed"
+                            Click="DetailsViewGoBack_Click" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="EditTemplate" x:DataType="models:MailMessageListDetailViewModel">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="64"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel VerticalAlignment="Center" Margin="16">
+                    <Button Content="发送" Click="SendMail_Click" HorizontalAlignment="Right"/>
+                </StackPanel>
+                <controls:DockPanel Grid.Row="1" Margin="16,0" Height="32">
+                    <TextBlock Text="收件人" controls:DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <TextBox Text="{Binding EditInfo.Sender,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                </controls:DockPanel>
+                <controls:DockPanel Grid.Row="2" Margin="16,0" Height="32">
+                    <TextBlock Text="抄送" controls:DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,30,0"/>
+                    <TextBox Text="{Binding EditInfo.Receiver,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                </controls:DockPanel>
+                <controls:DockPanel Grid.Row="3" Margin="16,0" Height="32">
+                    <TextBlock Text="主题" controls:DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,30,0"/>
+                    <TextBox Text="{Binding EditInfo.Title,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" />
+                </controls:DockPanel>
+                <TextBox Grid.Row="4" Text="{Binding EditInfo.Content,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" TextWrapping="Wrap"
+                         Margin="16" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" AcceptsReturn="True"/>
+            </Grid>
+        </DataTemplate>
+
+        <pages:DetailsSelector x:Key="DetailsSelector" EditTemplate="{StaticResource EditTemplate}"
+                               DefaultTemplate="{StaticResource DefaultTemplate}"/>
+    </Page.Resources>
 
     <Grid>
         <controls:ListDetailsView
@@ -24,7 +213,8 @@
             NoSelectionContent="Select an item to view"
             SelectionChanged="DetailsView_SelectionChanged"
             Tapped="ListDetailsView_Tapped"
-            ViewStateChanged="DetailsView_ViewStateChanged">
+            ViewStateChanged="DetailsView_ViewStateChanged"
+            DetailsContentTemplateSelector="{StaticResource DetailsSelector}">
             <controls:ListDetailsView.ListHeader>
                 <Grid>
                     <muxc:NavigationView
@@ -124,162 +314,6 @@
                     </StackPanel>
                 </DataTemplate>
             </controls:ListDetailsView.NoSelectionContentTemplate>
-            <controls:ListDetailsView.DetailsTemplate>
-                <DataTemplate x:DataType="models:MailMessageListDetailViewModel">
-                    <Grid>
-                        <ScrollViewer>
-                            <StackPanel Margin="50">
-                                <StackPanel>
-                                    <TextBlock
-                                        FontSize="20"
-                                        FontWeight="Bold"
-                                        Text="{x:Bind Title}"
-                                        TextWrapping="WrapWholeWords" />
-                                    <StackPanel Margin="0,30,0,0" Orientation="Horizontal">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock FontWeight="Bold" Text="From:" />
-                                            <StackPanel Margin="10,0,0,0">
-                                                <TextBlock FontWeight="SemiBold" Text="{x:Bind Sender.Name}" />
-                                                <TextBlock
-                                                    FontSize="12"
-                                                    FontWeight="SemiBold"
-                                                    Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                                    Text="{x:Bind Sender.Address}" />
-                                            </StackPanel>
-                                        </StackPanel>
-                                        <StackPanel Margin="55,0,0,0" Orientation="Horizontal">
-                                            <TextBlock FontWeight="Bold" Text="To:" />
-                                            <ListView
-                                                Margin="10,-2.05,0,0"
-                                                Padding="0"
-                                                ItemsSource="{x:Bind To}">
-                                                <ListView.ItemContainerStyle>
-                                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}"
-                                                           TargetType="ListViewItem">
-                                                        <Setter Property="Padding" Value="0" />
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="ListViewItem">
-                                                                    <Grid>
-                                                                        <Border
-                                                                            Height="{TemplateBinding Height}"
-                                                                            Background="{TemplateBinding Background}"
-                                                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                                                            CornerRadius="5">
-                                                                            <ContentPresenter
-                                                                                Height="{TemplateBinding Height}"
-                                                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                                                                        </Border>
-                                                                    </Grid>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Style>
-                                                </ListView.ItemContainerStyle>
-                                                <ListView.ItemTemplate>
-                                                    <DataTemplate x:DataType="data:MailMessageRecipientData">
-                                                        <StackPanel>
-                                                            <TextBlock
-                                                                FontWeight="SemiBold"
-                                                                Text="{x:Bind Name}"
-                                                                TextTrimming="CharacterEllipsis" />
-                                                            <TextBlock
-                                                                FontSize="12"
-                                                                FontWeight="SemiBold"
-                                                                Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                                                Text="{x:Bind Address}"
-                                                                TextTrimming="CharacterEllipsis" />
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ListView.ItemTemplate>
-                                            </ListView>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </StackPanel>
-                                <Grid Margin="0,55,0,0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <PersonPicture Grid.Row="0"
-                                                   Width="32"
-                                                   Height="32"
-                                                   Margin="5,5,15,5"
-                                                   VerticalAlignment="Top"
-                                                   DisplayName="{x:Bind SenderName}" />
-                                    <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock
-                                            FontWeight="SemiBold"
-                                            Text="{x:Bind Sender.Name}"
-                                            TextTrimming="CharacterEllipsis" />
-                                        <TextBlock
-                                            FontSize="12"
-                                            FontWeight="SemiBold"
-                                            Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                            Text="{x:Bind Sender.Address}"
-                                            TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                    <CommandBar Grid.Row="0"
-                                        Grid.Column="2"
-                                        Background="Transparent"
-                                        DefaultLabelPosition="Collapsed"
-                                        IsOpen="False">
-                                        <CommandBar.Resources>
-                                            <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}"
-                                                   TargetType="AppBarButton">
-                                                <Setter Property="Width" Value="43" />
-                                            </Style>
-                                        </CommandBar.Resources>
-                                        <AppBarButton>
-                                            <AppBarButton.Icon>
-                                                <FontIcon Glyph="&#xe793;" />
-                                            </AppBarButton.Icon>
-                                        </AppBarButton>
-                                        <AppBarButton Icon="MailReply" />
-                                        <AppBarButton Icon="MailReplyAll" />
-                                        <AppBarButton Icon="MailForward" />
-                                        <AppBarButton Icon="Delete" />
-                                        <CommandBar.SecondaryCommands>
-                                            <AppBarButton Icon="Setting" Label="Settings">
-                                                <AppBarButton.KeyboardAccelerators>
-                                                    <KeyboardAccelerator Key="I" Modifiers="Control" />
-                                                </AppBarButton.KeyboardAccelerators>
-                                            </AppBarButton>
-                                        </CommandBar.SecondaryCommands>
-                                    </CommandBar>
-                                    
-                                    <ListBox Grid.Column="1" 
-                                             Grid.Row="1" 
-                                             x:Name="AttachmentsListBox" DataContext="{Binding}"
-                                    />
-                                </Grid>
-                                <WebView
-                                    MinHeight="500"
-                                    Height="Auto"
-                                    HorizontalAlignment="Stretch"
-                                    NavigationCompleted="Browser_NavigationCompleted"
-                                    DefaultBackgroundColor="Transparent"
-                                    NavigationStarting="WebView_OnNavigationStarting"
-                                    DataContext="{Binding}"
-                                    VerticalAlignment="Stretch" />
-                            </StackPanel>
-                        </ScrollViewer>
-                        <Button
-                            x:Name="DetailsViewGoBack"
-                            VerticalAlignment="Top"
-                            Style="{ThemeResource NavigationBackButtonNormalStyle}"
-                            Visibility="Collapsed"
-                            Click="DetailsViewGoBack_Click" />
-                    </Grid>
-                </DataTemplate>
-            </controls:ListDetailsView.DetailsTemplate>
             <controls:ListDetailsView.ListCommandBar>
                 <CommandBar
                     Background="Transparent"

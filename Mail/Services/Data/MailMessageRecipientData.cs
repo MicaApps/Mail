@@ -4,7 +4,7 @@
     {
         public string Name { get; }
 
-        public string Address { get; }
+        public string Address { get; set; }
 
         public MailMessageRecipientData(string Name, string Address)
         {
