@@ -389,16 +389,8 @@
 
         <pages:DetailsSelector x:Key="DetailsSelector" EditTemplate="{StaticResource EditTemplate}"
                                DefaultTemplate="{StaticResource DefaultTemplate}"/>
-
-
-
-       
-            <!--<MenuFlyout x:Key="colorMenuFlyout">
-                <MenuFlyoutItem Text="Red" Tag="red" Click="MenuFlyoutItem_Click"/>
-                <MenuFlyoutItem Text="Green" Tag="green" Click="MenuFlyoutItem_Click"/>
-            </MenuFlyout>-->
         
-        <MenuFlyout x:Key="MailDetailItemMenuFlyout">
+        <MenuFlyout x:Key="MailDetailItemMenuFlyout" >
             <MenuFlyoutItem Margin="2" Text="存档">
                 <MenuFlyoutItem.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7B8;" />
@@ -486,7 +478,7 @@
             <!--Current Folder All Mail PreView-->
             <controls:ListDetailsView.ItemTemplate>
                 <DataTemplate x:DataType="models:MailMessageListDetailViewModel">
-                    <Grid Padding="2.5,10,12.5,10" ContextFlyout="{StaticResource MailDetailItemMenuFlyout}">
+                    <Grid Padding="2.5,10,12.5,10" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -525,6 +517,37 @@
                             FontWeight="SemiBold"
                             Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
                             Text="{x:Bind SentTime}" />
+
+                        <Grid.ContextFlyout >
+                            <MenuFlyout >
+                                <MenuFlyoutItem Margin="2" Text="存档" DataContext="{x:Bind }" >
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7B8;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem  Margin="2" Text="删除" Icon="Delete"/>
+                                <MenuFlyoutItem  Margin="2"  Text="移动">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem  Margin="2" Text="设置标记" Icon="Flag"/>
+                                <MenuFlyoutItem  Margin="2" Text="标记为已读" Icon="Read"/>
+                                <MenuFlyoutItem  Margin="2" Text="忽略" Icon="Delete"/>
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem  Margin="2" Text="标记为垃圾邮件" Icon="Mail"/>
+                                <MenuFlyoutItem  Margin="2" Text="移动到其他收件箱" >
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem  Margin="2" Text="总是移动到其他收件箱" >
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>
                     </Grid>
                 </DataTemplate>
             </controls:ListDetailsView.ItemTemplate>
