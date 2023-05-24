@@ -1,4 +1,6 @@
-﻿namespace Mail.Services.Data
+﻿using System.Collections.Generic;
+
+namespace Mail.Services.Data
 {
     internal class MailFolderData
     {
@@ -8,11 +10,14 @@
 
         public MailFolderType Type { get; }
 
-        public MailFolderData(string id, string name, MailFolderType type)
+        public MailFolderData[] ChildFolders { get; }
+
+        public MailFolderData(string id, string name, MailFolderType type, MailFolderData[] ChildFolders)
         {
             Id = id;
             Name = name;
             Type = type;
+            this.ChildFolders = ChildFolders;
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
-using Microsoft.Graph;
 
 namespace Mail.Services
 {
@@ -46,6 +45,17 @@ namespace Mail.Services
         }
 
         public override Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
+            MailMessageListDetailViewModel model, CancellationToken cancelToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken cancelToken)
         {
             throw new System.NotImplementedException();
         }

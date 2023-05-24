@@ -7,3 +7,7 @@
 /Mail/obj/
 /Mail/Secrect.cs
 /.idea
+/Mail/AppPackages
+/Mail/Mail.csproj.user
+/Mail/Mail_TemporaryKey.pfx
+/Mail/Package.StoreAssociation.xml
