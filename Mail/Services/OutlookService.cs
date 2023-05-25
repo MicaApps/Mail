@@ -53,7 +53,7 @@ namespace Mail.Services
         private async Task<MailFolder> CatchMailFolder(MailFolderItemRequestBuilder Builder,
             CancellationToken CancelToken = default)
         {
-            return await RunCatch.GetOrDefault(async () => await Builder.GetAsync(default, CancelToken));
+            return await RunCatch.GetOrDefault(Builder.GetAsync(default, CancelToken));
         }
 
         public override async IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(
