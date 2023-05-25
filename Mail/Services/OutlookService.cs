@@ -105,31 +105,31 @@ namespace Mail.Services
                 foreach (var folder in folders.Value)
                 {
                     MailFolderType FolderType = MailFolderType.Other;
-                    if (folder.Id == inbox.Id)
+                    if (inbox != null && folder.Id == inbox.Id)
                     {
                         FolderType = MailFolderType.Inbox;
                     }
-                    else if (folder.Id == archive.Id)
+                    else if (archive != null && folder.Id == archive.Id)
                     {
                         FolderType = MailFolderType.Archive;
                     }
-                    else if (folder.Id == deleted.Id)
+                    else if (deleted != null && folder.Id == deleted.Id)
                     {
                         FolderType = MailFolderType.Deleted;
                     }
-                    else if (folder.Id == sentItems.Id)
+                    else if (sentItems != null && folder.Id == sentItems.Id)
                     {
                         FolderType = MailFolderType.SentItems;
                     }
-                    else if (folder.Id == junkEmail.Id)
+                    else if (junkEmail != null && folder.Id == junkEmail.Id)
                     {
                         FolderType = MailFolderType.Junk;
                     }
-                    else if (folder.Id == drafts.Id)
+                    else if (drafts != null && folder.Id == drafts.Id)
                     {
                         FolderType = MailFolderType.Drafts;
                     }
-                    else if (folder.Id == syncIssues.Id)
+                    else if (syncIssues != null && folder.Id == syncIssues.Id)
                     {
                         continue;
                     }
