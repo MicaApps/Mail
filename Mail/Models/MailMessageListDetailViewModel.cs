@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Mail.Services.Data;
+using Newtonsoft.Json;
 
 namespace Mail.Models
 {
@@ -39,23 +43,11 @@ namespace Mail.Models
             set => InnerData.Sender = value;
         }
 
-        public IList<MailMessageRecipientData> ToRecipients
-        {
-            get => InnerData.To;
-            set => InnerData.To = value;
-        }
+        public IReadOnlyList<MailMessageRecipientData> ToRecipients => InnerData.To;
 
-        public IList<MailMessageRecipientData>? BccRecipients
-        {
-            get => InnerData.Bcc;
-            set => InnerData.Bcc = value;
-        }
+        public IReadOnlyList<MailMessageRecipientData> BccRecipients => InnerData.Bcc;
 
-        public IList<MailMessageRecipientData>? CcRecipients
-        {
-            get => InnerData.CC;
-            set => InnerData.CC = value;
-        }
+        public IReadOnlyList<MailMessageRecipientData> CcRecipients => InnerData.CC;
 
         public string BodyPreview
         {
@@ -66,11 +58,7 @@ namespace Mail.Models
         public bool IsDraft { get; set; }
         public bool IsDeliveryReceiptRequested { get; set; }
 
-        public MailMessageContentData Body
-        {
-            get => InnerData.Content;
-            set => InnerData.Content = value;
-        }
+        public MailMessageContentData Body => InnerData.Content;
 
         public string Content
         {
@@ -106,50 +94,6 @@ namespace Mail.Models
         }
 
         public EditInfoViewModel EditInfo { get; private set; }
-
-        public bool IsEmpty => string.IsNullOrEmpty(Id);
-
-        public static MailMessageListDetailViewModel Empty(MailMessageRecipientData Sender)
-        {
-            return new MailMessageListDetailViewModel(MailMessageData.Empty(Sender))
-            {
-                EditInfo = new EditInfoViewModel()
-            };
-        }
-
-        public EditInfoViewModel EditInfo { get; private set; }
-    }
-
-    public class EditInfoViewModel : INotifyPropertyChanged
-    {
-        private string title;
-        private string sender;
-        private string receiver;
-        private string content;
-
-        public string Title { get => title; set => SetValue(ref title, value); }
-
-        public string Sender { get => sender; set => SetValue(ref sender, value); }
-
-        public string Receiver { get => receiver; set => SetValue(ref receiver, value); }
-
-        public string Content { get => content; set => SetValue(ref content, value); }
-
-        protected bool SetValue<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, newValue)) return false;
-
-            field = newValue;
-            OnPropertyChanged(propertyName);
-            return true;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 
     public class EditInfoViewModel : INotifyPropertyChanged

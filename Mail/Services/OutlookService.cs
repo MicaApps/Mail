@@ -378,7 +378,8 @@ namespace Mail.Services
 
             var postAsync = await rb.Messages.PostAsync(deserializeObject);
             var o = JsonConvert.SerializeObject(postAsync);
-            return JsonConvert.DeserializeObject<MailMessageListDetailViewModel>(o, jsonSetting);
+            // TODO deserializeObject exception
+            return null;
         }
 
         public async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
