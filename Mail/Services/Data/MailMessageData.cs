@@ -14,15 +14,15 @@ namespace Mail.Services.Data
 
         public MailMessageRecipientData Sender { get; set; }
 
-        public IList<MailMessageRecipientData> To { get; set; }
+        public IReadOnlyList<MailMessageRecipientData> To { get; private set; }
 
-        public IList<MailMessageRecipientData>? CC { get; set; }
+        public IReadOnlyList<MailMessageRecipientData> CC { get; private set; }
 
-        public IList<MailMessageRecipientData>? Bcc { get; set; }
+        public IReadOnlyList<MailMessageRecipientData> Bcc { get; private set; }
 
-        public IReadOnlyList<IMailMessageAttachmentData> Attachments { get; set; }
+        public IReadOnlyList<IMailMessageAttachmentData> Attachments { get; private set; }
 
-        public MailMessageContentData Content { get; set; }
+        public MailMessageContentData Content { get; private set; }
 
         public MailMessageData(string Title, string Id, DateTimeOffset? SentTime, MailMessageRecipientData Sender,
             IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> CC,
