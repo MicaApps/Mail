@@ -34,11 +34,15 @@ namespace Mail.Pages
             //TODO: Test only and should remove this later
             try
             {
-                MsalProvider Provider = App.Services.GetService<OutlookService>().Provider as MsalProvider;
+                var service = App.Services.GetService<OutlookService>();
+
+                MsalProvider Provider = service.Provider as MsalProvider;
                 var model = new AccountModel(
                     Provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value,
                     Provider.Account.Username);
                 AccountSource.Add(model);
+
+                service.CurrentAccount = model;
             }
             catch
             {

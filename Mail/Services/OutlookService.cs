@@ -13,6 +13,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.MailFolders.Item.Messages;
 using Microsoft.Graph.Models;
+using Microsoft.Graph.Users.Item.SendMail;
+using Newtonsoft.Json;
 
 namespace Mail.Services
 {
@@ -54,11 +56,6 @@ namespace Mail.Services
             CancellationToken CancelToken = default)
         {
             return await RunCatch.GetOrDefault(async () => await Builder.GetAsync(default, CancelToken));
-        }
-
-        public override IEnumerable<AccountModel> GetCurrentLoginAccount()
-        {
-            throw new NotImplementedException();
         }
 
         public override async IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(
@@ -365,6 +362,44 @@ namespace Mail.Services
                     new MailMessageFileAttachmentData(Fa.Name, Fa.Id, Fa.ContentType, (ulong)Fa.ContentBytes.Length,
                         default, Fa.ContentBytes));
             }
+        }
+
+        public override async Task<MailMessageListDetailViewModel?> MailDraftSaveAsync(
+            MailMessageListDetailViewModel Model)
+        {
+            var rb = Provider.GetClient().Me;
+            var jsonSetting = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            var serializeObject = JsonConvert.SerializeObject(Model);
+            var deserializeObject = JsonConvert.DeserializeObject<Message>(serializeObject, jsonSetting);
+            if (deserializeObject is null) return null;
+
+            var postAsync = await rb.Messages.PostAsync(deserializeObject);
+            var o = JsonConvert.SerializeObject(postAsync);
+            return JsonConvert.DeserializeObject<MailMessageListDetailViewModel>(o, jsonSetting);
+        }
+
+        public async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
+        {
+            var tokenAsync = await Provider.GetTokenAsync();
+            var rb = Provider.GetClient().Users[tokenAsync];
+            var jsonSetting = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            var serializeObject = JsonConvert.SerializeObject(Model);
+            var message = JsonConvert.DeserializeObject<Message>(serializeObject, jsonSetting);
+            if (message is null) return false;
+
+            // TODO err
+            await rb.SendMail.PostAsync(new SendMailPostRequestBody
+            {
+                Message = message, SaveToSentItems = true
+            });
+
+            return true;
         }
     }
 }

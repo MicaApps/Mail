@@ -15,11 +15,6 @@ namespace Mail.Services
         {
         }
 
-        public override IEnumerable<AccountModel> GetCurrentLoginAccount()
-        {
-            throw new System.NotImplementedException();
-        }
-
         public override IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();
@@ -61,6 +56,11 @@ namespace Mail.Services
         }
 
         public override Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken cancelToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override Task<MailMessageListDetailViewModel?> MailDraftSaveAsync(MailMessageListDetailViewModel Model)
         {
             throw new System.NotImplementedException();
         }
