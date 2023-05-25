@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Core;
+using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
 using Mail.Extensions;
@@ -72,7 +75,7 @@ namespace Mail.Pages
             PreviewSource?.Clear();
             DetailsView.SelectedItem = null;
             EmptyContentText.Text = "Syncing you email";
-            var data = NavigationData;
+            MailFolderData data = NavigationData;
             if (data == null) return;
             try
             {
@@ -113,7 +116,9 @@ namespace Mail.Pages
         private async void ListDetailsView_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if ((e.OriginalSource as FrameworkElement)?.DataContext is not MailMessageListDetailViewModel Model) return;
+            if (Model.IsEmpty) return;
             if (sender is not ListDetailsView View) return;
+
             using (await SelectionChangeLocker.LockAsync())
             {
                 for (var Retry = 0; Retry < 10; Retry++)
@@ -259,6 +264,7 @@ namespace Mail.Pages
         private async Task LoadAttachmentsList(ItemsControl sender, MailMessageListDetailViewModel model)
         {
             if (CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
+            if (model.IsEmpty) return;
             CurrentMailAttachmentsListBoxMessageId = model.Id;
             IMailService service = App.Services.GetService<OutlookService>()!;
             var messageAttachmentsCollectionPage = service.GetMailAttachmentFileAsync(model);
@@ -308,7 +314,21 @@ namespace Mail.Pages
             }
             DetailsView.SelectedIndex = 0;
         }
+        
+        private async void CreateWindow(object Sender, RoutedEventArgs RoutedEventArgs)
+        {
+            var appWindow = await AppWindow.TryCreateAsync();
+            if (appWindow is null)
+            {
+                return;
+            }
 
+            var appWindowContentFrame = new Frame();
+            appWindowContentFrame.Navigate(typeof(EditMail));
+            ElementCompositionPreview.SetAppWindowContent(appWindow, appWindowContentFrame);
+            await appWindow.TryShowAsync();
+        }
+        
         private void SendMail_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?

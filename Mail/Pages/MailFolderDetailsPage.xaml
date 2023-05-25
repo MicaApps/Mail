@@ -41,7 +41,7 @@
                                     <ListView
                                                 Margin="10,-2.05,0,0"
                                                 Padding="0"
-                                                ItemsSource="{x:Bind To}">
+                                                ItemsSource="{x:Bind ToRecipients}">
                                         <ListView.ItemContainerStyle>
                                             <Style BasedOn="{StaticResource DefaultListViewItemStyle}"
                                                            TargetType="ListViewItem">

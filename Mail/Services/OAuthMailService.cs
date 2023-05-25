@@ -15,6 +15,8 @@ namespace Mail.Services
     {
         private readonly IPublicClientApplication ClientApplication;
         public static readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
+        private IMailService MailServiceImplementation;
+        public AccountModel? CurrentAccount { get; set; }
 
         public BaseProvider Provider { get; }
 
@@ -86,8 +88,10 @@ namespace Mail.Services
 
         public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 
-        public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
+        public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
+            MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
         public abstract Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
+        public abstract Task<MailMessageListDetailViewModel?> MailDraftSaveAsync(MailMessageListDetailViewModel Model);
     }
 }
