@@ -391,7 +391,7 @@
                                DefaultTemplate="{StaticResource DefaultTemplate}"/>
         
         <MenuFlyout x:Key="MailDetailItemMenuFlyout" >
-            <MenuFlyoutItem Margin="2" Text="存档">
+            <MenuFlyoutItem Margin="2" Text="存">
                 <MenuFlyoutItem.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7B8;" />
                 </MenuFlyoutItem.Icon>
