@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Mail.Services.Data
@@ -8,11 +8,11 @@ namespace Mail.Services.Data
     {
         public string Title { get; set; }
 
-        public string Id { get; }
+        public string Id { get; set; }
 
-        public DateTimeOffset? SentTime { get; }
+        public DateTimeOffset? SentTime { get; set; }
 
-        public MailMessageRecipientData Sender { get; }
+        public MailMessageRecipientData Sender { get; set; }
 
         public IReadOnlyList<MailMessageRecipientData> To { get; private set; }
 
@@ -24,7 +24,10 @@ namespace Mail.Services.Data
 
         public MailMessageContentData Content { get; private set; }
 
-        public MailMessageData(string Title, string Id, DateTimeOffset? SentTime, MailMessageRecipientData Sender, IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> CC, IEnumerable<MailMessageRecipientData> Bcc, MailMessageContentData Content, IEnumerable<MailMessageAttachmentData> Attachments)
+        public MailMessageData(string Title, string Id, DateTimeOffset? SentTime, MailMessageRecipientData Sender,
+            IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> CC,
+            IEnumerable<MailMessageRecipientData> Bcc, MailMessageContentData Content,
+            IEnumerable<MailMessageAttachmentData> Attachments)
         {
             this.Title = Title;
             this.Id = Id;

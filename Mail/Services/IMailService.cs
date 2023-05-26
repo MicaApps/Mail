@@ -15,7 +15,6 @@ namespace Mail.Services
         MemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
-
         public IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(CancellationToken CancelToken = default);
 
         public Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
@@ -40,8 +39,10 @@ namespace Mail.Services
                 uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
         }
 
-        public IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
+        public IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
+            MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
         Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
+        abstract Task<MailMessageListDetailViewModel?> MailDraftSaveAsync(MailMessageListDetailViewModel Model);
     }
 }

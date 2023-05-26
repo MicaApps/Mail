@@ -132,17 +132,20 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\RunCatch.cs" />
-    <Compile Include="Services\Data\IMailMessageAttachmentData.cs" />
-    <Compile Include="Services\Data\MailFolderData.cs" />
-    <Compile Include="Services\Data\MailFolderDetailData.cs" />
-    <Compile Include="Services\Data\MailMessageFileAttachmentData.cs" />
-    <Compile Include="Services\Data\MailMessageAttachmentData.cs" />
-    <Compile Include="Services\Data\MailMessageContentData.cs" />
-    <Compile Include="Services\Data\MailMessageData.cs" />
-    <Compile Include="Services\Data\MailMessageRecipientData.cs" />
-    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs" />
-    <Compile Include="Services\Data\AccountModel.cs" />
+    <Compile Include="Extensions\RunCatch.cs"/>
+    <Compile Include="Pages\EditMail.xaml.cs">
+      <DependentUpon>EditMail.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Services\Data\IMailMessageAttachmentData.cs"/>
+    <Compile Include="Services\Data\MailFolderData.cs"/>
+    <Compile Include="Services\Data\MailFolderDetailData.cs"/>
+    <Compile Include="Services\Data\MailMessageFileAttachmentData.cs"/>
+    <Compile Include="Services\Data\MailMessageAttachmentData.cs"/>
+    <Compile Include="Services\Data\MailMessageContentData.cs"/>
+    <Compile Include="Services\Data\MailMessageData.cs"/>
+    <Compile Include="Services\Data\MailMessageRecipientData.cs"/>
+    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs"/>
+    <Compile Include="Services\Data\AccountModel.cs"/>
     <Compile Include="Services\Data\ContactModel.cs" />
     <Compile Include="Extensions\DependencyObjectExtension.cs" />
     <Compile Include="Models\MailMessageListDetailViewModel.cs" />
@@ -244,6 +247,10 @@
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\EditMail.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\HomePage.xaml">
       <SubType>Designer</SubType>

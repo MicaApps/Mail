@@ -1,29 +1,80 @@
-﻿using Mail.Services.Data;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Mail.Services.Data;
+using Newtonsoft.Json;
 
 namespace Mail.Models
 {
     internal sealed class MailMessageListDetailViewModel
     {
-        public string Title => InnerData.Title;
+        [JsonProperty("subject")]
+        public string Title
+        {
+            get => InnerData.Title;
+            set => InnerData.Title = value;
+        }
 
-        public string Id => InnerData.Id;
 
-        public string PreviewText => InnerData.Content.ContentPreview;
+        public string Id
+        {
+            get => InnerData.Id;
+            set => InnerData.Id = value;
+        }
 
-        public string SenderName => InnerData.Sender.Name;
+        public string PreviewText
+        {
+            get => InnerData.Content.ContentPreview;
+            set => InnerData.Content.ContentType = Enum.TryParse(value, out MailMessageContentType result)
+                ? result
+                : MailMessageContentType.Text;
+        }
 
-        public MailMessageRecipientData Sender => InnerData.Sender;
+        public string SenderName
+        {
+            get => InnerData.Sender.Name;
+            set => InnerData.Sender.Name = value;
+        }
 
-        public IReadOnlyList<MailMessageRecipientData> To => InnerData.To;
+        public MailMessageRecipientData Sender
+        {
+            get => InnerData.Sender;
+            set => InnerData.Sender = value;
+        }
 
-        public string Content => InnerData.Content.Content;
+        public IReadOnlyList<MailMessageRecipientData> ToRecipients => InnerData.To;
 
-        public MailMessageContentType ContentType => InnerData.Content.ContentType;
+        public IReadOnlyList<MailMessageRecipientData> BccRecipients => InnerData.Bcc;
 
-        public string SentTime => InnerData.SentTime.HasValue ? InnerData.SentTime.Value.DateTime.ToString("yyyy/M/dd") : string.Empty;
+        public IReadOnlyList<MailMessageRecipientData> CcRecipients => InnerData.CC;
+
+        public string BodyPreview
+        {
+            get => InnerData.Content.ContentPreview;
+            set => InnerData.Content.ContentPreview = value;
+        }
+
+        public bool IsDraft { get; set; }
+        public bool IsDeliveryReceiptRequested { get; set; }
+
+        public MailMessageContentData Body => InnerData.Content;
+
+        public string Content
+        {
+            get => InnerData.Content.Content;
+            set => InnerData.Content.Content = value;
+        }
+
+        public MailMessageContentType ContentType
+        {
+            get => InnerData.Content.ContentType;
+            set => InnerData.Content.ContentType = value;
+        }
+
+        public string SentTime => InnerData.SentTime.HasValue
+            ? InnerData.SentTime.Value.DateTime.ToString("yyyy/M/dd")
+            : string.Empty;
 
         private readonly MailMessageData InnerData;
 
@@ -52,13 +103,29 @@ namespace Mail.Models
         private string receiver;
         private string content;
 
-        public string Title { get => title; set => SetValue(ref title, value); }
+        public string Title
+        {
+            get => title;
+            set => SetValue(ref title, value);
+        }
 
-        public string Sender { get => sender; set => SetValue(ref sender, value); }
+        public string Sender
+        {
+            get => sender;
+            set => SetValue(ref sender, value);
+        }
 
-        public string Receiver { get => receiver; set => SetValue(ref receiver, value); }
+        public string Receiver
+        {
+            get => receiver;
+            set => SetValue(ref receiver, value);
+        }
 
-        public string Content { get => content; set => SetValue(ref content, value); }
+        public string Content
+        {
+            get => content;
+            set => SetValue(ref content, value);
+        }
 
         protected bool SetValue<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
         {

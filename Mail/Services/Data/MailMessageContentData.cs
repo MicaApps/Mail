@@ -4,9 +4,9 @@
     {
         public string Content { get; set; }
 
-        public string ContentPreview { get; }
+        public string ContentPreview { get; set; }
 
-        public MailMessageContentType ContentType { get; }
+        public MailMessageContentType ContentType { get; set; }
 
         public MailMessageContentData(string Content, string ContentPreview, MailMessageContentType ContentType)
         {
