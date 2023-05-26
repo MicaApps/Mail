@@ -290,7 +290,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="EditTemplate" x:DataType="models:MailMessageListDetailViewModel">
-            <Grid Margin="36 0 0 0 ">
+            <Grid Margin="36 0 0 5 ">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="100" />
                     <RowDefinition Height="50" />
@@ -307,7 +307,7 @@
                         <TextBlock FontWeight="Bold" Text="主题:" FontSize="24" />
                         <TextBox FontWeight="Bold"  FontSize="24" Padding="0 2 0 0" Style="{StaticResource TransTextBoxStyle}" Grid.Column="1" Margin="0 0 24 0" Text="{Binding EditInfo.Sender,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" Background="Transparent" BorderThickness="0" />
                     </Grid>
-                    <Border  BorderBrush="#fff" Opacity="0.08" BorderThickness="0.5" />
+                    <Border  BorderBrush="#828282" Opacity="0.08" BorderThickness="0.5" />
                 </StackPanel>
                 <StackPanel Grid.Row="1">
                     <Grid  Margin="0 0 0 16" Height="32">
@@ -322,7 +322,7 @@
                         <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="To:" FontSize="18" />
                         <TextBox Padding="0 8 0 0" Style="{StaticResource TransTextBoxStyle}" Grid.Column="3" Margin=" 0 0 24 0" Background="Transparent" BorderThickness="0" />
                     </Grid>
-                    <Border  BorderBrush="#fff" Opacity="0.08" BorderThickness="0.5" />
+                    <Border  BorderBrush="#828282" Opacity="0.08" BorderThickness="0.5" />
                 </StackPanel>
                 <StackPanel Grid.Row="2" Margin="0 0 0 0" Orientation="Horizontal">
 
@@ -339,14 +339,9 @@
                         </AppBarButton>
                         <AppBarButton Background="Transparent" Icon="Underline" Width="40" />
                         <AppBarButton Background="Transparent" Icon="More" Width="40" />
+                        <AppBarSeparator/>
                     </CommandBar>
-                    <Border
-                        VerticalAlignment="Center"
-                        Opacity="0.08"
-                        Height="32"
-                                    Margin="1"
-                                    BorderBrush="White"
-                                    BorderThickness="1" />
+                    
 
                     <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Collapsed"
                             Grid.Row="0"
@@ -377,8 +372,13 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             >
-                    <Button Content="发送邮件" Style="{StaticResource AccentButtonStyle}" />
+                   
                     <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+                        <CommandBar.Content>
+                            <Grid >
+                                <Button Content="发送邮件" Style="{StaticResource AccentButtonStyle}" Margin="0 9 5 0 "/>
+                            </Grid>
+                        </CommandBar.Content>
                         <AppBarButton Icon="Edit" Label="保存到草稿"/>
                         <AppBarButton Icon="Delete" Label="删除"/>
                     </CommandBar>
