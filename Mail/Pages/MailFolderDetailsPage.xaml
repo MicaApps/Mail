@@ -9,6 +9,7 @@
     xmlns:models="using:Mail.Models"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:pages="using:Mail.Pages"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     Background="Transparent"
     NavigationCacheMode="Required"
     mc:Ignorable="d">
