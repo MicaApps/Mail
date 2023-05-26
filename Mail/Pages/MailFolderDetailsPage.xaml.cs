@@ -310,8 +310,10 @@ namespace Mail.Pages
             var newItem = PreviewSource.FirstOrDefault();
             if (newItem is not { IsEmpty: true })
             {
-                PreviewSource.Insert(0, MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty)));
+                PreviewSource.Insert(0,
+                    MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty)));
             }
+
             DetailsView.SelectedIndex = 0;
         }
         
@@ -332,11 +334,16 @@ namespace Mail.Pages
         private void SendMail_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?
-              .DataContext is not MailMessageListDetailViewModel { IsEmpty: true } Model) return;
+                .DataContext is not MailMessageListDetailViewModel { IsEmpty: true } Model) return;
 
             var info = Model.EditInfo;
 
             //TODO combine information and send email
+        }
+
+        private void DetailsView_OnRightTapped(object Sender, RightTappedRoutedEventArgs E)
+        {
+            Trace.WriteLine($"{E}");
         }
     }
 
