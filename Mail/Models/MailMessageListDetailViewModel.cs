@@ -23,6 +23,7 @@ namespace Mail.Models
             set => InnerData.Id = value;
         }
 
+        [JsonProperty("bodyPreview")] // Outlook: first 255 char
         public string PreviewText
         {
             get => InnerData.Content.ContentPreview;

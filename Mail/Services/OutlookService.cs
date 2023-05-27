@@ -383,7 +383,7 @@ namespace Mail.Services
             return null;
         }
 
-        public async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
+        public override async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
         {
             var rb = Provider.GetClient().Me;
             var jsonSetting = new JsonSerializerSettings
