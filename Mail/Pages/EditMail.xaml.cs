@@ -1,5 +1,11 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Navigation;
 using Mail.Models;
 using Mail.Services;
 using Mail.Services.Data;
@@ -15,7 +21,6 @@ namespace Mail.Pages
     /// </summary>
     public sealed partial class EditMail
     {
-        private MailMessageData MailMessageData { get; set; }
         private MailMessageListDetailViewModel Model { get; set; }
 
         /// <summary>
@@ -34,8 +39,7 @@ namespace Mail.Pages
             var service = App.Services.GetService<OutlookService>()!;
             MailSender = new MailMessageRecipientData(string.Empty,
                 service.CurrentAccount?.Address ?? string.Empty);
-            MailMessageData = MailMessageData.Empty(MailSender);
-            Model = new MailMessageListDetailViewModel(MailMessageData);
+            Model = new MailMessageListDetailViewModel(MailMessageData.Empty(MailSender));
 
             Model.ToRecipients.Add(To);
             InitializeComponent();
@@ -57,6 +61,32 @@ namespace Mail.Pages
             var mailMessageRecipientData = await service.MailSendAsync(Model);
 
             Trace.WriteLine(mailMessageRecipientData);
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (e.Parameter is MailMessageListDetailViewModel model)
+            {
+                Model = model;
+                Model.ToRecipients.Add(To);
+                MailSender = Model.Sender;
+            }
+
+            base.OnNavigatedTo(e);
+        }
+
+        public static async Task CreateEditWindow(MailMessageListDetailViewModel? Model = null)
+        {
+            var appWindow = await AppWindow.TryCreateAsync();
+            if (appWindow is null)
+            {
+                return;
+            }
+
+            var appWindowContentFrame = new Frame();
+            appWindowContentFrame.Navigate(typeof(EditMail), Model);
+            ElementCompositionPreview.SetAppWindowContent(appWindow, appWindowContentFrame);
+            await appWindow.TryShowAsync();
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Mail.Services.Data
 {
-    internal sealed class MailMessageAttachmentData : IMailMessageAttachmentData
+    public sealed class MailMessageAttachmentData : IMailMessageAttachmentData
     {
         public string Name { get; }
 

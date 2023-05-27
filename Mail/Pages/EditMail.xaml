@@ -223,12 +223,12 @@
                 <TextBox FontWeight="Bold" FontSize="24" Padding="0 2 0 0"
                          Style="{StaticResource TransTextBoxStyle}"
                          Grid.Column="1" Margin="0 0 24 0"
-                         Text="{x:Bind Path=MailMessageData.Title,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                         Text="{x:Bind Path=Model.Title,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                          Background="Transparent" BorderThickness="0" />
             </Grid>
             <Border BorderBrush="#fff" Opacity="0.08" BorderThickness="0.5" />
         </StackPanel>
-        <StackPanel Grid.Row="1" DataContext="{x:Bind MailSender}">
+        <StackPanel Grid.Row="1">
             <Grid Margin="0 0 0 16" Height="32">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="64" />
@@ -241,7 +241,7 @@
                 <TextBlock  Text="From: " FontSize="18" VerticalAlignment="Center" />
                 <TextBlock Padding="0 8 0 0" VerticalAlignment="Bottom"
                          Grid.Column="1" Margin="0 0 24 0"
-                         Text="{Binding Path=Address,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                         Text="{x:Bind Path=Model.Sender.Address,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
                 
                 <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="To:" FontSize="18" />
                 <TextBox Padding="0 8 0 0" Style="{StaticResource TransTextBoxStyle}" Grid.Column="3"
@@ -294,7 +294,7 @@
 
         </StackPanel>
         <TextBox Style="{StaticResource TransTextBoxStyle}" Grid.Row="3"
-                 Text="{x:Bind Path=MailMessageData.Content.Content, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                 Text="{x:Bind Path=Model.Content, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                  TextWrapping="Wrap"
                  Margin="0 0 36 0"
                  HorizontalContentAlignment="Left"

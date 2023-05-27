@@ -64,5 +64,10 @@ namespace Mail.Services
         {
             throw new System.NotImplementedException();
         }
+
+        public override Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

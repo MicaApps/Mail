@@ -1,6 +1,6 @@
 ﻿namespace Mail.Services.Data
 {
-    internal enum MailMessageContentType
+    public enum MailMessageContentType
     {
         Text,
         Html

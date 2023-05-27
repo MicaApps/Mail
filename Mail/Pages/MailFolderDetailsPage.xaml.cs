@@ -8,10 +8,8 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Core;
-using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
 using Mail.Extensions;
@@ -316,18 +314,9 @@ namespace Mail.Pages
             DetailsView.SelectedIndex = 0;
         }
 
-        private async void CreateEditMailWindow(object Sender, RoutedEventArgs RoutedEventArgs)
+        private void CreateEditMailWindow(object Sender, RoutedEventArgs RoutedEventArgs)
         {
-            var appWindow = await AppWindow.TryCreateAsync();
-            if (appWindow is null)
-            {
-                return;
-            }
-
-            var appWindowContentFrame = new Frame();
-            appWindowContentFrame.Navigate(typeof(EditMail));
-            ElementCompositionPreview.SetAppWindowContent(appWindow, appWindowContentFrame);
-            await appWindow.TryShowAsync();
+            EditMail.CreateEditWindow();
         }
 
         private void SendMail_Click(object sender, RoutedEventArgs e)

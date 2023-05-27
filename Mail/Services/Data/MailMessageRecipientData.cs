@@ -2,7 +2,7 @@
 
 namespace Mail.Services.Data
 {
-    internal sealed class MailMessageRecipientData
+    public sealed class MailMessageRecipientData
     {
         public string Name { get; set; }
         public string Address { get; set; }
