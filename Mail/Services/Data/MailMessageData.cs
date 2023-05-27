@@ -14,13 +14,13 @@ namespace Mail.Services.Data
 
         public MailMessageRecipientData Sender { get; set; }
 
-        public IReadOnlyList<MailMessageRecipientData> To { get; private set; }
+        public IList<MailMessageRecipientData> To { get; set; }
 
-        public IReadOnlyList<MailMessageRecipientData> CC { get; private set; }
+        public IList<MailMessageRecipientData> CC { get; set; }
 
-        public IReadOnlyList<MailMessageRecipientData> Bcc { get; private set; }
+        public IList<MailMessageRecipientData> Bcc { get; set; }
 
-        public IReadOnlyList<IMailMessageAttachmentData> Attachments { get; private set; }
+        public IList<IMailMessageAttachmentData> Attachments { get; private set; }
 
         public MailMessageContentData Content { get; private set; }
 
@@ -53,10 +53,10 @@ namespace Mail.Services.Data
             return new MailMessageData(string.Empty, string.Empty, DateTimeOffset.Now, Sender)
             {
                 Content = MailMessageContentData.Empty(),
-                To = Array.Empty<MailMessageRecipientData>(),
-                CC = Array.Empty<MailMessageRecipientData>(),
-                Bcc = Array.Empty<MailMessageRecipientData>(),
-                Attachments = Array.Empty<IMailMessageAttachmentData>()
+                To = new List<MailMessageRecipientData>(),
+                CC = new List<MailMessageRecipientData>(),
+                Bcc = new List<MailMessageRecipientData>(),
+                Attachments = new List<IMailMessageAttachmentData>()
             };
         }
     }

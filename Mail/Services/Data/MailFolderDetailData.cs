@@ -15,7 +15,7 @@ namespace Mail.Services.Data
         {
             this.Id = Id;
             this.MessageCount = MessageCount;
-            this.ChildFolders = ChildFolders is IReadOnlyList<MailFolderDetailData> ReadOnlyChildFolders ? ReadOnlyChildFolders : ChildFolders.ToArray();
+            this.ChildFolders = ChildFolders as IReadOnlyList<MailFolderDetailData> ?? ChildFolders.ToArray();
         }
     }
 }
