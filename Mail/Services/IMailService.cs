@@ -43,7 +43,9 @@ namespace Mail.Services
             MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
         Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
-        abstract Task<MailMessageListDetailViewModel?> MailDraftSaveAsync(MailMessageListDetailViewModel Model);
-        abstract Task<bool> MailSendAsync(MailMessageListDetailViewModel Model);
+        Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model);
+        Task<bool> MailSendAsync(MailMessageListDetailViewModel Model);
+        Task<bool> MailReplyAsync(MailMessageListDetailViewModel Model, string ReplyContent, bool IsAll = false);
+        Task<bool> MailForwardAsync(MailMessageListDetailViewModel Model, string ForwardContent);
     }
 }

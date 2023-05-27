@@ -17,6 +17,7 @@ using Mail.Models;
 using Mail.Services;
 using Mail.Services.Collection;
 using Mail.Services.Data;
+using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.UI.Controls;
@@ -316,7 +317,7 @@ namespace Mail.Pages
 
         private void CreateEditMailWindow(object Sender, RoutedEventArgs RoutedEventArgs)
         {
-            EditMail.CreateEditWindow();
+            EditMail.CreateEditWindow(new EditMailOption { EditMailType = EditMailType.Send });
         }
 
         private void SendMail_Click(object sender, RoutedEventArgs e)

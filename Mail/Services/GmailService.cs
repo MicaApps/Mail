@@ -60,12 +60,22 @@ namespace Mail.Services
             throw new System.NotImplementedException();
         }
 
-        public override Task<MailMessageListDetailViewModel?> MailDraftSaveAsync(MailMessageListDetailViewModel Model)
+        public override Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model)
         {
             throw new System.NotImplementedException();
         }
 
         public override Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override Task<bool> MailReplyAsync(MailMessageListDetailViewModel Model, string ReplyContent, bool IsAll)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override Task<bool> MailForwardAsync(MailMessageListDetailViewModel Model, string ForwardContent)
         {
             throw new System.NotImplementedException();
         }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
@@ -9,8 +8,8 @@ using Windows.UI.Xaml.Navigation;
 using Mail.Models;
 using Mail.Services;
 using Mail.Services.Data;
+using Mail.Services.Data.Enums;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -33,6 +32,9 @@ namespace Mail.Pages
         /// </summary>
         private MailMessageRecipientData To { get; set; } = new(string.Empty, string.Empty);
 
+        private EditMailOption EditMailOption { get; set; }
+        private string ReplyOrForwardContent { get; set; } = string.Empty;
+
         public EditMail()
         {
             // TODO abstract MailService
@@ -42,6 +44,7 @@ namespace Mail.Pages
             Model = new MailMessageListDetailViewModel(MailMessageData.Empty(MailSender));
 
             Model.ToRecipients.Add(To);
+            EditMailOption = new EditMailOption { Model = Model };
             InitializeComponent();
         }
 
@@ -50,24 +53,46 @@ namespace Mail.Pages
         {
             var service = App.Services.GetService<OutlookService>()!;
             Model.IsDraft = true;
-            var mailMessageRecipientData = await service.MailDraftSaveAsync(Model);
-
-            Trace.WriteLine(JsonConvert.SerializeObject(mailMessageRecipientData));
+            var result = await service.MailDraftSaveAsync(Model);
+            if (result)
+            {
+                Window.Current.Close();
+            }
+            else
+            {
+                // TODO tips fail
+            }
         }
 
         private async void SaveMailAndSend(object Sender, RoutedEventArgs E)
         {
             var service = App.Services.GetService<OutlookService>()!;
-            var mailMessageRecipientData = await service.MailSendAsync(Model);
 
-            Trace.WriteLine(mailMessageRecipientData);
+            var result = EditMailOption.EditMailType switch
+            {
+                EditMailType.Reply => await service.MailReplyAsync(Model, ReplyOrForwardContent,
+                    EditMailOption.IsReplyAll),
+                EditMailType.Forward => await service.MailForwardAsync(Model, ReplyOrForwardContent),
+                EditMailType.Send => await service.MailSendAsync(Model),
+                _ => await service.MailDraftSaveAsync(Model)
+            };
+
+            if (result)
+            {
+                Window.Current.Close();
+            }
+            else
+            {
+                // TODO tips fail
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is MailMessageListDetailViewModel model)
+            if (e.Parameter is EditMailOption option)
             {
-                Model = model;
+                EditMailOption = option;
+                Model = option.Model ?? Model;
                 Model.ToRecipients.Add(To);
                 MailSender = Model.Sender;
             }
@@ -75,7 +100,7 @@ namespace Mail.Pages
             base.OnNavigatedTo(e);
         }
 
-        public static async Task CreateEditWindow(MailMessageListDetailViewModel? Model = null)
+        public static async Task CreateEditWindow(EditMailOption? Option = null)
         {
             var appWindow = await AppWindow.TryCreateAsync();
             if (appWindow is null)
@@ -84,7 +109,7 @@ namespace Mail.Pages
             }
 
             var appWindowContentFrame = new Frame();
-            appWindowContentFrame.Navigate(typeof(EditMail), Model);
+            appWindowContentFrame.Navigate(typeof(EditMail), Option);
             ElementCompositionPreview.SetAppWindowContent(appWindow, appWindowContentFrame);
             await appWindow.TryShowAsync();
         }
