@@ -23,7 +23,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
-using System.Linq;
 
 namespace Mail.Pages
 {
@@ -316,8 +315,8 @@ namespace Mail.Pages
 
             DetailsView.SelectedIndex = 0;
         }
-        
-        private async void CreateWindow(object Sender, RoutedEventArgs RoutedEventArgs)
+
+        private async void CreateEditMailWindow(object Sender, RoutedEventArgs RoutedEventArgs)
         {
             var appWindow = await AppWindow.TryCreateAsync();
             if (appWindow is null)
@@ -330,7 +329,7 @@ namespace Mail.Pages
             ElementCompositionPreview.SetAppWindowContent(appWindow, appWindowContentFrame);
             await appWindow.TryShowAsync();
         }
-        
+
         private void SendMail_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?

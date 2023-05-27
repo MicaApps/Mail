@@ -93,5 +93,6 @@ namespace Mail.Services
 
         public abstract Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
         public abstract Task<MailMessageListDetailViewModel?> MailDraftSaveAsync(MailMessageListDetailViewModel Model);
+        public abstract Task<bool> MailSendAsync(MailMessageListDetailViewModel Model);
     }
 }

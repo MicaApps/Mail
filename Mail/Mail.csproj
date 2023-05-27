@@ -146,13 +146,13 @@
     <Compile Include="Services\Data\MailMessageRecipientData.cs"/>
     <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs"/>
     <Compile Include="Services\Data\AccountModel.cs"/>
-    <Compile Include="Services\Data\ContactModel.cs" />
-    <Compile Include="Extensions\DependencyObjectExtension.cs" />
-    <Compile Include="Models\MailMessageListDetailViewModel.cs" />
-    <Compile Include="Services\Data\MailFolderType.cs" />
-    <Compile Include="Services\Data\MailMessageContentType.cs" />
-    <Compile Include="Extensions\ICollectionExtension.cs" />
-    <Compile Include="Extensions\Graph\IProviderExtension.cs" />
+    <Compile Include="Services\Data\ContactModel.cs"/>
+    <Compile Include="Extensions\DependencyObjectExtension.cs"/>
+    <Compile Include="Models\MailMessageListDetailViewModel.cs"/>
+    <Compile Include="Services\Data\MailFolderType.cs"/>
+    <Compile Include="Services\Data\MailMessageContentType.cs"/>
+    <Compile Include="Extensions\ICollectionExtension.cs"/>
+    <Compile Include="Extensions\Graph\IProviderExtension.cs"/>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

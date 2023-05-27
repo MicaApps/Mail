@@ -12,8 +12,8 @@ using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.MailFolders.Item.Messages;
+using Microsoft.Graph.Me.SendMail;
 using Microsoft.Graph.Models;
-using Microsoft.Graph.Users.Item.SendMail;
 using Newtonsoft.Json;
 
 namespace Mail.Services
@@ -30,7 +30,8 @@ namespace Mail.Services
             "Contacts.Read",
             "Contacts.ReadWrite",
             "Mail.ReadWrite",
-            "offline_access"
+            "offline_access",
+            "Mail.Send"
         };
 
         public OutlookService() : base(WebAccountProviderType.Msa)
@@ -382,10 +383,9 @@ namespace Mail.Services
             return null;
         }
 
-        public async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
+        public override async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
         {
-            var tokenAsync = await Provider.GetTokenAsync();
-            var rb = Provider.GetClient().Users[tokenAsync];
+            var rb = Provider.GetClient().Me;
             var jsonSetting = new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore

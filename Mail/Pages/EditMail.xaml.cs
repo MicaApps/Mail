@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Mail.Models;
 using Mail.Services;
 using Mail.Services.Data;
@@ -14,7 +13,7 @@ namespace Mail.Pages
     /// <summary>
     /// 可用于自身或导航至 Frame 内部的空白页。
     /// </summary>
-    public sealed partial class EditMail : Page
+    public sealed partial class EditMail
     {
         private MailMessageData MailMessageData { get; set; }
         private MailMessageListDetailViewModel Model { get; set; }
@@ -27,7 +26,7 @@ namespace Mail.Pages
         /// <summary>
         /// TODO multiple recipient
         /// </summary>
-        private MailMessageRecipientData To { get; set; }
+        private MailMessageRecipientData To { get; set; } = new(string.Empty, string.Empty);
 
         public EditMail()
         {
@@ -38,6 +37,7 @@ namespace Mail.Pages
             MailMessageData = MailMessageData.Empty(MailSender);
             Model = new MailMessageListDetailViewModel(MailMessageData);
 
+            Model.ToRecipients.Add(To);
             InitializeComponent();
         }
 

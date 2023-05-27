@@ -23,6 +23,7 @@ namespace Mail.Models
             set => InnerData.Id = value;
         }
 
+        [JsonProperty("bodyPreview")] // Outlook: first 255 char
         public string PreviewText
         {
             get => InnerData.Content.ContentPreview;
@@ -43,11 +44,11 @@ namespace Mail.Models
             set => InnerData.Sender = value;
         }
 
-        public IReadOnlyList<MailMessageRecipientData> ToRecipients => InnerData.To;
+        public IList<MailMessageRecipientData> ToRecipients => InnerData.To;
 
-        public IReadOnlyList<MailMessageRecipientData> BccRecipients => InnerData.Bcc;
+        public IList<MailMessageRecipientData> BccRecipients => InnerData.Bcc;
 
-        public IReadOnlyList<MailMessageRecipientData> CcRecipients => InnerData.CC;
+        public IList<MailMessageRecipientData> CcRecipients => InnerData.CC;
 
         public string BodyPreview
         {

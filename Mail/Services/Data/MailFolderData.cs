@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Mail.Services.Data
+﻿namespace Mail.Services.Data
 {
     internal class MailFolderData
     {

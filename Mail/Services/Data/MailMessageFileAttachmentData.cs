@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mail.Services.Data
 {
@@ -20,7 +16,8 @@ namespace Mail.Services.Data
 
         public byte[] ContentBytes { get; }
 
-        public MailMessageFileAttachmentData(string Name, string Id, string ContentType = null, ulong AttachmentSize = 0, DateTimeOffset LastModifiedDate = default, byte[] ContentBytes = null)
+        public MailMessageFileAttachmentData(string Name, string Id, string ContentType = null,
+            ulong AttachmentSize = 0, DateTimeOffset LastModifiedDate = default, byte[] ContentBytes = null)
         {
             this.Name = Name;
             this.Id = Id;

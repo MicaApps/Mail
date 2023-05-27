@@ -454,7 +454,7 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Style="{ThemeResource AlternateCloseButtonStyle}"
-                        Click="CreateMail_Click">
+                        Click="CreateEditMailWindow">
                         <FontIcon FontSize="16" Glyph="&#xe710;" />
                     </Button>
                 </Grid>
