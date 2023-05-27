@@ -339,6 +339,11 @@ namespace Mail.Pages
 
             //TODO combine information and send email
         }
+
+        private void DetailsView_OnRightTapped(object Sender, RightTappedRoutedEventArgs E)
+        {
+            Trace.WriteLine($"{E}");
+        }
     }
 
     public class DetailsSelector : DataTemplateSelector
