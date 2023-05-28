@@ -308,16 +308,14 @@ namespace Mail.Pages
             var newItem = PreviewSource.FirstOrDefault();
             if (newItem is not { IsEmpty: true })
             {
+                var model = MailMessageListDetailViewModel.Empty(
+                    new MailMessageRecipientData(string.Empty, string.Empty));
                 PreviewSource.Insert(0,
-                    MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty)));
+                    model);
+                //EditMail.CreateEditWindow(new EditMailOption {Model = model,EditMailType = EditMailType.Send });
             }
 
             DetailsView.SelectedIndex = 0;
-        }
-
-        private void CreateEditMailWindow(object Sender, RoutedEventArgs RoutedEventArgs)
-        {
-            EditMail.CreateEditWindow(new EditMailOption { EditMailType = EditMailType.Send });
         }
 
         private void SendMail_Click(object sender, RoutedEventArgs e)
@@ -337,6 +335,16 @@ namespace Mail.Pages
             await EditMail.CreateEditWindow(new EditMailOption
             {
                 Model = model, EditMailType = EditMailType.Forward
+            });
+        }
+
+        private void Frame_OnNavigating(object Sender, NavigatingCancelEventArgs E)
+        {
+            if (Sender is not Frame { DataContext: MailMessageListDetailViewModel model } frame) return;
+            E.Cancel = true;
+            frame.Navigate(typeof(EditMail), new EditMailOption
+            {
+                Model = model, EditMailType = EditMailType.Send
             });
         }
     }

@@ -205,7 +205,7 @@
     </Page.Resources>
 
 
-    <Grid Margin="36 0 0 0 ">
+    <Grid Margin="36 0 0 5 ">
         <Grid.RowDefinitions>
             <RowDefinition Height="100" />
             <RowDefinition Height="50" />
@@ -220,35 +220,32 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <TextBlock FontWeight="Bold" Text="主题:" FontSize="24" />
-                <TextBox FontWeight="Bold" FontSize="24" Padding="0 2 0 0"
-                         Style="{StaticResource TransTextBoxStyle}"
+                <TextBox FontWeight="Bold" FontSize="24" Padding="0 2 0 0" Style="{StaticResource TransTextBoxStyle}"
                          Grid.Column="1" Margin="0 0 24 0"
-                         Text="{x:Bind Path=Model.Title,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                         Text="{x:Bind Model.Title,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                          Background="Transparent" BorderThickness="0" />
             </Grid>
-            <Border BorderBrush="#fff" Opacity="0.08" BorderThickness="0.5" />
+            <Border BorderBrush="#828282" Opacity="0.08" BorderThickness="0.5" />
         </StackPanel>
         <StackPanel Grid.Row="1">
             <Grid Margin="0 0 0 16" Height="32">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="64" />
-                    <ColumnDefinition Width="240" />
-                    <ColumnDefinition Width="64" />
-                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="32" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                
-                <TextBlock  Text="From: " FontSize="18" VerticalAlignment="Center" />
-                <TextBlock Padding="0 8 0 0" VerticalAlignment="Bottom"
+                <TextBlock Text="From:" FontSize="18" VerticalAlignment="Center" />
+                <TextBox Padding="0 8 0 0" VerticalAlignment="Bottom" Style="{StaticResource TransTextBoxStyle}"
                          Grid.Column="1" Margin="0 0 24 0"
-                         Text="{x:Bind Path=Model.Sender.Address,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
-                
+                         Text="{x:Bind MailSender.Address,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                         Background="Transparent" BorderThickness="0" />
                 <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="To:" FontSize="18" />
                 <TextBox Padding="0 8 0 0" Style="{StaticResource TransTextBoxStyle}" Grid.Column="3"
                          Text="{x:Bind Path=To.Address,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                          Margin=" 0 0 24 0" Background="Transparent" BorderThickness="0" />
             </Grid>
-            <Border BorderBrush="#fff" Opacity="0.08" BorderThickness="0.5" />
+            <Border BorderBrush="#828282" Opacity="0.08" BorderThickness="0.5" />
         </StackPanel>
         <StackPanel Grid.Row="2" Margin="0 0 0 0" Orientation="Horizontal">
 
@@ -264,14 +261,9 @@
                 </AppBarButton>
                 <AppBarButton Background="Transparent" Icon="Underline" Width="40" />
                 <AppBarButton Background="Transparent" Icon="More" Width="40" />
+                <AppBarSeparator />
             </CommandBar>
-            <Border
-                VerticalAlignment="Center"
-                Opacity="0.08"
-                Height="32"
-                Margin="1"
-                BorderBrush="White"
-                BorderThickness="1" />
+
 
             <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Collapsed"
                         Grid.Row="0"
@@ -294,22 +286,22 @@
 
         </StackPanel>
         <TextBox Style="{StaticResource TransTextBoxStyle}" Grid.Row="3"
-                 Text="{x:Bind Path=Model.Content, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
-                 TextWrapping="Wrap"
-                 Margin="0 0 36 0"
-                 HorizontalContentAlignment="Left"
-                 VerticalContentAlignment="Top"
-                 AcceptsReturn="True"
-                 Background="Transparent"
-                 BorderThickness="0" />
+                 Text="{x:Bind Model.Content,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap"
+                 Margin="0 0 36 0" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                 AcceptsReturn="True" Background="Transparent" BorderThickness="0" />
         <StackPanel Orientation="Horizontal"
                     Padding="2"
                     Grid.Row="4"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center">
-            <Button Content="发送邮件" Click="SaveMailAndSend"/>
+
             <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-                <AppBarButton Icon="Edit" Label="保存到草稿" Click="SaveDraft"/>
+                <CommandBar.Content>
+                    <Grid>
+                        <Button Content="发送邮件" Style="{StaticResource AccentButtonStyle}" Margin="0 9 5 0 " Click="SaveDraft" />
+                    </Grid>
+                </CommandBar.Content>
+                <AppBarButton Icon="Edit" Label="保存到草稿" />
                 <AppBarButton Icon="Delete" Label="删除" />
             </CommandBar>
 

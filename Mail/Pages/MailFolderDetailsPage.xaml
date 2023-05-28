@@ -289,7 +289,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="EditTemplate" x:DataType="models:MailMessageListDetailViewModel">
-            <Grid Margin="36 0 0 5 ">
+            <!--<Grid Margin="36 0 0 5 ">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="100" />
                     <RowDefinition Height="50" />
@@ -383,7 +383,8 @@
                     </CommandBar>
 
                 </StackPanel>
-            </Grid>
+            </Grid>-->
+            <Frame DataContext="{Binding}" SourcePageType="pages:EditMail" Navigating="Frame_OnNavigating"/>
         </DataTemplate>
 
         <pages:DetailsSelector x:Key="DetailsSelector" EditTemplate="{StaticResource EditTemplate}"
@@ -454,7 +455,7 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Style="{ThemeResource AlternateCloseButtonStyle}"
-                        Click="CreateEditMailWindow">
+                        Click="CreateMail_Click">
                         <FontIcon FontSize="16" Glyph="&#xe710;" />
                     </Button>
                 </Grid>
