@@ -3,6 +3,7 @@ using System.Buffers.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mail;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml.Data;
@@ -39,6 +40,30 @@ public class ContactToAvatarConverter : IValueConverter
                 bitmap.SetSourceAsync(ms.AsRandomAccessStream());
 
                 return bitmap;
+            }
+            else
+            {
+                if (true)
+                {
+                    var bitmap = new BitmapImage();
+                    string realDomain;
+                    var domainSplit = new MailAddress(recipient).Host.Split('.');
+                    if (domainSplit.Length > 3 && (domainSplit[domainSplit.Length - 2] == "co" ||
+                                                   domainSplit[domainSplit.Length - 2] == "com"))
+                    {
+                        realDomain = domainSplit[domainSplit.Length - 3] + "." +
+                                         domainSplit[domainSplit.Length - 2] + "." +
+                                         domainSplit[domainSplit.Length - 1];
+                    }
+                    else
+                    {
+                        realDomain = domainSplit[domainSplit.Length - 2] + "." +
+                                         domainSplit[domainSplit.Length - 1];
+                    }
+
+                    bitmap.UriSource = new Uri("https://" + realDomain + "/favicon.ico");
+                    return bitmap;
+                }
             }
         }
 
