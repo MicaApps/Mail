@@ -8,10 +8,8 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Core;
-using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
 using Mail.Extensions;
@@ -19,6 +17,7 @@ using Mail.Models;
 using Mail.Services;
 using Mail.Services.Collection;
 using Mail.Services.Data;
+using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.UI.Controls;
@@ -316,18 +315,9 @@ namespace Mail.Pages
             DetailsView.SelectedIndex = 0;
         }
 
-        private async void CreateEditMailWindow(object Sender, RoutedEventArgs RoutedEventArgs)
+        private void CreateEditMailWindow(object Sender, RoutedEventArgs RoutedEventArgs)
         {
-            var appWindow = await AppWindow.TryCreateAsync();
-            if (appWindow is null)
-            {
-                return;
-            }
-
-            var appWindowContentFrame = new Frame();
-            appWindowContentFrame.Navigate(typeof(EditMail));
-            ElementCompositionPreview.SetAppWindowContent(appWindow, appWindowContentFrame);
-            await appWindow.TryShowAsync();
+            EditMail.CreateEditWindow(new EditMailOption { EditMailType = EditMailType.Send });
         }
 
         private void SendMail_Click(object sender, RoutedEventArgs e)
@@ -340,9 +330,14 @@ namespace Mail.Pages
             //TODO combine information and send email
         }
 
-        private void DetailsView_OnRightTapped(object Sender, RightTappedRoutedEventArgs E)
+        private async void MailForwardAsync(object Sender, RoutedEventArgs E)
         {
-            Trace.WriteLine($"{E}");
+            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
+
+            await EditMail.CreateEditWindow(new EditMailOption
+            {
+                Model = model, EditMailType = EditMailType.Forward
+            });
         }
     }
 

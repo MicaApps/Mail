@@ -12,6 +12,9 @@ using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.MailFolders.Item.Messages;
+using Microsoft.Graph.Me.Messages.Item.Forward;
+using Microsoft.Graph.Me.Messages.Item.Reply;
+using Microsoft.Graph.Me.Messages.Item.ReplyAll;
 using Microsoft.Graph.Me.SendMail;
 using Microsoft.Graph.Models;
 using Newtonsoft.Json;
@@ -365,33 +368,23 @@ namespace Mail.Services
             }
         }
 
-        public override async Task<MailMessageListDetailViewModel?> MailDraftSaveAsync(
-            MailMessageListDetailViewModel Model)
+        public override async Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model)
         {
             var rb = Provider.GetClient().Me;
-            var jsonSetting = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            };
-            var serializeObject = JsonConvert.SerializeObject(Model);
-            var deserializeObject = JsonConvert.DeserializeObject<Message>(serializeObject, jsonSetting);
-            if (deserializeObject is null) return null;
+            var message = ToMessage(Model);
 
-            var postAsync = await rb.Messages.PostAsync(deserializeObject);
-            var o = JsonConvert.SerializeObject(postAsync);
+            if (message is null) return false;
+
+            message.IsDraft = true;
+            var postAsync = await rb.Messages.PostAsync(message);
             // TODO deserializeObject exception
-            return null;
+            return postAsync is not null;
         }
 
         public override async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
         {
             var rb = Provider.GetClient().Me;
-            var jsonSetting = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            };
-            var serializeObject = JsonConvert.SerializeObject(Model);
-            var message = JsonConvert.DeserializeObject<Message>(serializeObject, jsonSetting);
+            var message = ToMessage(Model);
             if (message is null) return false;
 
             // TODO err
@@ -400,6 +393,56 @@ namespace Mail.Services
                 Message = message, SaveToSentItems = true
             });
 
+            return true;
+        }
+
+        private static Message? ToMessage(MailMessageListDetailViewModel Model)
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            var serializeObject = JsonConvert.SerializeObject(Model);
+            var message = JsonConvert.DeserializeObject<Message>(serializeObject, jsonSetting);
+            return message;
+        }
+
+        public override async Task<bool> MailReplyAsync(MailMessageListDetailViewModel Model, string ReplyContent,
+            bool IsAll = false)
+        {
+            var me = Provider.GetClient().Me;
+            var message = ToMessage(Model);
+            if (message is null)
+            {
+                return false;
+            }
+
+            if (IsAll)
+            {
+                await me.Messages[Model.Id].ReplyAll.PostAsync(
+                    new ReplyAllPostRequestBody { Comment = ReplyContent });
+            }
+            else
+            {
+                await me.Messages[Model.Id].Reply.PostAsync(
+                    new ReplyPostRequestBody { Message = message, Comment = ReplyContent });
+            }
+
+            return true;
+        }
+
+        public override async Task<bool> MailForwardAsync(MailMessageListDetailViewModel Model,
+            string ForwardContent)
+        {
+            var me = Provider.GetClient().Me;
+            var message = ToMessage(Model);
+            if (message is null)
+            {
+                return false;
+            }
+
+            await me.Messages[Model.Id].Forward.PostAsync(new ForwardPostRequestBody
+                { ToRecipients = message.ToRecipients, Comment = ForwardContent });
             return true;
         }
     }

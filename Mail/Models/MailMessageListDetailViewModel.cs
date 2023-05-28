@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Mail.Models
 {
-    internal sealed class MailMessageListDetailViewModel
+    public sealed class MailMessageListDetailViewModel
     {
         [JsonProperty("subject")]
         public string Title
@@ -94,35 +94,35 @@ namespace Mail.Models
             };
         }
 
-        public EditInfoViewModel EditInfo { get; private set; }
+        public EditInfoViewModel? EditInfo { get; private set; }
     }
 
     public class EditInfoViewModel : INotifyPropertyChanged
     {
-        private string title;
-        private string sender;
-        private string receiver;
-        private string content;
+        private string? title;
+        private string? sender;
+        private string? receiver;
+        private string? content;
 
-        public string Title
+        public string? Title
         {
             get => title;
             set => SetValue(ref title, value);
         }
 
-        public string Sender
+        public string? Sender
         {
             get => sender;
             set => SetValue(ref sender, value);
         }
 
-        public string Receiver
+        public string? Receiver
         {
             get => receiver;
             set => SetValue(ref receiver, value);
         }
 
-        public string Content
+        public string? Content
         {
             get => content;
             set => SetValue(ref content, value);
@@ -137,7 +137,7 @@ namespace Mail.Models
             return true;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

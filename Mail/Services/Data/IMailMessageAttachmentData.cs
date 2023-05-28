@@ -2,7 +2,7 @@
 
 namespace Mail.Services.Data
 {
-    internal interface IMailMessageAttachmentData
+    public interface IMailMessageAttachmentData
     {
         public string Name { get; }
 

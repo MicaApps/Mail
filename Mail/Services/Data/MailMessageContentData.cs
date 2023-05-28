@@ -1,6 +1,6 @@
 ﻿namespace Mail.Services.Data
 {
-    internal sealed class MailMessageContentData
+    public sealed class MailMessageContentData
     {
         public string Content { get; set; }
 
