@@ -284,7 +284,7 @@ namespace Mail.Services
             CancellationToken CancelToken = default)
         {
             var Contacts =
-                (await IProviderExtension.GetClient(Provider).Me.Contacts.GetAsync(default, CancelToken)).Value;
+                (await IProviderExtension.GetClient(Provider).Me.Contacts.GetAsync((option) => option.QueryParameters.Top = 1000, CancelToken)).Value;
 
             var batch = new BatchRequestContentCollection(IProviderExtension.GetClient(Provider));
             Dictionary<string, string> UserToIdMapping = new Dictionary<string, string>();
