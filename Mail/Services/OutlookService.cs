@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
+using CommunityToolkit.Graph.Extensions;
 using Mail.Extensions;
 using Mail.Extensions.Graph;
 using Mail.Models;
 using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Graph;
 using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.MailFolders.Item.Messages;
 using Microsoft.Graph.Me.Messages.Item.Forward;
@@ -53,7 +56,7 @@ namespace Mail.Services
                 MailFolderType.Archive => "archive",
                 _ => throw new NotSupportedException()
             };
-            return Provider.GetClient().Me.MailFolders[FolderString];
+            return IProviderExtension.GetClient(Provider).Me.MailFolders[FolderString];
         }
 
         private async Task<MailFolder> CatchMailFolder(MailFolderItemRequestBuilder Builder,
@@ -65,7 +68,7 @@ namespace Mail.Services
         public override async IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
-            var client = Provider.GetClient();
+            var client = IProviderExtension.GetClient(Provider);
 
             //TODO: Remove this code when Graph beta API which include wellknown-name property become stable.
             var inbox = await CatchMailFolder(client.Me.MailFolders["inbox"], CancelToken);
@@ -159,7 +162,7 @@ namespace Mail.Services
         public override async Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default)
         {
-            var client = Provider.GetClient();
+            var client = IProviderExtension.GetClient(Provider);
 
             async IAsyncEnumerable<MailFolderDetailData> GenerateSubMailFolderDataBuilder(
                 MailFolderItemRequestBuilder Builder, [EnumeratorCancellation] CancellationToken CancelToken = default)
@@ -194,7 +197,7 @@ namespace Mail.Services
             uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
             MessagesRequestBuilder Builder =
-                Provider.GetClient().Me.MailFolders[RootFolderId].Messages;
+                IProviderExtension.GetClient(Provider).Me.MailFolders[RootFolderId].Messages;
 
             foreach (Message Message in (await Builder
                          .GetAsync(requestOptions =>
@@ -240,7 +243,8 @@ namespace Mail.Services
                 return null;
             }
 
-            var attachment = await Provider.GetClient().Me.Messages[messageId].Attachments[attachmentItem.Id]
+            var attachment = await IProviderExtension.GetClient(Provider).Me.Messages[messageId]
+                .Attachments[attachmentItem.Id]
                 .GetAsync();
 
             if (attachment is FileAttachment fileAttachment)
@@ -264,7 +268,7 @@ namespace Mail.Services
                 var Msg = MemoryCache.Get<Message>(messageId);
                 if (Msg != null) return Msg;
 
-                var Message = await Provider.GetClient().Me.Messages[messageId]
+                var Message = await IProviderExtension.GetClient(Provider).Me.Messages[messageId]
                     .GetAsync(requestOptions => requestOptions.QueryParameters.Expand = new string[] { "attachments" });
                 MemoryCache.Set(messageId, Message);
 
@@ -280,9 +284,30 @@ namespace Mail.Services
             CancellationToken CancelToken = default)
         {
             var Contacts =
-                (await Provider.GetClient().Me.Contacts.GetAsync(default, CancelToken)).Value;
-            return Contacts.Select((Contact) => Contact.EmailAddresses.LastOrDefault()).OfType<EmailAddress>()
-                .Select((Address) => new ContactModel(Address.Address, Address.Name)).ToArray();
+                (await IProviderExtension.GetClient(Provider).Me.Contacts.GetAsync(default, CancelToken)).Value;
+
+            var batch = new BatchRequestContentCollection(IProviderExtension.GetClient(Provider));
+            Dictionary<string, string> UserToIdMapping = new Dictionary<string, string>();
+            foreach (var Contact in Contacts)
+            {
+                var req = IProviderExtension.GetClient(Provider).Me.Contacts.ToGetRequestInformation();
+                req.URI = new Uri(req.URI + "/" + Contact.Id + "/photo/$value");
+                var id = await batch.AddBatchRequestStepAsync(req);
+                UserToIdMapping[Contact.Id] = id;
+            }
+
+            var batchBuilder = IProviderExtension.GetClient(Provider).Batch;
+
+            var photos = await batchBuilder.PostAsync(batch, CancelToken);
+            var ret = new List<ContactModel>();
+            foreach (var Contact in Contacts)
+            {
+                ret.Add(new ContactModel(Contact.DisplayName,
+                    Contact.EmailAddresses.LastOrDefault()?.Address ?? string.Empty,
+                    await photos.GetResponseStreamByIdAsync(UserToIdMapping[Contact.Id])));
+            }
+
+            return ret;
         }
 
         public async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, bool focused,
@@ -299,7 +324,7 @@ namespace Mail.Services
             }
 
             var Builder =
-                Provider.GetClient().Me.MailFolders[RootFolderId].Messages;
+                IProviderExtension.GetClient(Provider).Me.MailFolders[RootFolderId].Messages;
             var request = Builder.GetAsync(requestConfiguration =>
             {
                 var queryParameters = requestConfiguration.QueryParameters;
@@ -370,7 +395,7 @@ namespace Mail.Services
 
         public override async Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model)
         {
-            var rb = Provider.GetClient().Me;
+            var rb = IProviderExtension.GetClient(Provider).Me;
             var message = ToMessage(Model);
 
             if (message is null) return false;
@@ -383,7 +408,7 @@ namespace Mail.Services
 
         public override async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
         {
-            var rb = Provider.GetClient().Me;
+            var rb = IProviderExtension.GetClient(Provider).Me;
             var message = ToMessage(Model);
             if (message is null) return false;
 
@@ -410,7 +435,7 @@ namespace Mail.Services
         public override async Task<bool> MailReplyAsync(MailMessageListDetailViewModel Model, string ReplyContent,
             bool IsAll = false)
         {
-            var me = Provider.GetClient().Me;
+            var me = IProviderExtension.GetClient(Provider).Me;
             var message = ToMessage(Model);
             if (message is null)
             {
@@ -434,7 +459,7 @@ namespace Mail.Services
         public override async Task<bool> MailForwardAsync(MailMessageListDetailViewModel Model,
             string ForwardContent)
         {
-            var me = Provider.GetClient().Me;
+            var me = IProviderExtension.GetClient(Provider).Me;
             var message = ToMessage(Model);
             if (message is null)
             {

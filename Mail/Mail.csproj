@@ -132,29 +132,31 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\RunCatch.cs"/>
-    <Compile Include="Models\EditMailOption.cs"/>
+    <Compile Include="Converters\ContactToAvatarConverter.cs" />
+    <Compile Include="Extensions\RunCatch.cs" />
+    <Compile Include="Models\EditMailOption.cs" />
     <Compile Include="Pages\EditMail.xaml.cs">
       <DependentUpon>EditMail.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Services\Data\Enums\EditMailType.cs"/>
-    <Compile Include="Services\Data\IMailMessageAttachmentData.cs"/>
-    <Compile Include="Services\Data\MailFolderData.cs"/>
-    <Compile Include="Services\Data\MailFolderDetailData.cs"/>
-    <Compile Include="Services\Data\MailMessageFileAttachmentData.cs"/>
-    <Compile Include="Services\Data\MailMessageAttachmentData.cs"/>
-    <Compile Include="Services\Data\MailMessageContentData.cs"/>
-    <Compile Include="Services\Data\MailMessageData.cs"/>
-    <Compile Include="Services\Data\MailMessageRecipientData.cs"/>
-    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs"/>
-    <Compile Include="Services\Data\AccountModel.cs"/>
-    <Compile Include="Services\Data\ContactModel.cs"/>
-    <Compile Include="Extensions\DependencyObjectExtension.cs"/>
-    <Compile Include="Models\MailMessageListDetailViewModel.cs"/>
-    <Compile Include="Services\Data\MailFolderType.cs"/>
-    <Compile Include="Services\Data\MailMessageContentType.cs"/>
-    <Compile Include="Extensions\ICollectionExtension.cs"/>
-    <Compile Include="Extensions\Graph\IProviderExtension.cs"/>
+    <Compile Include="Services\CacheService.cs" />
+    <Compile Include="Services\Data\Enums\EditMailType.cs" />
+    <Compile Include="Services\Data\IMailMessageAttachmentData.cs" />
+    <Compile Include="Services\Data\MailFolderData.cs" />
+    <Compile Include="Services\Data\MailFolderDetailData.cs" />
+    <Compile Include="Services\Data\MailMessageFileAttachmentData.cs" />
+    <Compile Include="Services\Data\MailMessageAttachmentData.cs" />
+    <Compile Include="Services\Data\MailMessageContentData.cs" />
+    <Compile Include="Services\Data\MailMessageData.cs" />
+    <Compile Include="Services\Data\MailMessageRecipientData.cs" />
+    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs" />
+    <Compile Include="Services\Data\AccountModel.cs" />
+    <Compile Include="Services\Data\ContactModel.cs" />
+    <Compile Include="Extensions\DependencyObjectExtension.cs" />
+    <Compile Include="Models\MailMessageListDetailViewModel.cs" />
+    <Compile Include="Services\Data\MailFolderType.cs" />
+    <Compile Include="Services\Data\MailMessageContentType.cs" />
+    <Compile Include="Extensions\ICollectionExtension.cs" />
+    <Compile Include="Extensions\Graph\IProviderExtension.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -176,6 +178,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Secrect.cs" />
     <Compile Include="Services\GmailService.cs" />
+    <Compile Include="Services\ICacheService.cs" />
     <Compile Include="Services\IMailService.cs" />
     <Compile Include="Services\OAuthMailService.cs" />
     <Compile Include="Services\OutlookService.cs" />

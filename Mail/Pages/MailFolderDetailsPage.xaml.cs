@@ -104,6 +104,10 @@ namespace Mail.Pages
                 {
                     EmptyContentText.Text = "No available email";
                 }
+                
+                // Load Contacts to Cache
+                var contacts = await Service.GetContactsAsync();
+                App.Services.GetService<ICacheService>()!.AddOrReplaceCache<IReadOnlyList<ContactModel>>(contacts);
             }
             catch (Exception)
             {

@@ -10,9 +10,11 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
     xmlns:local="using:Mail.Pages"
+    xmlns:converters="using:Mail.Converters"
     mc:Ignorable="d">
     <Page.Resources>
         <local:FolderIconConverter x:Key="FolderIconConverter" />
+        <converters:ContactToAvatarConverter x:Key="ContactToAvatarConverter" />
     </Page.Resources>
     <Grid>
         <VisualStateManager.VisualStateGroups>
@@ -26,10 +28,12 @@
                             <Setter.Value>
                                 <DataTemplate x:DataType="models:AccountModel">
                                     <Grid Width="28" HorizontalAlignment="Left">
-                                        <PersonPicture HorizontalAlignment="Center"
-                                                    Width="24"
-                                                    Height="24"
-                                                    DisplayName="{x:Bind Name, Mode=OneWay}" />
+                                        <PersonPicture
+                                            ProfilePicture="{x:Bind Address, Converter={StaticResource ContactToAvatarConverter}}"
+                                            HorizontalAlignment="Center"
+                                            Width="24"
+                                            Height="24"
+                                            DisplayName="{x:Bind Name, Mode=OneWay}" />
 
                                         <ToolTipService.ToolTip>
                                             <TextBlock>
@@ -153,6 +157,7 @@
                                 <PersonPicture
                                     Width="32"
                                     Height="32"
+                                    ProfilePicture="{x:Bind Address, Converter={StaticResource ContactToAvatarConverter}}"
                                     DisplayName="{x:Bind Name, Mode=OneWay}" />
                                 <StackPanel Grid.Column="2">
                                     <TextBlock FontWeight="SemiBold" Text="{x:Bind Name}" />
