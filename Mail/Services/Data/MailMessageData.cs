@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Mail.Services.Data
 {
@@ -33,9 +32,9 @@ namespace Mail.Services.Data
             this.Id = Id;
             this.SentTime = SentTime;
             this.Sender = Sender;
-            this.To = To.ToArray();
-            this.CC = Cc.ToArray();
-            this.Bcc = Bcc.ToArray();
+            this.To = new List<MailMessageRecipientData>(To);
+            this.CC = new List<MailMessageRecipientData>(Cc);
+            this.Bcc = new List<MailMessageRecipientData>(Bcc);
             this.Attachments = new List<IMailMessageAttachmentData>(Attachments);
             this.Content = Content;
         }

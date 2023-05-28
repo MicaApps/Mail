@@ -490,7 +490,7 @@
                             Margin="10,5"
                             VerticalAlignment="Top"
                             DisplayName="{x:Bind SenderName}" />
-                        <StackPanel Grid.Column="1" RightTapped="DetailsView_OnRightTapped" DataContext="{Binding}">
+                        <StackPanel Grid.Column="1" DataContext="{Binding}">
                             <TextBlock
                                 FontWeight="Bold"
                                 Text="{x:Bind SenderName}"
@@ -525,6 +525,7 @@
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem  Margin="2" Text="删除" Icon="Delete"/>
+                                <MenuFlyoutItem  Margin="2" Text="Forward" Icon="Forward" Click="MailForwardAsync"/>
                                 <MenuFlyoutItem  Margin="2"  Text="移动">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />

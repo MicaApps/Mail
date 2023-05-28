@@ -371,15 +371,12 @@ namespace Mail.Services
         public override async Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model)
         {
             var rb = Provider.GetClient().Me;
-            var jsonSetting = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            };
-            var serializeObject = JsonConvert.SerializeObject(Model);
-            var deserializeObject = JsonConvert.DeserializeObject<Message>(serializeObject, jsonSetting);
-            if (deserializeObject is null) return false;
+            var message = ToMessage(Model);
 
-            var postAsync = await rb.Messages.PostAsync(deserializeObject);
+            if (message is null) return false;
+
+            message.IsDraft = true;
+            var postAsync = await rb.Messages.PostAsync(message);
             // TODO deserializeObject exception
             return postAsync is not null;
         }

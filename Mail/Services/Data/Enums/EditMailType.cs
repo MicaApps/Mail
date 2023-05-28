@@ -4,5 +4,6 @@ public enum EditMailType
 {
     Send,
     Reply,
-    Forward
+    Forward,
+    Draft
 }

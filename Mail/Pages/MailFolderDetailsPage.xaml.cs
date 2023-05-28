@@ -330,9 +330,14 @@ namespace Mail.Pages
             //TODO combine information and send email
         }
 
-        private void DetailsView_OnRightTapped(object Sender, RightTappedRoutedEventArgs E)
+        private async void MailForwardAsync(object Sender, RoutedEventArgs E)
         {
-            Trace.WriteLine($"{E}");
+            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
+
+            await EditMail.CreateEditWindow(new EditMailOption
+            {
+                Model = model, EditMailType = EditMailType.Forward
+            });
         }
     }
 

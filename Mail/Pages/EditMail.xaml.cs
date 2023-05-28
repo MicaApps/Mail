@@ -44,24 +44,36 @@ namespace Mail.Pages
             Model = new MailMessageListDetailViewModel(MailMessageData.Empty(MailSender));
 
             Model.ToRecipients.Add(To);
-            EditMailOption = new EditMailOption { Model = Model };
+            EditMailOption = new EditMailOption { Model = Model, EditMailType = EditMailType.Send };
+
+            InitBaseData(EditMailOption);
             InitializeComponent();
         }
 
-
-        private async void SaveDraft(object Sender, RoutedEventArgs E)
+        private void InitBaseData(EditMailOption MailOption)
         {
-            var service = App.Services.GetService<OutlookService>()!;
-            Model.IsDraft = true;
-            var result = await service.MailDraftSaveAsync(Model);
-            if (result)
+            Model = MailOption.Model ?? Model;
+
+            switch (MailOption.EditMailType)
             {
-                Window.Current.Close();
+                case EditMailType.Forward:
+                    Model.ToRecipients.Clear();
+                    break;
+                case EditMailType.Reply:
+                case EditMailType.Send:
+                case EditMailType.Draft:
+                default:
+                    break;
             }
-            else
-            {
-                // TODO tips fail
-            }
+
+            Model.ToRecipients.Add(To);
+            MailSender = Model.Sender;
+        }
+
+        private void SaveDraft(object Sender, RoutedEventArgs E)
+        {
+            EditMailOption.EditMailType = EditMailType.Draft;
+            SaveMailAndSend(MailSender, E);
         }
 
         private async void SaveMailAndSend(object Sender, RoutedEventArgs E)
@@ -79,7 +91,6 @@ namespace Mail.Pages
 
             if (result)
             {
-                Window.Current.Close();
             }
             else
             {
@@ -91,10 +102,7 @@ namespace Mail.Pages
         {
             if (e.Parameter is EditMailOption option)
             {
-                EditMailOption = option;
-                Model = option.Model ?? Model;
-                Model.ToRecipients.Add(To);
-                MailSender = Model.Sender;
+                InitBaseData(option);
             }
 
             base.OnNavigatedTo(e);
