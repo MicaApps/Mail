@@ -13,15 +13,24 @@ namespace Mail
 {
     sealed partial class App : Application
     {
-        public static IServiceProvider Services { get; } = new ServiceCollection().AddSingleton<OutlookService, OutlookService>()
-                                                                                  .BuildServiceProvider();
+        public static IServiceProvider Services = null!;
 
         public App()
         {
             InitializeComponent();
+            var services = new ServiceCollection();
+            RegisterServices(services);
+            Services = services.BuildServiceProvider();
             Suspending += OnSuspending;
         }
 
+        private void RegisterServices(IServiceCollection services)
+        {
+            services.AddSingleton<OutlookService, OutlookService>()
+                .AddSingleton<ICacheService, CacheService>()
+                .BuildServiceProvider();
+        }
+        
         protected override void OnWindowCreated(WindowCreatedEventArgs args)
         {
             CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;

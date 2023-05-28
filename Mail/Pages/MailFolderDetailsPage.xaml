@@ -10,6 +10,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:pages="using:Mail.Pages"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:converters1="using:Mail.Converters"
     Background="Transparent"
     NavigationCacheMode="Required"
     mc:Ignorable="d">
@@ -133,6 +134,7 @@
         </Style>
 
         <converters:BoolToVisibilityConverter x:Key="B2V"/>
+        <converters1:ContactToAvatarConverter x:Key="ContactToAvatarConverter" />
 
         <DataTemplate x:Key="DefaultTemplate" x:DataType="models:MailMessageListDetailViewModel">
             <Grid>
@@ -218,6 +220,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <PersonPicture Grid.Row="0"
+                                           ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}"
                                                    Width="32"
                                                    Height="32"
                                                    Margin="5,5,15,5"
@@ -486,6 +489,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <PersonPicture
+                            ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}"
                             Width="32"
                             Height="32"
                             Margin="10,5"

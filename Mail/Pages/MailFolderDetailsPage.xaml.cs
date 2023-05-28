@@ -79,7 +79,11 @@ namespace Mail.Pages
             {
                 IMailService Service = App.Services.GetService<OutlookService>()!;
                 MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(data.Id);
-
+                
+                // Load Contacts to Cache
+                var contacts = await Service.GetContactsAsync();
+                App.Services.GetService<ICacheService>()!.AddOrReplaceCache<IReadOnlyList<ContactModel>>(contacts);
+                
                 DetailsView.ItemsSource = PreviewSource =
                     new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, data.Type,
                         MailFolder, (messageData) => new MailMessageListDetailViewModel(messageData),
