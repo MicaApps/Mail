@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
@@ -10,6 +11,7 @@ using Mail.Services;
 using Mail.Services.Data;
 using Mail.Services.Data.Enums;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -57,16 +59,32 @@ namespace Mail.Pages
             switch (MailOption.EditMailType)
             {
                 case EditMailType.Forward:
-                    Model.ToRecipients.Clear();
+                    // Model.ToRecipients.Clear();
+                    break;
+                case EditMailType.Send:
+                    if (Model.Sender.Address.IsNullOrEmpty())
+                    {
+                        Model.Sender.Address = MailSender.Address;
+                    }
+
                     break;
                 case EditMailType.Reply:
-                case EditMailType.Send:
                 case EditMailType.Draft:
                 default:
+
                     break;
             }
 
-            Model.ToRecipients.Add(To);
+            var to = Model.ToRecipients.FirstOrDefault();
+            if (to is null)
+            {
+                Model.ToRecipients.Add(To);
+            }
+            else
+            {
+                To = to;
+            }
+
             MailSender = Model.Sender;
         }
 
