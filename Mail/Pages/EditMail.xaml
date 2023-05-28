@@ -298,10 +298,10 @@
             <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
                 <CommandBar.Content>
                     <Grid>
-                        <Button Content="发送邮件" Style="{StaticResource AccentButtonStyle}" Margin="0 9 5 0 " Click="SaveDraft" />
+                        <Button Content="发送邮件" Style="{StaticResource AccentButtonStyle}" Margin="0 9 5 0 " Click="SaveMailAndSend" />
                     </Grid>
                 </CommandBar.Content>
-                <AppBarButton Icon="Edit" Label="保存到草稿" />
+                <AppBarButton Icon="Edit" Label="保存到草稿" Click="SaveDraft" />
                 <AppBarButton Icon="Delete" Label="删除" />
             </CommandBar>
 

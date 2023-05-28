@@ -340,8 +340,21 @@ namespace Mail.Pages
 
         private void Frame_OnNavigating(object Sender, NavigatingCancelEventArgs E)
         {
-            if (Sender is not Frame { DataContext: MailMessageListDetailViewModel model } frame) return;
-            E.Cancel = true;
+            if (Sender is not Frame frame) return;
+            var model = PreviewSource?.FirstOrDefault();
+            if (model?.IsEmpty != true) return;
+
+            frame.Navigate(typeof(EditMail), new EditMailOption
+            {
+                Model = model, EditMailType = EditMailType.Send
+            });
+        }
+
+        private void FrameworkElement_OnLoading(FrameworkElement Sender, object Args)
+        {
+            if (Sender is not Frame frame) return;
+            var model = frame.DataContext as MailMessageListDetailViewModel;
+            if (model?.IsEmpty != true) return;
             frame.Navigate(typeof(EditMail), new EditMailOption
             {
                 Model = model, EditMailType = EditMailType.Send

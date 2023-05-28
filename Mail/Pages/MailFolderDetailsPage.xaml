@@ -384,7 +384,7 @@
 
                 </StackPanel>
             </Grid>-->
-            <Frame DataContext="{Binding}" SourcePageType="pages:EditMail" Navigating="Frame_OnNavigating"/>
+            <Frame Loading="FrameworkElement_OnLoading" />
         </DataTemplate>
 
         <pages:DetailsSelector x:Key="DetailsSelector" EditTemplate="{StaticResource EditTemplate}"
