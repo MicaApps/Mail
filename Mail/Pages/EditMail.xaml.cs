@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -97,6 +99,9 @@ namespace Mail.Pages
             }
 
             MailSender = Model.Sender;
+            var service = App.Services.GetService<OutlookService>()!;
+            // save draft
+            service.MailDraftSaveAsync(Model);
         }
 
         private void SaveDraft(object Sender, RoutedEventArgs E)
@@ -172,6 +177,51 @@ namespace Mail.Pages
             appWindowContentFrame.Navigate(typeof(EditMail), Option);
             ElementCompositionPreview.SetAppWindowContent(appWindow, appWindowContentFrame);
             await appWindow.TryShowAsync();
+        }
+
+        private async void UploadAttachment(object Sender, RoutedEventArgs E)
+        {
+            var openPicker = new FileOpenPicker
+            {
+                FileTypeFilter = { "*" },
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                ViewMode = PickerViewMode.List
+            };
+
+            foreach (var storageFile in await openPicker.PickMultipleFilesAsync())
+            {
+                var basicProperties = await storageFile.GetBasicPropertiesAsync();
+                if (basicProperties.Size < 3 * 1024 * 1024)
+                {
+                    await AttachmentUploadAsync(storageFile);
+                }
+                else
+                {
+                    await AttachmentUploadSessionAsync(storageFile);
+                }
+            }
+        }
+
+        private async Task AttachmentUploadSessionAsync(StorageFile StorageFile)
+        {
+            var service = App.Services.GetService<OutlookService>();
+            await service.UploadAttachmentSessionAsync(StorageFile, default);
+        }
+
+        private async Task AttachmentUploadAsync(StorageFile StorageFile)
+        {
+            var service = App.Services.GetService<OutlookService>();
+            await service.UploadAttachmentAsync(StorageFile);
+        }
+
+        private void TextBox_OnTextCompositionChanged(TextBox Sender, TextCompositionChangedEventArgs Args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void RemoveMail(object Sender, RoutedEventArgs E)
+        {
+            throw new NotImplementedException();
         }
     }
 }

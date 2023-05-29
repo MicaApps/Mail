@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using CommunityToolkit.Authentication;
-using CommunityToolkit.Graph.Extensions;
 using Mail.Extensions;
 using Mail.Extensions.Graph;
 using Mail.Models;
@@ -284,7 +283,8 @@ namespace Mail.Services
             CancellationToken CancelToken = default)
         {
             var Contacts =
-                (await IProviderExtension.GetClient(Provider).Me.Contacts.GetAsync((option) => option.QueryParameters.Top = 1000, CancelToken)).Value;
+                (await IProviderExtension.GetClient(Provider).Me.Contacts
+                    .GetAsync((option) => option.QueryParameters.Top = 1000, CancelToken)).Value;
 
             var batch = new BatchRequestContentCollection(IProviderExtension.GetClient(Provider));
             Dictionary<string, string> UserToIdMapping = new Dictionary<string, string>();
@@ -402,6 +402,9 @@ namespace Mail.Services
 
             message.IsDraft = true;
             var postAsync = await rb.Messages.PostAsync(message);
+
+            Model.Id = message.Id;
+
             // TODO deserializeObject exception
             return postAsync is not null;
         }
@@ -466,6 +469,17 @@ namespace Mail.Services
             await me.Messages[Model.Id].Forward.PostAsync(new ForwardPostRequestBody
                 { ToRecipients = message.ToRecipients, Comment = ForwardContent });
             return true;
+        }
+
+        public override async Task UploadAttachmentSessionAsync(StorageFile StorageFile,
+            CancellationToken CancelToken = default)
+        {
+        }
+
+        public override async Task UploadAttachmentAsync(StorageFile StorageFile,
+            CancellationToken CancelToken = default)
+        {
+            var arb = IProviderExtension.GetClient(Provider).Me.Events[""].Attachments;
         }
     }
 }

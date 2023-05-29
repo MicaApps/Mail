@@ -271,7 +271,7 @@
                         VerticalAlignment="Center">
 
                 <AppBarButton HorizontalAlignment="Center" Background="Transparent" Icon="Pictures" Width="40" />
-                <AppBarButton Background="Transparent" Icon="Attach" Width="40" />
+                <AppBarButton Background="Transparent" Icon="Attach" Width="40" Click="UploadAttachment"/>
 
                 <AppBarButton Background="Transparent" Icon="Link" Width="40" />
                 <AppBarButton Background="Transparent" Width="40">
@@ -285,10 +285,18 @@
             </CommandBar>
 
         </StackPanel>
-        <TextBox Style="{StaticResource TransTextBoxStyle}" Grid.Row="3"
-                 Text="{x:Bind Model.Content,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap"
-                 Margin="0 0 36 0" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
-                 AcceptsReturn="True" Background="Transparent" BorderThickness="0" />
+        <TextBox Style="{StaticResource TransTextBoxStyle}" 
+                 Grid.Row="3"
+                 Text="{x:Bind Model.Content,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
+                 TextCompositionChanged="TextBox_OnTextCompositionChanged"
+                 TextWrapping="Wrap"
+                 Margin="0 0 36 0" 
+                 HorizontalContentAlignment="Left" 
+                 VerticalContentAlignment="Top"
+                 AcceptsReturn="True" 
+                 Background="Transparent" 
+                 BorderThickness="0" 
+                 />
         <StackPanel Orientation="Horizontal"
                     Padding="2"
                     Grid.Row="4"
@@ -302,7 +310,7 @@
                     </Grid>
                 </CommandBar.Content>
                 <AppBarButton Icon="Edit" Label="保存到草稿" Click="SaveDraft" />
-                <AppBarButton Icon="Delete" Label="删除" />
+                <AppBarButton Icon="Delete" Label="删除" Click="RemoveMail"/>
             </CommandBar>
 
         </StackPanel>

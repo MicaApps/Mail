@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Mail.Models;
 using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
@@ -43,9 +44,18 @@ namespace Mail.Services
             MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
         Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
+
+        /// <summary>
+        /// 如果成功, 请将Model的id设置为服务返回的id
+        /// </summary>
+        /// <param name="Model">执行成功后, Model会被设置id</param>
+        /// <returns></returns>
         Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model);
+
         Task<bool> MailSendAsync(MailMessageListDetailViewModel Model);
         Task<bool> MailReplyAsync(MailMessageListDetailViewModel Model, string ReplyContent, bool IsAll = false);
         Task<bool> MailForwardAsync(MailMessageListDetailViewModel Model, string ForwardContent);
+        Task UploadAttachmentSessionAsync(StorageFile StorageFile, CancellationToken CancelToken = default);
+        Task UploadAttachmentAsync(StorageFile StorageFile, CancellationToken CancelToken = default);
     }
 }
