@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI.WindowManagement;
@@ -54,12 +55,21 @@ namespace Mail.Pages
 
         private void InitBaseData(EditMailOption MailOption)
         {
+            EditMailOption = MailOption;
             Model = MailOption.Model ?? Model;
+
+            void CopyContent()
+            {
+                ReplyOrForwardContent = Model.Content;
+                Model.Content = string.Empty;
+            }
 
             switch (MailOption.EditMailType)
             {
                 case EditMailType.Forward:
-                    // Model.ToRecipients.Clear();
+                    Model.ToRecipients.Clear();
+                    Model.Sender.Address = MailSender.Address;
+                    CopyContent();
                     break;
                 case EditMailType.Send:
                     if (Model.Sender.Address.IsNullOrEmpty())
@@ -69,9 +79,10 @@ namespace Mail.Pages
 
                     break;
                 case EditMailType.Reply:
+                    CopyContent();
+                    break;
                 case EditMailType.Draft:
                 default:
-
                     break;
             }
 
@@ -98,23 +109,46 @@ namespace Mail.Pages
         {
             var service = App.Services.GetService<OutlookService>()!;
 
-            var result = EditMailOption.EditMailType switch
+            switch (EditMailOption.EditMailType)
             {
-                EditMailType.Reply => await service.MailReplyAsync(Model, ReplyOrForwardContent,
-                    EditMailOption.IsReplyAll),
-                EditMailType.Forward => await service.MailForwardAsync(Model, ReplyOrForwardContent),
-                EditMailType.Send => await service.MailSendAsync(Model),
-                _ => await service.MailDraftSaveAsync(Model)
-            };
-
-            if (result)
-            {
+                case EditMailType.Reply:
+                case EditMailType.Forward:
+                    (Model.Content, ReplyOrForwardContent) = (ReplyOrForwardContent, Model.Content);
+                    break;
+                case EditMailType.Send:
+                case EditMailType.Draft:
+                default:
+                    break;
             }
-            else
+
+            try
             {
-                // TODO tips fail
+                var result = EditMailOption.EditMailType switch
+                {
+                    EditMailType.Reply => await service.MailReplyAsync(Model, ReplyOrForwardContent,
+                        EditMailOption.IsReplyAll),
+                    EditMailType.Forward => await service.MailForwardAsync(Model, ReplyOrForwardContent),
+                    EditMailType.Send => await service.MailSendAsync(Model),
+                    _ => await service.MailDraftSaveAsync(Model)
+                };
+
+                if (result)
+                {
+                    // TODO close frame
+                }
+                else
+                {
+                    // TODO tips fail
+                }
+            }
+            catch (Exception e)
+            {
+                // TODO Exception tips
+                Trace.WriteLine(e);
+                throw;
             }
         }
+
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {

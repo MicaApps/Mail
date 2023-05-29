@@ -292,135 +292,11 @@
         </DataTemplate>
 
         <DataTemplate x:Key="EditTemplate" x:DataType="models:MailMessageListDetailViewModel">
-            <!--<Grid Margin="36 0 0 5 ">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="100" />
-                    <RowDefinition Height="50" />
-                    <RowDefinition Height="48" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="48" />
-                </Grid.RowDefinitions>
-                <StackPanel Grid.Row="0">
-                    <Grid  Margin="0 32 0 16" Height="32">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="64" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock FontWeight="Bold" Text="主题:" FontSize="24" />
-                        <TextBox FontWeight="Bold"  FontSize="24" Padding="0 2 0 0" Style="{StaticResource TransTextBoxStyle}" Grid.Column="1" Margin="0 0 24 0" Text="{Binding EditInfo.Sender,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" Background="Transparent" BorderThickness="0" />
-                    </Grid>
-                    <Border  BorderBrush="#828282" Opacity="0.08" BorderThickness="0.5" />
-                </StackPanel>
-                <StackPanel Grid.Row="1">
-                    <Grid  Margin="0 0 0 16" Height="32">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="64" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="32" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock  Text="From:" FontSize="18" VerticalAlignment="Center" />
-                        <TextBox Padding="0 8 0 0" VerticalAlignment="Bottom" Style="{StaticResource TransTextBoxStyle}" Grid.Column="1" Margin="0 0 24 0" Text="{Binding .,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" Background="Transparent" BorderThickness="0"/>
-                        <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="To:" FontSize="18" />
-                        <TextBox Padding="0 8 0 0" Style="{StaticResource TransTextBoxStyle}" Grid.Column="3" Margin=" 0 0 24 0" Background="Transparent" BorderThickness="0" />
-                    </Grid>
-                    <Border  BorderBrush="#828282" Opacity="0.08" BorderThickness="0.5" />
-                </StackPanel>
-                <StackPanel Grid.Row="2" Margin="0 0 0 0" Orientation="Horizontal">
-
-                    <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Collapsed"
-                            Grid.Row="0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            >
-                        <AppBarButton Background="Transparent" Icon="Bold" Width="40" />
-                        <AppBarButton Background="Transparent" Width="40">
-                            <AppBarButton.Icon>
-                                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE933;" />
-                            </AppBarButton.Icon>
-                        </AppBarButton>
-                        <AppBarButton Background="Transparent" Icon="Underline" Width="40" />
-                        <AppBarButton Background="Transparent" Icon="More" Width="40" />
-                        <AppBarSeparator/>
-                    </CommandBar>
-                    
-
-                    <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Collapsed"
-                            Grid.Row="0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            >
-
-                        <AppBarButton HorizontalAlignment="Center" Background="Transparent" Icon="Pictures" Width="40" />
-                        <AppBarButton Background="Transparent" Icon="Attach" Width="40" />
-
-                        <AppBarButton Background="Transparent" Icon="Link" Width="40" />
-                        <AppBarButton Background="Transparent" Width="40">
-                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xF0E2;" />
-                        </AppBarButton>
-                        <AppBarButton Background="Transparent" Width="40">
-                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xEF15;" />
-                        </AppBarButton>
-                        <AppBarButton Background="Transparent" Icon="More" Width="40" />
-
-                    </CommandBar>
-
-                </StackPanel>
-                <TextBox Style="{StaticResource TransTextBoxStyle}" Grid.Row="3" Text="{Binding EditInfo.Content,Mode=TwoWay,UpdateSourceTrigger=LostFocus}" TextWrapping="Wrap"
-                         Margin="0 0 36 0" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" AcceptsReturn="True" Background="Transparent" BorderThickness="0"/>
-                <StackPanel Orientation="Horizontal"
-                    Padding="2"
-                            Grid.Row="4"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            >
-                   
-                    <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-                        <CommandBar.Content>
-                            <Grid >
-                                <Button Content="发送邮件" Style="{StaticResource AccentButtonStyle}" Margin="0 9 5 0 "/>
-                            </Grid>
-                        </CommandBar.Content>
-                        <AppBarButton Icon="Edit" Label="保存到草稿"/>
-                        <AppBarButton Icon="Delete" Label="删除"/>
-                    </CommandBar>
-
-                </StackPanel>
-            </Grid>-->
             <Frame Loading="FrameworkElement_OnLoading" />
         </DataTemplate>
 
         <pages:DetailsSelector x:Key="DetailsSelector" EditTemplate="{StaticResource EditTemplate}"
                                DefaultTemplate="{StaticResource DefaultTemplate}"/>
-        
-        <MenuFlyout x:Key="MailDetailItemMenuFlyout" >
-            <MenuFlyoutItem Margin="2" Text="存">
-                <MenuFlyoutItem.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7B8;" />
-                </MenuFlyoutItem.Icon>
-            </MenuFlyoutItem>
-            <MenuFlyoutItem  Margin="2" Text="删除" Icon="Delete"/>
-            <MenuFlyoutItem  Margin="2"  Text="移动">
-                <MenuFlyoutItem.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
-                </MenuFlyoutItem.Icon>
-            </MenuFlyoutItem>
-            <MenuFlyoutItem  Margin="2" Text="设置标记" Icon="Flag"/>
-            <MenuFlyoutItem  Margin="2" Text="标记为已读" Icon="Read"/>
-            <MenuFlyoutItem  Margin="2" Text="忽略" Icon="Delete"/>
-            <MenuFlyoutSeparator/>
-            <MenuFlyoutItem  Margin="2" Text="标记为垃圾邮件" Icon="Mail"/>
-            <MenuFlyoutItem  Margin="2" Text="移动到其他收件箱" >
-                <MenuFlyoutItem.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
-                </MenuFlyoutItem.Icon>
-            </MenuFlyoutItem>
-            <MenuFlyoutItem  Margin="2" Text="总是移动到其他收件箱" >
-                <MenuFlyoutItem.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
-                </MenuFlyoutItem.Icon>
-            </MenuFlyoutItem>
-        </MenuFlyout>
 
     </Page.Resources>
 
@@ -531,6 +407,7 @@
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem  Margin="2" Text="删除" Icon="Delete"/>
                                 <MenuFlyoutItem  Margin="2" Text="Forward" Icon="Forward" Click="MailForwardAsync"/>
+                                <MenuFlyoutItem  Margin="2" Text="Reply" Icon="Forward" Click="MailReplyAsync"/>
                                 <MenuFlyoutItem  Margin="2"  Text="移动">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />

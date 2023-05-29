@@ -461,10 +461,7 @@ namespace Mail.Services
         {
             var me = IProviderExtension.GetClient(Provider).Me;
             var message = ToMessage(Model);
-            if (message is null)
-            {
-                return false;
-            }
+            if (message is null) return false;
 
             await me.Messages[Model.Id].Forward.PostAsync(new ForwardPostRequestBody
                 { ToRecipients = message.ToRecipients, Comment = ForwardContent });

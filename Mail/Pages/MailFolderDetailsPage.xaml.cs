@@ -364,6 +364,16 @@ namespace Mail.Pages
                 Model = model, EditMailType = EditMailType.Send
             });
         }
+
+        private async void MailReplyAsync(object Sender, RoutedEventArgs E)
+        {
+            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
+
+            await EditMail.CreateEditWindow(new EditMailOption
+            {
+                Model = model, EditMailType = EditMailType.Reply
+            });
+        }
     }
 
     public class DetailsSelector : DataTemplateSelector
