@@ -117,6 +117,9 @@ namespace Mail.Services
         public abstract Task UploadAttachmentSessionAsync(StorageFile StorageFile,
             CancellationToken CancelToken = default);
 
-        public abstract Task UploadAttachmentAsync(StorageFile StorageFile, CancellationToken CancelToken = default);
+        public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
+            StorageFile StorageFile, CancellationToken CancelToken = default);
+
+        public abstract Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model);
     }
 }

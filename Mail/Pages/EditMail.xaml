@@ -283,12 +283,13 @@
                 <AppBarButton Background="Transparent" Icon="More" Width="40" />
 
             </CommandBar>
+            <ListBox x:Name="AttachmentListBox" />
 
         </StackPanel>
         <TextBox Style="{StaticResource TransTextBoxStyle}" 
                  Grid.Row="3"
                  Text="{x:Bind Model.Content,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
-                 TextCompositionChanged="TextBox_OnTextCompositionChanged"
+                 TextCompositionEnded="TextBox_OnTextCompositionEnded"
                  TextWrapping="Wrap"
                  Margin="0 0 36 0" 
                  HorizontalContentAlignment="Left" 

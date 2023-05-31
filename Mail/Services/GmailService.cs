@@ -79,5 +79,10 @@ namespace Mail.Services
         {
             throw new System.NotImplementedException();
         }
+
+        public override Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

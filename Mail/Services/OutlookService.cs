@@ -19,6 +19,8 @@ using Microsoft.Graph.Me.Messages.Item.Reply;
 using Microsoft.Graph.Me.Messages.Item.ReplyAll;
 using Microsoft.Graph.Me.SendMail;
 using Microsoft.Graph.Models;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Toolkit.Uwp.Helpers;
 using Newtonsoft.Json;
 
 namespace Mail.Services
@@ -136,6 +138,7 @@ namespace Mail.Services
                     else if (drafts != null && folder.Id == drafts.Id)
                     {
                         FolderType = MailFolderType.Drafts;
+                        this.DraftFolderId = drafts.Id;
                     }
                     else if (syncIssues != null && folder.Id == syncIssues.Id)
                     {
@@ -255,6 +258,7 @@ namespace Mail.Services
         }
 
         private static readonly SemaphoreSlim GetMailMessageAttachmentsLock = new(1);
+        private string? DraftFolderId;
 
         private async Task<Message> GetMailMessageAttachmentsAsync(string messageId)
         {
@@ -400,10 +404,15 @@ namespace Mail.Services
 
             if (message is null) return false;
 
-            message.IsDraft = true;
             var postAsync = await rb.Messages.PostAsync(message);
 
-            Model.Id = message.Id;
+            var response = await rb.Messages.GetAsync(config =>
+            {
+                config.QueryParameters.Filter = "IsDraft eq true";
+                config.QueryParameters.Top = 1;
+            });
+
+            Model.Id = response.Value.FirstOrDefault()?.Id ?? "";
 
             // TODO deserializeObject exception
             return postAsync is not null;
@@ -476,10 +485,29 @@ namespace Mail.Services
         {
         }
 
-        public override async Task UploadAttachmentAsync(StorageFile StorageFile,
+        public override async Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(
+            MailMessageListDetailViewModel Model,
+            StorageFile StorageFile,
             CancellationToken CancelToken = default)
         {
-            var arb = IProviderExtension.GetClient(Provider).Me.Events[""].Attachments;
+            var arb = Provider.GetClient().Me.Events[Model.Id].Attachments;
+
+            var result = await arb.PostAsync(new FileAttachment()
+            {
+                Name = StorageFile.Name,
+                ContentType = StorageFile.ContentType,
+                ContentBytes = await StorageFile.ReadBytesAsync()
+            });
+            var json = JsonConvert.SerializeObject(result);
+            return JsonConvert.DeserializeObject<MailMessageFileAttachmentData>(json);
+        }
+
+        public override async Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model)
+        {
+            if (Model.Id.IsNullOrEmpty()) return false;
+
+            await Provider.GetClient().Me.Messages[Model.Id].DeleteAsync();
+            return true;
         }
     }
 }

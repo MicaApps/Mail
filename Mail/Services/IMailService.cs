@@ -55,7 +55,10 @@ namespace Mail.Services
         Task<bool> MailSendAsync(MailMessageListDetailViewModel Model);
         Task<bool> MailReplyAsync(MailMessageListDetailViewModel Model, string ReplyContent, bool IsAll = false);
         Task<bool> MailForwardAsync(MailMessageListDetailViewModel Model, string ForwardContent);
+
+        Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
+            StorageFile StorageFile, CancellationToken CancelToken = default);
+
         Task UploadAttachmentSessionAsync(StorageFile StorageFile, CancellationToken CancelToken = default);
-        Task UploadAttachmentAsync(StorageFile StorageFile, CancellationToken CancelToken = default);
     }
 }
