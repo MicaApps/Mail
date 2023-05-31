@@ -403,19 +403,25 @@ namespace Mail.Services
             var message = ToMessage(Model);
 
             if (message is null) return false;
-
-            var postAsync = await rb.Messages.PostAsync(message);
-
-            var response = await rb.Messages.GetAsync(config =>
+            Message result;
+            if (Model.Id.IsNullOrEmpty())
             {
-                config.QueryParameters.Filter = "IsDraft eq true";
-                config.QueryParameters.Top = 1;
-            });
+                result = await rb.Messages.PostAsync(message);
+                var response = await rb.Messages.GetAsync(config =>
+                {
+                    config.QueryParameters.Filter = "IsDraft eq true";
+                    config.QueryParameters.Top = 1;
+                });
 
-            Model.Id = response.Value.FirstOrDefault()?.Id ?? "";
+                Model.Id = response.Value.FirstOrDefault()?.Id ?? "";
+            }
+            else
+            {
+                result = await rb.Messages[Model.Id].PatchAsync(message);
+            }
 
             // TODO deserializeObject exception
-            return postAsync is not null;
+            return result is not null;
         }
 
         public override async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)

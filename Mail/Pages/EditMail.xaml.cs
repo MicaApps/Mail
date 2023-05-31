@@ -110,10 +110,9 @@ namespace Mail.Pages
             }
         }
 
-        private void SaveDraft(object Sender, RoutedEventArgs E)
+        private async void SaveDraft(object Sender, RoutedEventArgs E)
         {
-            EditMailOption.EditMailType = EditMailType.Draft;
-            SaveMailAndSend(MailSender, E);
+            await Service!.MailDraftSaveAsync(Model);
         }
 
         private async void SaveMailAndSend(object Sender, RoutedEventArgs E)
