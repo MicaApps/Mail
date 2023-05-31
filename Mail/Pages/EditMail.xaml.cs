@@ -205,6 +205,7 @@ namespace Mail.Pages
                     if (basicProperties.Size < 3 * 1024 * 1024)
                     {
                         var attachment = await AttachmentUploadAsync(storageFile);
+                        // TODO render attachment list
                         listItems?.Add(new ListBoxItem
                         {
                             Name = attachment?.Name

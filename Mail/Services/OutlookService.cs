@@ -496,16 +496,17 @@ namespace Mail.Services
             StorageFile StorageFile,
             CancellationToken CancelToken = default)
         {
-            var arb = Provider.GetClient().Me.Events[Model.Id].Attachments;
+            var arb = Provider.GetClient().Me.Messages[Model.Id].Attachments;
 
+            var readBytesAsync = await StorageFile.ReadBytesAsync();
             var result = await arb.PostAsync(new FileAttachment()
             {
                 Name = StorageFile.Name,
                 ContentType = StorageFile.ContentType,
-                ContentBytes = await StorageFile.ReadBytesAsync()
-            });
-            var json = JsonConvert.SerializeObject(result);
-            return JsonConvert.DeserializeObject<MailMessageFileAttachmentData>(json);
+                ContentBytes = readBytesAsync
+            }, cancellationToken: CancelToken);
+            return new MailMessageFileAttachmentData(result.Name, result.Id, result.ContentType,
+                (ulong)(result.Size ?? 0), default, readBytesAsync);
         }
 
         public override async Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model)
