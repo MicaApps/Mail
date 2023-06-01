@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using CommunityToolkit.Authentication;
-using CommunityToolkit.Graph.Extensions;
 using Mail.Extensions;
 using Mail.Extensions.Graph;
 using Mail.Models;
@@ -20,6 +19,8 @@ using Microsoft.Graph.Me.Messages.Item.Reply;
 using Microsoft.Graph.Me.Messages.Item.ReplyAll;
 using Microsoft.Graph.Me.SendMail;
 using Microsoft.Graph.Models;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Toolkit.Uwp.Helpers;
 using Newtonsoft.Json;
 
 namespace Mail.Services
@@ -137,6 +138,7 @@ namespace Mail.Services
                     else if (drafts != null && folder.Id == drafts.Id)
                     {
                         FolderType = MailFolderType.Drafts;
+                        this.DraftFolderId = drafts.Id;
                     }
                     else if (syncIssues != null && folder.Id == syncIssues.Id)
                     {
@@ -256,6 +258,7 @@ namespace Mail.Services
         }
 
         private static readonly SemaphoreSlim GetMailMessageAttachmentsLock = new(1);
+        private string? DraftFolderId;
 
         private async Task<Message> GetMailMessageAttachmentsAsync(string messageId)
         {
@@ -284,7 +287,8 @@ namespace Mail.Services
             CancellationToken CancelToken = default)
         {
             var Contacts =
-                (await IProviderExtension.GetClient(Provider).Me.Contacts.GetAsync((option) => option.QueryParameters.Top = 1000, CancelToken)).Value;
+                (await IProviderExtension.GetClient(Provider).Me.Contacts
+                    .GetAsync((option) => option.QueryParameters.Top = 1000, CancelToken)).Value;
 
             var batch = new BatchRequestContentCollection(IProviderExtension.GetClient(Provider));
             Dictionary<string, string> UserToIdMapping = new Dictionary<string, string>();
@@ -399,11 +403,25 @@ namespace Mail.Services
             var message = ToMessage(Model);
 
             if (message is null) return false;
+            Message result;
+            if (Model.Id.IsNullOrEmpty())
+            {
+                result = await rb.Messages.PostAsync(message);
+                var response = await rb.Messages.GetAsync(config =>
+                {
+                    config.QueryParameters.Filter = "IsDraft eq true";
+                    config.QueryParameters.Top = 1;
+                });
 
-            message.IsDraft = true;
-            var postAsync = await rb.Messages.PostAsync(message);
+                Model.Id = response.Value.FirstOrDefault()?.Id ?? "";
+            }
+            else
+            {
+                result = await rb.Messages[Model.Id].PatchAsync(message);
+            }
+
             // TODO deserializeObject exception
-            return postAsync is not null;
+            return result is not null;
         }
 
         public override async Task<bool> MailSendAsync(MailMessageListDetailViewModel Model)
@@ -465,6 +483,37 @@ namespace Mail.Services
 
             await me.Messages[Model.Id].Forward.PostAsync(new ForwardPostRequestBody
                 { ToRecipients = message.ToRecipients, Comment = ForwardContent });
+            return true;
+        }
+
+        public override async Task UploadAttachmentSessionAsync(StorageFile StorageFile,
+            CancellationToken CancelToken = default)
+        {
+        }
+
+        public override async Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(
+            MailMessageListDetailViewModel Model,
+            StorageFile StorageFile,
+            CancellationToken CancelToken = default)
+        {
+            var arb = Provider.GetClient().Me.Messages[Model.Id].Attachments;
+
+            var readBytesAsync = await StorageFile.ReadBytesAsync();
+            var result = await arb.PostAsync(new FileAttachment()
+            {
+                Name = StorageFile.Name,
+                ContentType = StorageFile.ContentType,
+                ContentBytes = readBytesAsync
+            }, cancellationToken: CancelToken);
+            return new MailMessageFileAttachmentData(result.Name, result.Id, result.ContentType,
+                (ulong)(result.Size ?? 0), default, readBytesAsync);
+        }
+
+        public override async Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model)
+        {
+            if (Model.Id.IsNullOrEmpty()) return false;
+
+            await Provider.GetClient().Me.Messages[Model.Id].DeleteAsync();
             return true;
         }
     }

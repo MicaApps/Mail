@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
@@ -92,12 +93,33 @@ namespace Mail.Services
             MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
         public abstract Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
+
+        /// <summary>
+        /// 如果成功, 请将Model的id设置为服务返回的id
+        /// </summary>
+        /// <param name="Model">执行成功后, Model会被设置id</param>
+        /// <returns></returns>
         public abstract Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model);
+
         public abstract Task<bool> MailSendAsync(MailMessageListDetailViewModel Model);
 
         public abstract Task<bool> MailReplyAsync(MailMessageListDetailViewModel Model, string ReplyContent,
             bool IsAll = false);
 
         public abstract Task<bool> MailForwardAsync(MailMessageListDetailViewModel Model, string ForwardContent);
+
+        /// <summary>
+        /// 大文件上传(>3mb)
+        /// </summary>
+        /// <param name="StorageFile"></param>
+        /// <param name="CancelToken"></param>
+        /// <returns></returns>
+        public abstract Task UploadAttachmentSessionAsync(StorageFile StorageFile,
+            CancellationToken CancelToken = default);
+
+        public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
+            StorageFile StorageFile, CancellationToken CancelToken = default);
+
+        public abstract Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model);
     }
 }

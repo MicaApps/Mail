@@ -2,11 +2,14 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Navigation;
+using Mail.Extensions;
 using Mail.Models;
 using Mail.Services;
 using Mail.Services.Data;
@@ -23,6 +26,7 @@ namespace Mail.Pages
     /// </summary>
     public sealed partial class EditMail
     {
+        private OAuthMailService? Service;
         private MailMessageListDetailViewModel Model { get; set; }
 
         /// <summary>
@@ -40,16 +44,17 @@ namespace Mail.Pages
 
         public EditMail()
         {
-            // TODO abstract MailService
-            var service = App.Services.GetService<OutlookService>()!;
+            Service = App.Services.GetService<OutlookService>()!;
+
             MailSender = new MailMessageRecipientData(string.Empty,
-                service.CurrentAccount?.Address ?? string.Empty);
+                Service?.CurrentAccount?.Address ?? string.Empty);
             Model = new MailMessageListDetailViewModel(MailMessageData.Empty(MailSender));
 
             Model.ToRecipients.Add(To);
             EditMailOption = new EditMailOption { Model = Model, EditMailType = EditMailType.Send };
 
-            InitBaseData(EditMailOption);
+            // init 由导航执行
+            // InitBaseData(EditMailOption);
             InitializeComponent();
         }
 
@@ -72,11 +77,6 @@ namespace Mail.Pages
                     CopyContent();
                     break;
                 case EditMailType.Send:
-                    if (Model.Sender.Address.IsNullOrEmpty())
-                    {
-                        Model.Sender.Address = MailSender.Address;
-                    }
-
                     break;
                 case EditMailType.Reply:
                     CopyContent();
@@ -96,19 +96,27 @@ namespace Mail.Pages
                 To = to;
             }
 
+            if (Model.Sender.Address.IsNullOrEmpty())
+            {
+                Model.Sender.Address = Service!.CurrentAccount!.Address;
+            }
+
             MailSender = Model.Sender;
+
+            // save draft
+            if (Model.Id.IsNullOrEmpty())
+            {
+                Service?.MailDraftSaveAsync(Model);
+            }
         }
 
-        private void SaveDraft(object Sender, RoutedEventArgs E)
+        private async void SaveDraft(object Sender, RoutedEventArgs E)
         {
-            EditMailOption.EditMailType = EditMailType.Draft;
-            SaveMailAndSend(MailSender, E);
+            await Service!.MailDraftSaveAsync(Model);
         }
 
         private async void SaveMailAndSend(object Sender, RoutedEventArgs E)
         {
-            var service = App.Services.GetService<OutlookService>()!;
-
             switch (EditMailOption.EditMailType)
             {
                 case EditMailType.Reply:
@@ -125,11 +133,11 @@ namespace Mail.Pages
             {
                 var result = EditMailOption.EditMailType switch
                 {
-                    EditMailType.Reply => await service.MailReplyAsync(Model, ReplyOrForwardContent,
+                    EditMailType.Reply => await Service!.MailReplyAsync(Model, ReplyOrForwardContent,
                         EditMailOption.IsReplyAll),
-                    EditMailType.Forward => await service.MailForwardAsync(Model, ReplyOrForwardContent),
-                    EditMailType.Send => await service.MailSendAsync(Model),
-                    _ => await service.MailDraftSaveAsync(Model)
+                    EditMailType.Forward => await Service!.MailForwardAsync(Model, ReplyOrForwardContent),
+                    EditMailType.Send => await Service!.MailSendAsync(Model),
+                    _ => await Service!.MailDraftSaveAsync(Model)
                 };
 
                 if (result)
@@ -172,6 +180,69 @@ namespace Mail.Pages
             appWindowContentFrame.Navigate(typeof(EditMail), Option);
             ElementCompositionPreview.SetAppWindowContent(appWindow, appWindowContentFrame);
             await appWindow.TryShowAsync();
+        }
+
+        private async void UploadAttachment(object Sender, RoutedEventArgs E)
+        {
+            var openPicker = new FileOpenPicker
+            {
+                FileTypeFilter = { "*" },
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                ViewMode = PickerViewMode.List
+            };
+            try
+            {
+                if (this.FindChildOfName<ListBox>("AttachmentListBox") is not { } listBox)
+                {
+                    return;
+                }
+
+                var listItems = listBox.Items;
+                listItems?.Clear();
+                foreach (var storageFile in await openPicker.PickMultipleFilesAsync())
+                {
+                    var basicProperties = await storageFile.GetBasicPropertiesAsync();
+                    if (basicProperties.Size < 3 * 1024 * 1024)
+                    {
+                        var attachment = await AttachmentUploadAsync(storageFile);
+                        // TODO render attachment list
+                        listItems?.Add(new ListBoxItem
+                        {
+                            Name = attachment?.Name
+                        });
+                    }
+                    else
+                    {
+                        await AttachmentUploadSessionAsync(storageFile);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // TODO upload fail tips
+                Trace.WriteLine(e);
+            }
+        }
+
+        private async Task AttachmentUploadSessionAsync(StorageFile StorageFile)
+        {
+            await Service!.UploadAttachmentSessionAsync(StorageFile);
+        }
+
+        private async Task<MailMessageFileAttachmentData?> AttachmentUploadAsync(StorageFile StorageFile)
+        {
+            return await Service!.UploadAttachmentAsync(Model, StorageFile);
+        }
+
+        private void RemoveMail(object Sender, RoutedEventArgs E)
+        {
+            // TODO remove Folder MailList
+            Service?.RemoveMailAsync(Model);
+        }
+
+        private void TextBox_OnTextCompositionEnded(TextBox Sender, TextCompositionEndedEventArgs Args)
+        {
+            Service?.MailDraftSaveAsync(Model);
         }
     }
 }
