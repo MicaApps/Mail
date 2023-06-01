@@ -231,7 +231,11 @@ namespace Mail.Pages
                     }
                     else
                     {
-                        await AttachmentUploadSessionAsync(basicProperties, storageFile);
+                        await AttachmentUploadSessionAsync(basicProperties, storageFile,
+                            currenOffset =>
+                            {
+                                Trace.WriteLine($"Uploaded {currenOffset} bytes of {basicProperties.Size} bytes");
+                            });
                     }
                 }
             }
@@ -242,9 +246,16 @@ namespace Mail.Pages
             }
         }
 
-        private async Task AttachmentUploadSessionAsync(BasicProperties BasicProperties, StorageFile StorageFile)
+        /// <summary>
+        /// 大文件上传处理
+        /// </summary>
+        /// <param name="BasicProperties"></param>
+        /// <param name="StorageFile"></param>
+        /// <param name="UploadedSliceCallback">每上传完一次数据包会执行一次回调</param>
+        private async Task AttachmentUploadSessionAsync(BasicProperties BasicProperties, StorageFile StorageFile,
+            Action<long> UploadedSliceCallback)
         {
-            await Service!.UploadAttachmentSessionAsync(Model, BasicProperties, StorageFile);
+            await Service!.UploadAttachmentSessionAsync(Model, BasicProperties, StorageFile, UploadedSliceCallback);
         }
 
         private async Task<MailMessageFileAttachmentData?> AttachmentUploadAsync(StorageFile StorageFile)

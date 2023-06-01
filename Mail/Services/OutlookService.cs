@@ -492,6 +492,7 @@ namespace Mail.Services
 
         public override async Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
             BasicProperties BasicProperties, StorageFile StorageFile,
+            Action<long> UploadedSliceCallback,
             CancellationToken CancelToken = default)
         {
             if (Model.Id.IsNullOrEmpty())
@@ -510,17 +511,13 @@ namespace Mail.Services
                 }
             }, cancellationToken: CancelToken);
 
-            const int maxSliceSize = 320 * 1024;
+            const int maxSliceSize = 320 * 1024 * 2;
             var fileUploadTask = new LargeFileUploadTask<FileAttachment>(uploadSession,
                 (await StorageFile.OpenSequentialReadAsync()).AsStreamForRead(),
                 maxSliceSize);
             var totalLength = BasicProperties.Size;
             // Create a callback that is invoked after each slice is uploaded
-            IProgress<long> callback = new Progress<long>(callback =>
-            {
-                // TODO upload progress bar
-                Trace.WriteLine($"Uploaded {callback} bytes of {totalLength} bytes");
-            });
+            IProgress<long> callback = new Progress<long>(UploadedSliceCallback);
 
             try
             {

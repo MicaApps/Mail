@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
@@ -63,6 +64,7 @@ namespace Mail.Services
         public abstract Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
             BasicProperties BasicProperties,
             StorageFile StorageFile,
+            Action<long> UploadedSliceCallback,
             CancellationToken CancelToken = default);
     }
 }

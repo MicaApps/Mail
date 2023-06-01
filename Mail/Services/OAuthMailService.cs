@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -115,11 +116,13 @@ namespace Mail.Services
         /// <param name="Model"></param>
         /// <param name="BasicProperties"></param>
         /// <param name="StorageFile"></param>
+        /// <param name="UploadedSliceCallback"></param>
         /// <param name="CancelToken"></param>
         /// <returns></returns>
         public abstract Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
             BasicProperties BasicProperties,
             StorageFile StorageFile,
+            Action<long> UploadedSliceCallback,
             CancellationToken CancelToken = default);
 
         public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
