@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.FileProperties;
 using Windows.Storage.Pickers;
 using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
@@ -16,6 +18,7 @@ using Mail.Services.Data;
 using Mail.Services.Data.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Nito.AsyncEx;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -110,9 +113,19 @@ namespace Mail.Pages
             }
         }
 
+        private static readonly SemaphoreSlim SaveMailLock = new(1);
+
         private async void SaveDraft(object Sender, RoutedEventArgs E)
         {
-            await Service!.MailDraftSaveAsync(Model);
+            await SaveMailLock.LockAsync();
+            try
+            {
+                await Service!.MailDraftSaveAsync(Model);
+            }
+            finally
+            {
+                SaveMailLock.Release();
+            }
         }
 
         private async void SaveMailAndSend(object Sender, RoutedEventArgs E)
@@ -129,6 +142,7 @@ namespace Mail.Pages
                     break;
             }
 
+            await SaveMailLock.LockAsync();
             try
             {
                 var result = EditMailOption.EditMailType switch
@@ -154,6 +168,10 @@ namespace Mail.Pages
                 // TODO Exception tips
                 Trace.WriteLine(e);
                 throw;
+            }
+            finally
+            {
+                SaveMailLock.Release();
             }
         }
 
@@ -213,7 +231,7 @@ namespace Mail.Pages
                     }
                     else
                     {
-                        await AttachmentUploadSessionAsync(storageFile);
+                        await AttachmentUploadSessionAsync(basicProperties, storageFile);
                     }
                 }
             }
@@ -224,9 +242,9 @@ namespace Mail.Pages
             }
         }
 
-        private async Task AttachmentUploadSessionAsync(StorageFile StorageFile)
+        private async Task AttachmentUploadSessionAsync(BasicProperties BasicProperties, StorageFile StorageFile)
         {
-            await Service!.UploadAttachmentSessionAsync(StorageFile);
+            await Service!.UploadAttachmentSessionAsync(Model, BasicProperties, StorageFile);
         }
 
         private async Task<MailMessageFileAttachmentData?> AttachmentUploadAsync(StorageFile StorageFile)

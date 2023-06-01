@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.FileProperties;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
@@ -111,10 +112,14 @@ namespace Mail.Services
         /// <summary>
         /// 大文件上传(>3mb)
         /// </summary>
+        /// <param name="Model"></param>
+        /// <param name="BasicProperties"></param>
         /// <param name="StorageFile"></param>
         /// <param name="CancelToken"></param>
         /// <returns></returns>
-        public abstract Task UploadAttachmentSessionAsync(StorageFile StorageFile,
+        public abstract Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
+            BasicProperties BasicProperties,
+            StorageFile StorageFile,
             CancellationToken CancelToken = default);
 
         public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.FileProperties;
 using Mail.Models;
 using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
@@ -59,6 +60,9 @@ namespace Mail.Services
         Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
             StorageFile StorageFile, CancellationToken CancelToken = default);
 
-        Task UploadAttachmentSessionAsync(StorageFile StorageFile, CancellationToken CancelToken = default);
+        public abstract Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
+            BasicProperties BasicProperties,
+            StorageFile StorageFile,
+            CancellationToken CancelToken = default);
     }
 }
