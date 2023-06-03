@@ -19,6 +19,7 @@ using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.MailFolders.Item.Messages;
 using Microsoft.Graph.Me.Messages.Item.Attachments.CreateUploadSession;
 using Microsoft.Graph.Me.Messages.Item.Forward;
+using Microsoft.Graph.Me.Messages.Item.Move;
 using Microsoft.Graph.Me.Messages.Item.Reply;
 using Microsoft.Graph.Me.Messages.Item.ReplyAll;
 using Microsoft.Graph.Me.SendMail;
@@ -118,6 +119,7 @@ namespace Mail.Services
 
                 foreach (var folder in folders.Value)
                 {
+                    Trace.WriteLine($"{folder.DisplayName}: {folder.Id}");
                     MailFolderType FolderType = MailFolderType.Other;
                     if (inbox != null && folder.Id == inbox.Id)
                     {
@@ -530,6 +532,16 @@ namespace Mail.Services
             {
                 Trace.WriteLine(e);
             }
+        }
+
+        public override async Task<bool> MoveMailAsync(string mailMessageId, string folderId)
+        {
+            var postAsync = await Provider.GetClient().Me.Messages[mailMessageId].Move.PostAsync(new MovePostRequestBody
+            {
+                DestinationId = folderId
+            });
+
+            return postAsync != null;
         }
 
         public override async Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(

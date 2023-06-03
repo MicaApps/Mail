@@ -79,11 +79,11 @@ namespace Mail.Pages
             {
                 IMailService Service = App.Services.GetService<OutlookService>()!;
                 MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(data.Id);
-                
+
                 // Load Contacts to Cache
                 var contacts = await Service.GetContactsAsync();
                 App.Services.GetService<ICacheService>()!.AddOrReplaceCache<IReadOnlyList<ContactModel>>(contacts);
-                
+
                 DetailsView.ItemsSource = PreviewSource =
                     new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, data.Type,
                         MailFolder, (messageData) => new MailMessageListDetailViewModel(messageData),
@@ -373,6 +373,14 @@ namespace Mail.Pages
             {
                 Model = model, EditMailType = EditMailType.Reply
             });
+        }
+
+        private async void MailMoveAsync(object Sender, RoutedEventArgs E)
+        {
+            var service = App.Services.GetService<OutlookService>()!;
+            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
+            //TODO 目标文件夹id来源需要前台处理
+            await service.MoveMailAsync(model.Id, "sQACTCKK1QAAAA==");
         }
     }
 

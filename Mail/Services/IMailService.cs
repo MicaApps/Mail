@@ -68,6 +68,8 @@ namespace Mail.Services
             Action<long> UploadedSliceCallback,
             CancellationToken CancelToken = default);
 
+        Task<bool> MoveMailAsync(string mailMessageId, string folderId);
+
         Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model);
     }
 }
