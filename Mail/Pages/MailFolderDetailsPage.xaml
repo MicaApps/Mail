@@ -405,10 +405,10 @@
                                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7B8;" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem  Margin="2" Text="删除" Icon="Delete"/>
+                                <MenuFlyoutItem  Margin="2" Text="删除" Icon="Delete" Click="MailRemoveAsync"/>
                                 <MenuFlyoutItem  Margin="2" Text="Forward" Icon="Forward" Click="MailForwardAsync"/>
                                 <MenuFlyoutItem  Margin="2" Text="Reply" Icon="Forward" Click="MailReplyAsync"/>
-                                <MenuFlyoutItem  Margin="2"  Text="移动">
+                                <MenuFlyoutItem  Margin="2"  Text="移动" Click="MailMoveAsync">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
                                     </MenuFlyoutItem.Icon>

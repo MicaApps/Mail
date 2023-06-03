@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.FileProperties;
 using Mail.Models;
 using Mail.Services.Data;
 using Microsoft.Extensions.Caching.Memory;
@@ -13,6 +15,7 @@ namespace Mail.Services
         public bool IsSupported { get; }
 
         public bool IsSignIn { get; }
+        AccountModel? CurrentAccount { get; }
         MemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
@@ -59,6 +62,14 @@ namespace Mail.Services
         Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
             StorageFile StorageFile, CancellationToken CancelToken = default);
 
-        Task UploadAttachmentSessionAsync(StorageFile StorageFile, CancellationToken CancelToken = default);
+        public abstract Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
+            BasicProperties BasicProperties,
+            StorageFile StorageFile,
+            Action<long> UploadedSliceCallback,
+            CancellationToken CancelToken = default);
+
+        Task<bool> MailMoveAsync(string mailMessageId, string folderId);
+
+        Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);
     }
 }

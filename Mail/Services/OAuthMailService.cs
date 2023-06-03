@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.FileProperties;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
@@ -111,15 +113,24 @@ namespace Mail.Services
         /// <summary>
         /// 大文件上传(>3mb)
         /// </summary>
+        /// <param name="Model"></param>
+        /// <param name="BasicProperties"></param>
         /// <param name="StorageFile"></param>
+        /// <param name="UploadedSliceCallback"></param>
         /// <param name="CancelToken"></param>
         /// <returns></returns>
-        public abstract Task UploadAttachmentSessionAsync(StorageFile StorageFile,
+        public abstract Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
+            BasicProperties BasicProperties,
+            StorageFile StorageFile,
+            Action<long> UploadedSliceCallback,
             CancellationToken CancelToken = default);
+
+        public abstract Task<bool> MailMoveAsync(string mailMessageId, string folderId);
+
 
         public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
             StorageFile StorageFile, CancellationToken CancelToken = default);
 
-        public abstract Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model);
+        public abstract Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);
     }
 }

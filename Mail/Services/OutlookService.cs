@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.FileProperties;
 using CommunityToolkit.Authentication;
 using Mail.Extensions;
 using Mail.Extensions.Graph;
@@ -14,7 +17,9 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph;
 using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.MailFolders.Item.Messages;
+using Microsoft.Graph.Me.Messages.Item.Attachments.CreateUploadSession;
 using Microsoft.Graph.Me.Messages.Item.Forward;
+using Microsoft.Graph.Me.Messages.Item.Move;
 using Microsoft.Graph.Me.Messages.Item.Reply;
 using Microsoft.Graph.Me.Messages.Item.ReplyAll;
 using Microsoft.Graph.Me.SendMail;
@@ -114,6 +119,7 @@ namespace Mail.Services
 
                 foreach (var folder in folders.Value)
                 {
+                    Trace.WriteLine($"{folder.DisplayName}: {folder.Id}");
                     MailFolderType FolderType = MailFolderType.Other;
                     if (inbox != null && folder.Id == inbox.Id)
                     {
@@ -486,9 +492,56 @@ namespace Mail.Services
             return true;
         }
 
-        public override async Task UploadAttachmentSessionAsync(StorageFile StorageFile,
+        public override async Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
+            BasicProperties BasicProperties, StorageFile StorageFile,
+            Action<long> UploadedSliceCallback,
             CancellationToken CancelToken = default)
         {
+            if (Model.Id.IsNullOrEmpty())
+            {
+                return;
+            }
+
+            var builder = Provider.GetClient().Me.Messages[Model.Id].Attachments.CreateUploadSession;
+            var uploadSession = await builder.PostAsync(new CreateUploadSessionPostRequestBody
+            {
+                AttachmentItem = new AttachmentItem
+                {
+                    AttachmentType = AttachmentType.File,
+                    Name = StorageFile.Name,
+                    Size = (long)BasicProperties.Size
+                }
+            }, cancellationToken: CancelToken);
+
+            const int maxSliceSize = 320 * 1024 * 2;
+            var fileUploadTask = new LargeFileUploadTask<FileAttachment>(uploadSession,
+                (await StorageFile.OpenSequentialReadAsync()).AsStreamForRead(),
+                maxSliceSize);
+            var totalLength = BasicProperties.Size;
+            // Create a callback that is invoked after each slice is uploaded
+            IProgress<long> callback = new Progress<long>(UploadedSliceCallback);
+
+            try
+            {
+                var uploadResult = await fileUploadTask.UploadAsync(callback, cancellationToken: CancelToken);
+                Trace.WriteLine(uploadResult.UploadSucceeded
+                    ? $"Upload complete, item ID: {uploadResult.ItemResponse?.Id}"
+                    : "Upload failed");
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+        }
+
+        public override async Task<bool> MailMoveAsync(string mailMessageId, string folderId)
+        {
+            var postAsync = await Provider.GetClient().Me.Messages[mailMessageId].Move.PostAsync(new MovePostRequestBody
+            {
+                DestinationId = folderId
+            });
+
+            return postAsync != null;
         }
 
         public override async Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(
@@ -499,7 +552,7 @@ namespace Mail.Services
             var arb = Provider.GetClient().Me.Messages[Model.Id].Attachments;
 
             var readBytesAsync = await StorageFile.ReadBytesAsync();
-            var result = await arb.PostAsync(new FileAttachment()
+            var result = await arb.PostAsync(new FileAttachment
             {
                 Name = StorageFile.Name,
                 ContentType = StorageFile.ContentType,
@@ -509,7 +562,7 @@ namespace Mail.Services
                 (ulong)(result.Size ?? 0), default, readBytesAsync);
         }
 
-        public override async Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model)
+        public override async Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model)
         {
             if (Model.Id.IsNullOrEmpty()) return false;
 
