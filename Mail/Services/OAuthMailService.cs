@@ -125,12 +125,12 @@ namespace Mail.Services
             Action<long> UploadedSliceCallback,
             CancellationToken CancelToken = default);
 
-        public abstract Task<bool> MoveMailAsync(string mailMessageId, string folderId);
+        public abstract Task<bool> MailMoveAsync(string mailMessageId, string folderId);
 
 
         public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
             StorageFile StorageFile, CancellationToken CancelToken = default);
 
-        public abstract Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model);
+        public abstract Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);
     }
 }

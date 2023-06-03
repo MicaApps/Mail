@@ -534,7 +534,7 @@ namespace Mail.Services
             }
         }
 
-        public override async Task<bool> MoveMailAsync(string mailMessageId, string folderId)
+        public override async Task<bool> MailMoveAsync(string mailMessageId, string folderId)
         {
             var postAsync = await Provider.GetClient().Me.Messages[mailMessageId].Move.PostAsync(new MovePostRequestBody
             {
@@ -562,7 +562,7 @@ namespace Mail.Services
                 (ulong)(result.Size ?? 0), default, readBytesAsync);
         }
 
-        public override async Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model)
+        public override async Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model)
         {
             if (Model.Id.IsNullOrEmpty()) return false;
 

@@ -377,10 +377,19 @@ namespace Mail.Pages
 
         private async void MailMoveAsync(object Sender, RoutedEventArgs E)
         {
-            var service = App.Services.GetService<OutlookService>()!;
             if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
+            var service = App.Services.GetService<OutlookService>()!;
             //TODO 目标文件夹id来源需要前台处理
-            await service.MoveMailAsync(model.Id, "sQACTCKK1QAAAA==");
+            await service.MailMoveAsync(model.Id, "sQACTCKK1QAAAA==");
+        }
+
+        private async void MailRemoveAsync(object Sender, RoutedEventArgs E)
+        {
+            // TODO refresh folder
+            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
+            var service = App.Services.GetService<OutlookService>()!;
+            var mailRemoveAsync = await service.MailRemoveAsync(model);
+            Trace.WriteLine($"删除邮件: {mailRemoveAsync}");
         }
     }
 

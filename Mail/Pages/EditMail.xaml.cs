@@ -266,7 +266,7 @@ namespace Mail.Pages
         private async void RemoveMail(object Sender, RoutedEventArgs E)
         {
             // TODO remove Folder MailList
-            await Service!.RemoveMailAsync(Model);
+            await Service!.MailRemoveAsync(Model);
         }
 
         private void TextBox_OnTextCompositionEnded(TextBox Sender, TextCompositionEndedEventArgs Args)
