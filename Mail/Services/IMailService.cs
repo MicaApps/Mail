@@ -15,6 +15,7 @@ namespace Mail.Services
         public bool IsSupported { get; }
 
         public bool IsSignIn { get; }
+        AccountModel? CurrentAccount { get; }
         MemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
@@ -66,5 +67,7 @@ namespace Mail.Services
             StorageFile StorageFile,
             Action<long> UploadedSliceCallback,
             CancellationToken CancelToken = default);
+
+        Task<bool> RemoveMailAsync(MailMessageListDetailViewModel Model);
     }
 }

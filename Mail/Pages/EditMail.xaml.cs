@@ -29,7 +29,7 @@ namespace Mail.Pages
     /// </summary>
     public sealed partial class EditMail
     {
-        private OAuthMailService? Service;
+        private readonly IMailService? Service;
         private MailMessageListDetailViewModel Model { get; set; }
 
         /// <summary>
@@ -263,10 +263,10 @@ namespace Mail.Pages
             return await Service!.UploadAttachmentAsync(Model, StorageFile);
         }
 
-        private void RemoveMail(object Sender, RoutedEventArgs E)
+        private async void RemoveMail(object Sender, RoutedEventArgs E)
         {
             // TODO remove Folder MailList
-            Service?.RemoveMailAsync(Model);
+            await Service!.RemoveMailAsync(Model);
         }
 
         private void TextBox_OnTextCompositionEnded(TextBox Sender, TextCompositionEndedEventArgs Args)
