@@ -17,9 +17,15 @@ namespace Mail.Services
     internal abstract class OAuthMailService : IMailService
     {
         private readonly IPublicClientApplication ClientApplication;
-        public static readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
+        protected static readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
         private IMailService MailServiceImplementation;
         public AccountModel? CurrentAccount { get; set; }
+
+        /// <summary>
+        /// 如果熬完成本地缓存, 考虑持久化该数据来获取确定的id与文件夹数据
+        /// <p>key: folderId</p>
+        /// </summary>
+        public Dictionary<string, MailFolderData> LoadedMailFolderData { get; } = new();
 
         public BaseProvider Provider { get; }
 

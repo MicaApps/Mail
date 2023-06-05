@@ -39,12 +39,12 @@ namespace Mail.Pages
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is MailFolderData data && e.NavigationMode == NavigationMode.New)
+            if (e is { Parameter: MailFolderData data, NavigationMode: NavigationMode.New })
             {
                 NavigationData = data;
                 FolderName.Text = data.Name;
-                IMailService Service = App.Services.GetService<OutlookService>()!;
-                if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport)
+                IMailService service = App.Services.GetService<OutlookService>()!;
+                if (data.Type == MailFolderType.Inbox && service is IMailService.IFocusFilterSupport)
                 {
                     NavigationTab.Visibility = Visibility.Visible;
                     FolderName.Visibility = Visibility.Collapsed;
@@ -73,35 +73,35 @@ namespace Mail.Pages
             PreviewSource?.Clear();
             DetailsView.SelectedItem = null;
             EmptyContentText.Text = "Syncing you email";
-            MailFolderData data = NavigationData;
+            var data = NavigationData;
             if (data == null) return;
             try
             {
-                IMailService Service = App.Services.GetService<OutlookService>()!;
-                MailFolderDetailData MailFolder = await Service.GetMailFolderDetailAsync(data.Id);
+                IMailService service = App.Services.GetService<OutlookService>()!;
+                var mailFolder = await service.GetMailFolderDetailAsync(data.Id);
 
                 // Load Contacts to Cache
-                var contacts = await Service.GetContactsAsync();
-                App.Services.GetService<ICacheService>()!.AddOrReplaceCache<IReadOnlyList<ContactModel>>(contacts);
+                var contacts = await service.GetContactsAsync();
+                App.Services.GetService<ICacheService>()!.AddOrReplaceCache(contacts);
 
                 DetailsView.ItemsSource = PreviewSource =
-                    new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(Service, data.Type,
-                        MailFolder, (messageData) => new MailMessageListDetailViewModel(messageData),
+                    new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(service, data.Type,
+                        mailFolder, (messageData) => new MailMessageListDetailViewModel(messageData),
                         IsFocusTab: IsFocusedTab);
 
                 IAsyncEnumerable<MailMessageData> dataSet;
-                if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport FilterService)
+                if (data.Type == MailFolderType.Inbox && service is IMailService.IFocusFilterSupport filterService)
                 {
-                    dataSet = FilterService.GetMailMessageAsync(data.Id, IsFocusedTab);
+                    dataSet = filterService.GetMailMessageAsync(data.Id, IsFocusedTab);
                 }
                 else
                 {
-                    dataSet = Service.GetMailMessageAsync(MailFolder.Id);
+                    dataSet = service.GetMailMessageAsync(mailFolder.Id);
                 }
 
-                await foreach (MailMessageData MessageData in dataSet)
+                await foreach (var messageData in dataSet)
                 {
-                    PreviewSource.Add(new MailMessageListDetailViewModel(MessageData));
+                    PreviewSource.Add(new MailMessageListDetailViewModel(messageData));
                 }
 
                 if (PreviewSource.Count == 0)
