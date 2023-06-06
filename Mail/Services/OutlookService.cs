@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -117,10 +118,8 @@ namespace Mail.Services
             return IProviderExtension.GetClient(Provider).Me.MailFolders[FolderString];
         }
 
-        private string MailFolderSuperParentId = string.Empty;
-
-        private async Task<MailFolderCollectionResponse?> DefaultFolderTaskAsync(
-            string name)
+        private async Task<MailFolderCollectionResponse?> DefaultFolderTaskAsync(string name,
+            CancellationToken CancellationToken)
         {
             try
             {
@@ -131,14 +130,23 @@ namespace Mail.Services
 
                 var mailFolder = await GetClient().Me.MailFolders[name].GetAsync();
                 if (!Enum.TryParse(name, true, out MailFolderType type)) type = MailFolderType.Other;
-                // 默认文件夹都是一个顶层父类文件夹
-                MailFolderSuperParentId = mailFolder.ParentFolderId;
 
                 var mailFolderData =
-                    new MailFolderData(mailFolder.Id, mailFolder.DisplayName, type, new List<MailFolderData>(3));
-                Trace.WriteLine($"{mailFolderData}");
+                    new MailFolderData(mailFolder.Id, mailFolder.DisplayName, type,
+                        new ObservableCollection<MailFolderData>())
+                    {
+                        ParentFolderId = mailFolder.ParentFolderId,
+                        ChildFolderCount = mailFolder.ChildFolderCount ?? 0
+                    };
+
+                //Trace.WriteLine($"{mailFolderData}");
                 LoadedMailFolderData[mailFolder.Id] = mailFolderData;
                 MemoryCache.Set(name, mailFolderData);
+
+                if (mailFolderData.ChildFolderCount > 0)
+                {
+                    LoadMailChildFolderAsync(mailFolderData.Id, CancellationToken);
+                }
             }
             catch (Exception e)
             {
@@ -148,7 +156,7 @@ namespace Mail.Services
             return null;
         }
 
-        public override async IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(
+        public override async IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
             var foldersBuilder = GetClient().Me.MailFolders;
@@ -159,13 +167,13 @@ namespace Mail.Services
                 },
                 cancellationToken: CancelToken);
             var result = await Task.WhenAll(folders,
-                DefaultFolderTaskAsync("inbox"),
-                DefaultFolderTaskAsync("archive"),
-                DefaultFolderTaskAsync("deleteditems"),
-                DefaultFolderTaskAsync("junkemail"),
-                DefaultFolderTaskAsync("sentitems"),
-                DefaultFolderTaskAsync("syncissues"),
-                DefaultFolderTaskAsync("drafts")
+                DefaultFolderTaskAsync("inbox", CancelToken),
+                DefaultFolderTaskAsync("archive", CancelToken),
+                DefaultFolderTaskAsync("deleteditems", CancelToken),
+                DefaultFolderTaskAsync("junkemail", CancelToken),
+                DefaultFolderTaskAsync("sentitems", CancelToken),
+                DefaultFolderTaskAsync("syncissues", CancelToken),
+                DefaultFolderTaskAsync("drafts", CancelToken)
             );
 
             foreach (var (_, value) in LoadedMailFolderData)
@@ -178,14 +186,46 @@ namespace Mail.Services
                 var cacheFolder = LoadedMailFolderData.GetValueOrDefault(mailFolder.Id);
                 if (cacheFolder is not null) continue;
 
-                var mailFoldersAsync = new MailFolderData(mailFolder.Id,
+                var folderData = new MailFolderData(mailFolder.Id,
                     mailFolder.DisplayName,
                     MailFolderType.Other,
-                    // 考虑为文件夹添加子邮件
-                    new List<MailFolderData>(3));
+                    new ObservableCollection<MailFolderData>())
+                {
+                    ChildFolderCount = mailFolder.ChildFolderCount ?? 0,
+                    ParentFolderId = mailFolder.ParentFolderId
+                };
 
-                LoadedMailFolderData[mailFoldersAsync.Id] = mailFoldersAsync;
-                yield return mailFoldersAsync;
+                LoadedMailFolderData[folderData.Id] = folderData;
+
+                if (folderData.ChildFolderCount > 0)
+                {
+                    LoadMailChildFolderAsync(folderData.Id, CancelToken);
+                }
+
+                yield return folderData;
+            }
+        }
+
+        private async Task LoadMailChildFolderAsync(string MailFolderId, CancellationToken CancelToken = default)
+        {
+            var folders = await GetClient().Me.MailFolders[MailFolderId].ChildFolders
+                .GetAsync(cancellationToken: CancelToken);
+
+            var superMailFolder = LoadedMailFolderData[MailFolderId];
+            foreach (var mailFolder in folders.Value)
+            {
+                var childMailFolder = new MailFolderData(mailFolder.Id, mailFolder.DisplayName,
+                    MailFolderType.Other, new ObservableCollection<MailFolderData>())
+                {
+                    ParentFolderId = MailFolderId,
+                    ChildFolderCount = mailFolder.ChildFolderCount ?? 0
+                };
+
+                superMailFolder.ChildFolders.Add(childMailFolder);
+                if (childMailFolder.ChildFolderCount > 0)
+                {
+                    LoadMailChildFolderAsync(childMailFolder.Id, CancelToken);
+                }
             }
         }
 

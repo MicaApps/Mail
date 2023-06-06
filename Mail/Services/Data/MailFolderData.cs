@@ -13,6 +13,9 @@ namespace Mail.Services.Data
 
         public IList<MailFolderData> ChildFolders { get; }
 
+        public string ParentFolderId { get; set; } = "";
+        public int ChildFolderCount { get; set; }
+
         public MailFolderData(string id, string name, MailFolderType type, IList<MailFolderData> ChildFolders)
         {
             Id = id;

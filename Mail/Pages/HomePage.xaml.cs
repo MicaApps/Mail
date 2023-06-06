@@ -87,7 +87,7 @@ namespace Mail.Pages
             try
             {
                 // the specified folder could not be found in the store
-                await foreach (var item in App.Services.GetService<OutlookService>()!.GetMailFoldersAsync()
+                await foreach (var item in App.Services.GetService<OutlookService>()!.GetMailSuperFoldersAsync()
                                    .OrderBy(item => item.Type))
                 {
                     if (item.Type == MailFolderType.Other && isFirstOther)
