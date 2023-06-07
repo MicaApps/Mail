@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
@@ -118,6 +119,19 @@ namespace Mail.Services
             return IProviderExtension.GetClient(Provider).Me.MailFolders[FolderString];
         }
 
+        private async Task SaveFoldersDataToLocal()
+        {
+            var local = ApplicationData.Current.LocalCacheFolder;
+            var fileAsync = await local.CreateFileAsync($"{nameof(LoadedMailFolderDataTree)}.json",
+                CreationCollisionOption.ReplaceExisting);
+            var ser = JsonConvert.SerializeObject(LoadedMailFolderDataTree);
+
+            var stream = await fileAsync.OpenStreamForWriteAsync();
+            var buffer = Encoding.UTF8.GetBytes(ser);
+            await stream.WriteAsync(buffer, 0, buffer.Length);
+            await stream.FlushAsync();
+        }
+
         private async Task<MailFolderCollectionResponse?> DefaultFolderTaskAsync(string name,
             CancellationToken CancellationToken)
         {
@@ -139,8 +153,8 @@ namespace Mail.Services
                         ChildFolderCount = mailFolder.ChildFolderCount ?? 0
                     };
 
-                //Trace.WriteLine($"{mailFolderData}");
-                LoadedMailFolderData[mailFolder.Id] = mailFolderData;
+                Trace.WriteLine($"{name}:{mailFolderData}");
+                LoadedMailFolderDataTree[mailFolder.Id] = mailFolderData;
                 MemoryCache.Set(name, mailFolderData);
 
                 if (mailFolderData.ChildFolderCount > 0)
@@ -159,6 +173,27 @@ namespace Mail.Services
         public override async IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
+            var local = ApplicationData.Current.LocalCacheFolder;
+            var fileAsync = await local.CreateFileAsync($"{nameof(LoadedMailFolderDataTree)}.json",
+                CreationCollisionOption.OpenIfExists);
+            var readBytesAsync = await fileAsync.ReadBytesAsync();
+
+            var json = Encoding.UTF8.GetString(readBytesAsync);
+            Trace.WriteLine($"本地缓存数据:{json}");
+            var mailFolderDataMap = JsonConvert.DeserializeObject<Dictionary<string, MailFolderData>>(json);
+            // TODO update folder
+            if (mailFolderDataMap is { Count: > 0 })
+            {
+                LoadedMailFolderDataTree.Clear();
+                foreach (var (key, value) in mailFolderDataMap)
+                {
+                    LoadedMailFolderDataTree[key] = value;
+                    yield return value;
+                }
+
+                yield break;
+            }
+
             var foldersBuilder = GetClient().Me.MailFolders;
             var folders = foldersBuilder.GetAsync(config =>
                 {
@@ -176,14 +211,14 @@ namespace Mail.Services
                 DefaultFolderTaskAsync("drafts", CancelToken)
             );
 
-            foreach (var (_, value) in LoadedMailFolderData)
+            foreach (var (_, value) in LoadedMailFolderDataTree)
             {
                 yield return value;
             }
 
             foreach (var mailFolder in result[0]?.Value ?? new List<MailFolder>(0))
             {
-                var cacheFolder = LoadedMailFolderData.GetValueOrDefault(mailFolder.Id);
+                var cacheFolder = LoadedMailFolderDataTree.GetValueOrDefault(mailFolder.Id);
                 if (cacheFolder is not null) continue;
 
                 var folderData = new MailFolderData(mailFolder.Id,
@@ -195,7 +230,7 @@ namespace Mail.Services
                     ParentFolderId = mailFolder.ParentFolderId
                 };
 
-                LoadedMailFolderData[folderData.Id] = folderData;
+                LoadedMailFolderDataTree[folderData.Id] = folderData;
 
                 if (folderData.ChildFolderCount > 0)
                 {
@@ -211,7 +246,7 @@ namespace Mail.Services
             var folders = await GetClient().Me.MailFolders[MailFolderId].ChildFolders
                 .GetAsync(cancellationToken: CancelToken);
 
-            var superMailFolder = LoadedMailFolderData[MailFolderId];
+            var superMailFolder = LoadedMailFolderDataTree[MailFolderId];
             foreach (var mailFolder in folders.Value)
             {
                 var childMailFolder = new MailFolderData(mailFolder.Id, mailFolder.DisplayName,

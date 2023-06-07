@@ -22,10 +22,10 @@ namespace Mail.Services
         public AccountModel? CurrentAccount { get; set; }
 
         /// <summary>
-        /// 如果熬完成本地缓存, 考虑持久化该数据来获取确定的id与文件夹数据
+        /// 如果要完成本地缓存, 考虑持久化该数据来获取确定的id与文件夹数据
         /// <p>key: folderId</p>
         /// </summary>
-        public Dictionary<string, MailFolderData> LoadedMailFolderData { get; } = new();
+        public Dictionary<string, MailFolderData> LoadedMailFolderDataTree { get; } = new();
 
         public BaseProvider Provider { get; }
 

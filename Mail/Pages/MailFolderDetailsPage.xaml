@@ -400,7 +400,7 @@
 
                         <Grid.ContextFlyout >
                             <MenuFlyout >
-                                <MenuFlyoutItem Margin="2" Text="存档" DataContext="{x:Bind }" >
+                                <MenuFlyoutItem Margin="2" Text="存档" DataContext="{x:Bind }" Click="MailMoveArchiveAsync">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7B8;" />
                                     </MenuFlyoutItem.Icon>
