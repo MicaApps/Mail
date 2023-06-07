@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;
@@ -79,33 +80,31 @@ namespace Mail.Pages
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            if (e.NavigationMode == NavigationMode.New)
+            if (e.NavigationMode != NavigationMode.New) return;
+
+            MailFolderSource.Add(0);
+            var isFirstOther = true;
+            try
             {
-                MailFolderSource.Add(0);
-                var isFirstOther = true;
-                try
+                // the specified folder could not be found in the store
+                await foreach (var item in App.Services.GetService<OutlookService>()!.GetMailSuperFoldersAsync()
+                                   .OrderBy(item => item.Type))
                 {
-                    // TODO 新账号会引发异常
-                    // the specified folder could not be found in the store
-                    await foreach (var item in App.Services.GetService<OutlookService>().GetMailFoldersAsync()
-                                       .OrderBy(item => item.Type))
+                    if (item.Type == MailFolderType.Other && isFirstOther)
                     {
-                        if (item.Type == MailFolderType.Other && isFirstOther)
-                        {
-                            MailFolderSource.Add(1);
-                            isFirstOther = false;
-                        }
-
-                        MailFolderSource.Add(item);
+                        MailFolderSource.Add(1);
+                        isFirstOther = false;
                     }
-                }
-                catch (Exception Exception)
-                {
-                    //Console.WriteLine(Exception);
-                }
 
-                NavView.SelectedItem = MailFolderSource.FirstOrDefault(item => item is MailFolderData);
+                    MailFolderSource.Add(item);
+                }
             }
+            catch (Exception exception)
+            {
+                Trace.WriteLine(exception);
+            }
+
+            NavView.SelectedItem = MailFolderSource.FirstOrDefault(item => item is MailFolderData);
         }
 
         private void SystemBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)

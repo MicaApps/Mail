@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -9,7 +10,6 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
 using CommunityToolkit.Authentication;
-using Mail.Extensions;
 using Mail.Extensions.Graph;
 using Mail.Models;
 using Mail.Services.Data;
@@ -32,7 +32,17 @@ namespace Mail.Services
 {
     internal class OutlookService : OAuthMailService, IMailService.IFocusFilterSupport
     {
-        protected override string[] Scopes { get; } = new string[]
+        private static readonly SemaphoreSlim GetMailMessageAttachmentsLock = new(1);
+        private GraphServiceClient? _client;
+        private string? DraftFolderId;
+
+        private GraphServiceClient GetClient() => _client ??= IProviderExtension.GetClient(Provider);
+
+        public OutlookService() : base(WebAccountProviderType.Msa)
+        {
+        }
+
+        protected override string[] Scopes { get; } =
         {
             "User.Read",
             "User.ReadBasic.All",
@@ -46,8 +56,51 @@ namespace Mail.Services
             "Mail.Send"
         };
 
-        public OutlookService() : base(WebAccountProviderType.Msa)
+        public async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, bool focused,
+            uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
+            string type;
+            if (focused)
+            {
+                type = "Focused";
+            }
+            else
+            {
+                type = "Other";
+            }
+
+            var Builder =
+                IProviderExtension.GetClient(Provider).Me.MailFolders[RootFolderId].Messages;
+            var request = Builder.GetAsync(requestConfiguration =>
+            {
+                var queryParameters = requestConfiguration.QueryParameters;
+                queryParameters.Filter =
+                    $"sentDateTime ge 1900-01-01T00:00:00Z and inferenceClassification eq '{type}'";
+                queryParameters.Orderby = new string[] { "sentDateTime desc" };
+                queryParameters.Skip = (int)StartIndex;
+                queryParameters.Top = (int)Count;
+            }, CancelToken);
+            foreach (Message Message in (await request).Value)
+            {
+                CancelToken.ThrowIfCancellationRequested();
+
+                yield return new MailMessageData(Message.Subject,
+                    Message.Id,
+                    Message.SentDateTime,
+                    new MailMessageRecipientData(Message.Sender.EmailAddress.Name, Message.Sender.EmailAddress.Address),
+                    Message.ToRecipients.Select((Recipient) =>
+                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                    Message.CcRecipients.Select((Recipient) =>
+                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                    Message.BccRecipients.Select((Recipient) =>
+                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                    new MailMessageContentData(Message.Body.Content, Message.BodyPreview,
+                        (MailMessageContentType)Message.Body.ContentType),
+                    Message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
+                        Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size),
+                        Attachment.LastModifiedDateTime.GetValueOrDefault())) ??
+                    Enumerable.Empty<MailMessageAttachmentData>());
+            }
         }
 
         private MailFolderItemRequestBuilder GetDefatultMailFolderBuilder(MailFolderType Type)
@@ -65,98 +118,115 @@ namespace Mail.Services
             return IProviderExtension.GetClient(Provider).Me.MailFolders[FolderString];
         }
 
-        private async Task<MailFolder> CatchMailFolder(MailFolderItemRequestBuilder Builder,
-            CancellationToken CancelToken = default)
+        private async Task<MailFolderCollectionResponse?> DefaultFolderTaskAsync(string name,
+            CancellationToken CancellationToken)
         {
-            return await RunCatch.GetOrDefault(Builder.GetAsync(default, CancelToken));
-        }
-
-        public override async IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(
-            [EnumeratorCancellation] CancellationToken CancelToken = default)
-        {
-            var client = IProviderExtension.GetClient(Provider);
-
-            //TODO: Remove this code when Graph beta API which include wellknown-name property become stable.
-            var inbox = await CatchMailFolder(client.Me.MailFolders["inbox"], CancelToken);
-            var archive = await CatchMailFolder(client.Me.MailFolders["archive"], CancelToken);
-            var drafts = await CatchMailFolder(client.Me.MailFolders["drafts"], CancelToken);
-            var deleted = await CatchMailFolder(client.Me.MailFolders["deleteditems"], CancelToken);
-            var junkEmail = await CatchMailFolder(client.Me.MailFolders["junkemail"], CancelToken);
-            var sentItems = await CatchMailFolder(client.Me.MailFolders["sentitems"], CancelToken);
-            var syncIssues = await CatchMailFolder(client.Me.MailFolders["syncissues"], CancelToken);
-
-            MailFolderCollectionResponse folders = null;
-            var count = 0;
-
-            async IAsyncEnumerable<MailFolderData> GenerateSubMailFolderDataBuilder(
-                MailFolderItemRequestBuilder Builder, [EnumeratorCancellation] CancellationToken CancelToken = default)
+            try
             {
-                var subFolderCount = 0;
-                MailFolderCollectionResponse subFolders = null;
-                do
+                if (MemoryCache.Get(name) is not null)
                 {
-                    subFolders = (await Builder.ChildFolders.GetAsync(
-                        requestConfiguration => { requestConfiguration.QueryParameters.Skip = subFolderCount; },
-                        CancelToken));
-                    subFolderCount += subFolders.Value.Count;
-                    foreach (MailFolder SubFolder in subFolders.Value)
-                    {
-                        CancelToken.ThrowIfCancellationRequested();
-                        var SubFolderBuilder = client.Me.MailFolders[SubFolder.Id];
-                        yield return new MailFolderData(SubFolder.Id, SubFolder.DisplayName, MailFolderType.Other,
-                            await GenerateSubMailFolderDataBuilder(SubFolderBuilder, CancelToken).ToArrayAsync());
-                    }
-                } while (subFolders.OdataNextLink != null);
-            }
-
-            do
-            {
-                folders = (await client.Me.MailFolders.GetAsync(requestOptions =>
-                {
-                    requestOptions.QueryParameters.IncludeHiddenFolders = "true";
-                    requestOptions.QueryParameters.Skip = count;
-                }, CancelToken));
-
-                foreach (var folder in folders.Value)
-                {
-                    Trace.WriteLine($"{folder.DisplayName}: {folder.Id}");
-                    MailFolderType FolderType = MailFolderType.Other;
-                    if (inbox != null && folder.Id == inbox.Id)
-                    {
-                        FolderType = MailFolderType.Inbox;
-                    }
-                    else if (archive != null && folder.Id == archive.Id)
-                    {
-                        FolderType = MailFolderType.Archive;
-                    }
-                    else if (deleted != null && folder.Id == deleted.Id)
-                    {
-                        FolderType = MailFolderType.Deleted;
-                    }
-                    else if (sentItems != null && folder.Id == sentItems.Id)
-                    {
-                        FolderType = MailFolderType.SentItems;
-                    }
-                    else if (junkEmail != null && folder.Id == junkEmail.Id)
-                    {
-                        FolderType = MailFolderType.Junk;
-                    }
-                    else if (drafts != null && folder.Id == drafts.Id)
-                    {
-                        FolderType = MailFolderType.Drafts;
-                        this.DraftFolderId = drafts.Id;
-                    }
-                    else if (syncIssues != null && folder.Id == syncIssues.Id)
-                    {
-                        continue;
-                    }
-
-                    yield return new MailFolderData(folder.Id, folder.DisplayName, FolderType,
-                        await GenerateSubMailFolderDataBuilder(client.Me.MailFolders[folder.Id]).ToArrayAsync());
+                    return null;
                 }
 
-                count += folders.Value.Count;
-            } while (folders.OdataNextLink != null);
+                var mailFolder = await GetClient().Me.MailFolders[name].GetAsync();
+                if (!Enum.TryParse(name, true, out MailFolderType type)) type = MailFolderType.Other;
+
+                var mailFolderData =
+                    new MailFolderData(mailFolder.Id, mailFolder.DisplayName, type,
+                        new ObservableCollection<MailFolderData>())
+                    {
+                        ParentFolderId = mailFolder.ParentFolderId,
+                        ChildFolderCount = mailFolder.ChildFolderCount ?? 0
+                    };
+
+                //Trace.WriteLine($"{mailFolderData}");
+                LoadedMailFolderData[mailFolder.Id] = mailFolderData;
+                MemoryCache.Set(name, mailFolderData);
+
+                if (mailFolderData.ChildFolderCount > 0)
+                {
+                    LoadMailChildFolderAsync(mailFolderData.Id, CancellationToken);
+                }
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+
+            return null;
+        }
+
+        public override async IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
+            [EnumeratorCancellation] CancellationToken CancelToken = default)
+        {
+            var foldersBuilder = GetClient().Me.MailFolders;
+            var folders = foldersBuilder.GetAsync(config =>
+                {
+                    const string n = nameof(MailFolder.DisplayName);
+                    config.QueryParameters.Filter = $"{n} ne 'outbox'";
+                },
+                cancellationToken: CancelToken);
+            var result = await Task.WhenAll(folders,
+                DefaultFolderTaskAsync("inbox", CancelToken),
+                DefaultFolderTaskAsync("archive", CancelToken),
+                DefaultFolderTaskAsync("deleteditems", CancelToken),
+                DefaultFolderTaskAsync("junkemail", CancelToken),
+                DefaultFolderTaskAsync("sentitems", CancelToken),
+                DefaultFolderTaskAsync("syncissues", CancelToken),
+                DefaultFolderTaskAsync("drafts", CancelToken)
+            );
+
+            foreach (var (_, value) in LoadedMailFolderData)
+            {
+                yield return value;
+            }
+
+            foreach (var mailFolder in result[0]?.Value ?? new List<MailFolder>(0))
+            {
+                var cacheFolder = LoadedMailFolderData.GetValueOrDefault(mailFolder.Id);
+                if (cacheFolder is not null) continue;
+
+                var folderData = new MailFolderData(mailFolder.Id,
+                    mailFolder.DisplayName,
+                    MailFolderType.Other,
+                    new ObservableCollection<MailFolderData>())
+                {
+                    ChildFolderCount = mailFolder.ChildFolderCount ?? 0,
+                    ParentFolderId = mailFolder.ParentFolderId
+                };
+
+                LoadedMailFolderData[folderData.Id] = folderData;
+
+                if (folderData.ChildFolderCount > 0)
+                {
+                    LoadMailChildFolderAsync(folderData.Id, CancelToken);
+                }
+
+                yield return folderData;
+            }
+        }
+
+        private async Task LoadMailChildFolderAsync(string MailFolderId, CancellationToken CancelToken = default)
+        {
+            var folders = await GetClient().Me.MailFolders[MailFolderId].ChildFolders
+                .GetAsync(cancellationToken: CancelToken);
+
+            var superMailFolder = LoadedMailFolderData[MailFolderId];
+            foreach (var mailFolder in folders.Value)
+            {
+                var childMailFolder = new MailFolderData(mailFolder.Id, mailFolder.DisplayName,
+                    MailFolderType.Other, new ObservableCollection<MailFolderData>())
+                {
+                    ParentFolderId = MailFolderId,
+                    ChildFolderCount = mailFolder.ChildFolderCount ?? 0
+                };
+
+                superMailFolder.ChildFolders.Add(childMailFolder);
+                if (childMailFolder.ChildFolderCount > 0)
+                {
+                    LoadMailChildFolderAsync(childMailFolder.Id, CancelToken);
+                }
+            }
         }
 
 
@@ -263,9 +333,6 @@ namespace Mail.Services
             return null;
         }
 
-        private static readonly SemaphoreSlim GetMailMessageAttachmentsLock = new(1);
-        private string? DraftFolderId;
-
         private async Task<Message> GetMailMessageAttachmentsAsync(string messageId)
         {
             var ConcurrentReading = MemoryCache.Get<Message>(messageId);
@@ -318,53 +385,6 @@ namespace Mail.Services
             }
 
             return ret;
-        }
-
-        public async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, bool focused,
-            uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
-        {
-            string type;
-            if (focused)
-            {
-                type = "Focused";
-            }
-            else
-            {
-                type = "Other";
-            }
-
-            var Builder =
-                IProviderExtension.GetClient(Provider).Me.MailFolders[RootFolderId].Messages;
-            var request = Builder.GetAsync(requestConfiguration =>
-            {
-                var queryParameters = requestConfiguration.QueryParameters;
-                queryParameters.Filter =
-                    $"sentDateTime ge 1900-01-01T00:00:00Z and inferenceClassification eq '{type}'";
-                queryParameters.Orderby = new string[] { "sentDateTime desc" };
-                queryParameters.Skip = (int)StartIndex;
-                queryParameters.Top = (int)Count;
-            }, CancelToken);
-            foreach (Message Message in (await request).Value)
-            {
-                CancelToken.ThrowIfCancellationRequested();
-
-                yield return new MailMessageData(Message.Subject,
-                    Message.Id,
-                    Message.SentDateTime,
-                    new MailMessageRecipientData(Message.Sender.EmailAddress.Name, Message.Sender.EmailAddress.Address),
-                    Message.ToRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
-                    Message.CcRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
-                    Message.BccRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
-                    new MailMessageContentData(Message.Body.Content, Message.BodyPreview,
-                        (MailMessageContentType)Message.Body.ContentType),
-                    Message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
-                        Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size),
-                        Attachment.LastModifiedDateTime.GetValueOrDefault())) ??
-                    Enumerable.Empty<MailMessageAttachmentData>());
-            }
         }
 
         public override async IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
@@ -502,7 +522,7 @@ namespace Mail.Services
                 return;
             }
 
-            var builder = Provider.GetClient().Me.Messages[Model.Id].Attachments.CreateUploadSession;
+            var builder = IProviderExtension.GetClient(Provider).Me.Messages[Model.Id].Attachments.CreateUploadSession;
             var uploadSession = await builder.PostAsync(new CreateUploadSessionPostRequestBody
             {
                 AttachmentItem = new AttachmentItem
@@ -536,10 +556,11 @@ namespace Mail.Services
 
         public override async Task<bool> MailMoveAsync(string mailMessageId, string folderId)
         {
-            var postAsync = await Provider.GetClient().Me.Messages[mailMessageId].Move.PostAsync(new MovePostRequestBody
-            {
-                DestinationId = folderId
-            });
+            var postAsync = await IProviderExtension.GetClient(Provider).Me.Messages[mailMessageId].Move.PostAsync(
+                new MovePostRequestBody
+                {
+                    DestinationId = folderId
+                });
 
             return postAsync != null;
         }
@@ -549,7 +570,7 @@ namespace Mail.Services
             StorageFile StorageFile,
             CancellationToken CancelToken = default)
         {
-            var arb = Provider.GetClient().Me.Messages[Model.Id].Attachments;
+            var arb = IProviderExtension.GetClient(Provider).Me.Messages[Model.Id].Attachments;
 
             var readBytesAsync = await StorageFile.ReadBytesAsync();
             var result = await arb.PostAsync(new FileAttachment
@@ -566,7 +587,7 @@ namespace Mail.Services
         {
             if (Model.Id.IsNullOrEmpty()) return false;
 
-            await Provider.GetClient().Me.Messages[Model.Id].DeleteAsync();
+            await IProviderExtension.GetClient(Provider).Me.Messages[Model.Id].DeleteAsync();
             return true;
         }
     }

@@ -19,7 +19,7 @@ namespace Mail.Services
         MemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
-        public IAsyncEnumerable<MailFolderData> GetMailFoldersAsync(CancellationToken CancelToken = default);
+        public IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(CancellationToken CancelToken = default);
 
         public Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default);
