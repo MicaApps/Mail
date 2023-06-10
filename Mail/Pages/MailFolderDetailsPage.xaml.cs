@@ -31,20 +31,23 @@ namespace Mail.Pages
         private MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>? PreviewSource;
         private MailFolderData? NavigationData;
         private bool IsFocusedTab { get; set; } = true;
+        private IMailService Service;
 
         public MailFolderDetailsPage()
         {
+            Service = App.Services.GetService<OutlookService>()!;
             InitializeComponent();
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            Service = App.Services.GetService<OutlookService>()!;
+
             if (e is { Parameter: MailFolderData data, NavigationMode: NavigationMode.New })
             {
                 NavigationData = data;
                 FolderName.Text = data.Name;
-                IMailService service = App.Services.GetService<OutlookService>()!;
-                if (data.Type == MailFolderType.Inbox && service is IMailService.IFocusFilterSupport)
+                if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport)
                 {
                     NavigationTab.Visibility = Visibility.Visible;
                     FolderName.Visibility = Visibility.Collapsed;
@@ -117,29 +120,29 @@ namespace Mail.Pages
 
         private async void ListDetailsView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if ((e.OriginalSource as FrameworkElement)?.DataContext is not MailMessageListDetailViewModel Model) return;
-            if (Model.IsEmpty) return;
-            if (sender is not ListDetailsView View) return;
+            if ((e.OriginalSource as FrameworkElement)?.DataContext is not MailMessageListDetailViewModel model) return;
+            if (model.IsEmpty) return;
+            if (sender is not ListDetailsView view) return;
 
             using (await SelectionChangeLocker.LockAsync())
             {
-                for (var Retry = 0; Retry < 10; Retry++)
+                for (var retry = 0; retry < 10; retry++)
                 {
-                    if (View.FindChildOfType<WebView>() is WebView Browser)
+                    if (view.FindChildOfType<WebView>() is { } browser)
                     {
-                        LoadImageAndCacheAsync(Model, Browser);
-                        LoadAttachmentsList(View.FindChildOfName<ListBox>("AttachmentsListBox"), Model);
-                        Browser.Height = 100;
+                        LoadImageAndCacheAsync(model, browser);
+                        LoadAttachmentsList(view.FindChildOfName<ListBox>("AttachmentsListBox"), model);
+                        browser.Height = 100;
 
-                        var Replace = Model.Content;
+                        var replace = model.Content;
 
-                        if (Model.ContentType == MailMessageContentType.Text)
+                        if (model.ContentType == MailMessageContentType.Text)
                         {
-                            Replace =
-                                @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Replace}</body></html>";
+                            replace =
+                                @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{replace}</body></html>";
                         }
 
-                        Browser.NavigateToString(Replace);
+                        browser.NavigateToString(replace);
                         break;
                     }
 
@@ -152,34 +155,31 @@ namespace Mail.Pages
 
         private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model, WebView browser)
         {
-            IMailService Service = App.Services.GetService<OutlookService>()!;
             if (Service.GetCache().Get(model.Id) is null)
             {
                 await Service.LoadAttachmentsAndCacheAsync(model.Id);
             }
 
-            if (browser.DataContext is not MailMessageListDetailViewModel Context) return;
-            if (!Context.Id.Equals(model.Id)) return;
+            if (browser.DataContext is not MailMessageListDetailViewModel context) return;
+            if (!context.Id.Equals(model.Id)) return;
 
-            var Replace = Rgx.Replace(model.Content, ReplaceWord);
+            var replace = Rgx.Replace(model.Content, ReplaceWord);
 
             if (model.ContentType == MailMessageContentType.Text)
             {
-                Replace =
-                    @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{Replace}</body></html>";
+                replace =
+                    @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{replace}</body></html>";
             }
 
-            await Dispatcher.RunAsync(CoreDispatcherPriority.High, () => browser.NavigateToString(Replace));
+            await Dispatcher.RunAsync(CoreDispatcherPriority.High, () => browser.NavigateToString(replace));
         }
 
         private string ReplaceWord(Capture match)
         {
-            IMailService Service = App.Services.GetService<OutlookService>()!;
-
-            var FileAttachment = Service.GetCache().Get<MailMessageFileAttachmentData>(match.Value.Replace("cid:", ""));
-            return FileAttachment is null
+            var fileAttachment = Service.GetCache().Get<MailMessageFileAttachmentData>(match.Value.Replace("cid:", ""));
+            return fileAttachment is null
                 ? match.Value
-                : $"data:{FileAttachment.ContentType};base64,{Convert.ToBase64String(FileAttachment.ContentBytes)}";
+                : $"data:{fileAttachment.ContentType};base64,{Convert.ToBase64String(fileAttachment.ContentBytes)}";
         }
 
         private async Task SetWebviewHeight(WebView webView)
@@ -199,12 +199,12 @@ namespace Mail.Pages
 
         private void ListDetailsView_Loaded(object sender, RoutedEventArgs e)
         {
-            if (sender is not ListDetailsView View) return;
-            if (View.FindChildOfType<ListView>() is not ListView InnerView) return;
+            if (sender is not ListDetailsView view) return;
+            if (view.FindChildOfType<ListView>() is not { } innerView) return;
 
-            InnerView.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
-            InnerView.IncrementalLoadingThreshold = 3;
-            InnerView.DataFetchSize = 3;
+            innerView.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
+            innerView.IncrementalLoadingThreshold = 3;
+            innerView.DataFetchSize = 3;
         }
 
         private void DetailsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -225,8 +225,8 @@ namespace Mail.Pages
 
         private void DetailsView_ViewStateChanged(object sender, ListDetailsViewState e)
         {
-            if (sender is ListDetailsView View &&
-                View.FindChildOfName<Button>("DetailsViewGoBack") is Button detailsViewGoBack)
+            if (sender is ListDetailsView view &&
+                view.FindChildOfName<Button>("DetailsViewGoBack") is { } detailsViewGoBack)
             {
                 detailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details
                     ? Visibility.Visible
@@ -275,13 +275,13 @@ namespace Mail.Pages
             await foreach (var attachment in messageAttachmentsCollectionPage)
             {
                 // TODO Style
-                var ListBoxItem = new Button
+                var listBoxItem = new Button
                 {
                     Content = $"{attachment.Name}\r\nSize: {attachment.AttachmentSize} Byte",
                     DataContext = attachment
                 };
-                ListBoxItem.Click += MailFileAttachmentDownload;
-                listBoxItems.Add(ListBoxItem);
+                listBoxItem.Click += MailFileAttachmentDownload;
+                listBoxItems.Add(listBoxItem);
             }
         }
 
@@ -322,16 +322,6 @@ namespace Mail.Pages
             DetailsView.SelectedIndex = 0;
         }
 
-        private void SendMail_Click(object sender, RoutedEventArgs e)
-        {
-            if ((sender as FrameworkElement)?
-                .DataContext is not MailMessageListDetailViewModel { IsEmpty: true } Model) return;
-
-            var info = Model.EditInfo;
-
-            //TODO combine information and send email
-        }
-
         private async void MailForwardAsync(object Sender, RoutedEventArgs E)
         {
             if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
@@ -339,18 +329,6 @@ namespace Mail.Pages
             await EditMail.CreateEditWindow(new EditMailOption
             {
                 Model = model, EditMailType = EditMailType.Forward
-            });
-        }
-
-        private void Frame_OnNavigating(object Sender, NavigatingCancelEventArgs E)
-        {
-            if (Sender is not Frame frame) return;
-            var model = PreviewSource?.FirstOrDefault();
-            if (model?.IsEmpty != true) return;
-
-            frame.Navigate(typeof(EditMail), new EditMailOption
-            {
-                Model = model, EditMailType = EditMailType.Send
             });
         }
 
@@ -378,35 +356,42 @@ namespace Mail.Pages
         private async void MailMoveAsync(object Sender, RoutedEventArgs E)
         {
             if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
-            var service = App.Services.GetService<OutlookService>()!;
             //TODO 目标文件夹id来源需要前台处理
-            await service.MailMoveAsync(model.Id, "sQACTCKK1QAAAA==");
+            await Service.MailMoveAsync(model.Id, "sQACTCKK1QAAAA==");
         }
 
         private async void MailRemoveAsync(object Sender, RoutedEventArgs E)
         {
             // TODO refresh folder
             if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
-            var service = App.Services.GetService<OutlookService>()!;
-            var mailRemoveAsync = await service.MailRemoveAsync(model);
+            var mailRemoveAsync = await Service.MailRemoveAsync(model);
             Trace.WriteLine($"删除邮件: {mailRemoveAsync}");
+        }
+
+        private async void MailMoveArchiveAsync(object Sender, RoutedEventArgs E)
+        {
+            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
+
+            var folder = Service.GetCache().Get<MailFolderData>("archive");
+            if (folder == null)
+            {
+                //TODO Outlook是加入了缓存, 其他服务需要处理
+                return;
+            }
+
+            await Service.MailMoveAsync(model.Id, folder.Id);
         }
     }
 
     public class DetailsSelector : DataTemplateSelector
     {
-        public DataTemplate EditTemplate { get; set; }
+        public DataTemplate EditTemplate { get; set; } = default!;
 
-        public DataTemplate DefaultTemplate { get; set; }
+        public DataTemplate DefaultTemplate { get; set; } = default!;
 
         protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
         {
-            if (item is MailMessageListDetailViewModel { IsEmpty: true })
-            {
-                return EditTemplate;
-            }
-
-            return DefaultTemplate;
+            return item is MailMessageListDetailViewModel { IsEmpty: true } ? EditTemplate : DefaultTemplate;
         }
     }
 }
