@@ -324,8 +324,8 @@
                         Visibility="Collapsed"
                         PaneDisplayMode="Top">
                         <muxc:NavigationView.MenuItems>
-                            <muxc:NavigationViewItem Content="Focusd" x:Name="FocusedTab" />
-                            <muxc:NavigationViewItem Content="Other" x:Name="OtherTab" />
+                            <muxc:NavigationViewItem x:Uid="FocusedTab" x:Name="FocusedTab" />
+                            <muxc:NavigationViewItem x:Uid="OtherTab" x:Name="OtherTab" />
                         </muxc:NavigationView.MenuItems>
                     </muxc:NavigationView>
                     <TextBlock x:Name="FolderName" FontWeight="Bold" Visibility="Collapsed" VerticalAlignment="Center" />
