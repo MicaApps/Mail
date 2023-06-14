@@ -19,6 +19,7 @@ using Mail.Services.Data.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Nito.AsyncEx;
+using Windows.UI.Xaml.Media.Animation;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -172,6 +173,14 @@ namespace Mail.Pages
             finally
             {
                 SaveMailLock.Release();
+            }
+            if (this.Parent.GetType() == typeof(Frame))
+            {
+                Frame frame = (Frame)this.Parent;
+                await frame.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => 
+                {
+                    frame.Navigate(typeof(BlankPage), null, new DrillInNavigationTransitionInfo());
+                });
             }
         }
 
