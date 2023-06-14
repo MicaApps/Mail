@@ -435,17 +435,20 @@
             </controls:ListDetailsView.ItemTemplate>
             <controls:ListDetailsView.NoSelectionContentTemplate>
                 <DataTemplate>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <SymbolIcon RenderTransformOrigin=".5,.5" Symbol="Mail">
+                    <Grid HorizontalAlignment="Center" VerticalAlignment="Center" >
+                        
+                        <SymbolIcon RenderTransformOrigin=".5,.5" Symbol="MailFilled" Foreground="{ThemeResource SystemControlBackgroundListMediumBrush }">
                             <SymbolIcon.RenderTransform>
-                                <CompositeTransform ScaleX="2" ScaleY="2" />
+                                <CompositeTransform ScaleX="4.5" ScaleY="4.5" />
                             </SymbolIcon.RenderTransform>
                         </SymbolIcon>
-                        <TextBlock
-                            Margin="0,12"
-                            FontSize="20"
-                            Text="Select an item to view" />
-                    </StackPanel>
+                        <SymbolIcon RenderTransformOrigin=".5,.5" Symbol="Mail" Foreground="{ThemeResource SystemControlAcrylicWindowBrush}">
+                            <SymbolIcon.RenderTransform>
+                                <CompositeTransform ScaleX="4.5" ScaleY="4.5" />
+                            </SymbolIcon.RenderTransform>
+                        </SymbolIcon>
+                        
+                    </Grid>
                 </DataTemplate>
             </controls:ListDetailsView.NoSelectionContentTemplate>
             <controls:ListDetailsView.ListCommandBar>
