@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using Windows.UI.Xaml.Navigation;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
+using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Identity.Client;
 
@@ -20,9 +22,10 @@ namespace Mail.Services
         protected static readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
         private IMailService MailServiceImplementation;
         public AccountModel? CurrentAccount { get; set; }
+        public abstract MailType MailType { get; }
 
         /// <summary>
-        /// 如果要完成本地缓存, 考虑持久化该数据来获取确定的id与文件夹数据
+        /// 已加载的第一层文件夹数据
         /// <p>key: folderId</p>
         /// </summary>
         public Dictionary<string, MailFolderData> LoadedMailFolderDataTree { get; } = new();
@@ -79,7 +82,7 @@ namespace Mail.Services
             return Task.FromResult(true);
         }
 
-        public abstract IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
+        public abstract IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(NavigationMode NavigationMode,
             CancellationToken CancelToken = default);
 
         public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,

@@ -4,8 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using Windows.UI.Xaml.Navigation;
 using Mail.Models;
 using Mail.Services.Data;
+using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Mail.Services
@@ -16,10 +18,13 @@ namespace Mail.Services
 
         public bool IsSignIn { get; }
         AccountModel? CurrentAccount { get; }
+        MailType MailType { get; }
         MemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
-        public IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(CancellationToken CancelToken = default);
+
+        public IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(NavigationMode NavigationMode,
+            CancellationToken CancelToken = default);
 
         public Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default);

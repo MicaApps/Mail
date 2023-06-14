@@ -1,33 +1,46 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
+using Mail.Extensions;
+using Mail.Interfaces;
+using Mail.Services.Data.Enums;
+using SqlSugar;
 
 namespace Mail.Services.Data
 {
-    internal class MailFolderData
+    [SugarTable]
+    internal class MailFolderData : DbEntity
     {
-        public string Id { get; }
+        public MailFolderData()
+        {
+        }
 
-        public string Name { get; }
+        [SugarColumn(IsPrimaryKey = true)] public new string Id { get; set; }
 
-        public MailFolderType Type { get; }
+        public string Name { get; set; }
+
+        public MailFolderType Type { get; set; }
         public bool IsHidden { get; set; }
+        [SugarColumn(IsIgnore = true)] public ObservableCollection<MailFolderData> ChildFolders { get; set; }
 
-        public IList<MailFolderData> ChildFolders { get; }
+        public MailType MailType { get; set; }
 
+        /// <summary>
+        /// 最高级为""
+        /// </summary>
         public string ParentFolderId { get; set; } = "";
+
         public int ChildFolderCount { get; set; }
 
-        public MailFolderData(string id, string name, MailFolderType type, IList<MailFolderData> ChildFolders)
+        public MailFolderData(string id, string name, MailFolderType type,
+            ObservableCollection<MailFolderData> ChildFolders,
+            MailType MailType)
         {
             Id = id;
             Name = name;
             Type = type;
             this.ChildFolders = ChildFolders;
-        }
-
-        public override string ToString()
-        {
-            return
-                $"{nameof(Id)}: {Id}, {nameof(Name)}: {Name}, {nameof(Type)}: {Type}, {nameof(IsHidden)}: {IsHidden}, {nameof(ChildFolders)}: {ChildFolders}";
+            this.ChildFolders.CollectionChanged +=
+                ObservableCollectionExtension<MailFolderData>.CollectionChanged_DbHandle;
+            this.MailType = MailType;
         }
     }
 }

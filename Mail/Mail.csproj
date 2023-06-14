@@ -133,8 +133,11 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ContactToAvatarConverter.cs" />
+    <Compile Include="Extensions\DbClientExtension.cs"/>
     <Compile Include="Extensions\Graph\MsalProvider.cs" />
+    <Compile Include="Extensions\ObservableCollectionExtension.cs"/>
     <Compile Include="Extensions\RunCatch.cs" />
+    <Compile Include="Interfaces\DbEntity.cs"/>
     <Compile Include="Models\EditMailOption.cs" />
     <Compile Include="Pages\EditMail.xaml.cs">
       <DependentUpon>EditMail.xaml</DependentUpon>
@@ -314,14 +317,25 @@
     <PackageReference Include="Nito.AsyncEx">
       <Version>5.1.2</Version>
     </PackageReference>
+    <PackageReference Include="SqlSugar">
+      <Version>5.1.4.83</Version>
+    </PackageReference>
+    <PackageReference Include="System.Data.SQLite">
+      <Version>1.0.118</Version>
+    </PackageReference>
     <PackageReference Include="System.Interactive.Async">
       <Version>6.0.1</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\..\..\..\.nuget\packages\entityframework\6.4.4\lib\net40\EntityFramework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets"/>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
