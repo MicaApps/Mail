@@ -132,13 +132,16 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\ContactToAvatarConverter.cs"/>
+    <Compile Include="Converters\ContactToAvatarConverter.cs" />
     <Compile Include="Extensions\DbClientExtension.cs"/>
     <Compile Include="Extensions\DbOperationEvent.cs"/>
-    <Compile Include="Extensions\Graph\MsalProvider.cs"/>
-    <Compile Include="Extensions\RunCatch.cs"/>
     <Compile Include="Interfaces\DbEntity.cs"/>
-    <Compile Include="Models\EditMailOption.cs"/>
+    <Compile Include="Extensions\Graph\MsalProvider.cs" />
+    <Compile Include="Extensions\RunCatch.cs" />
+    <Compile Include="Models\EditMailOption.cs" />
+    <Compile Include="Pages\BlankPage.xaml.cs">
+      <DependentUpon>BlankPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\EditMail.xaml.cs">
       <DependentUpon>EditMail.xaml</DependentUpon>
     </Compile>
@@ -258,6 +261,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Pages\BlankPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Pages\EditMail.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -335,7 +342,7 @@
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets"/>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
