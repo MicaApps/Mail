@@ -1,33 +1,73 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Mail.Extensions;
+using Mail.Interfaces;
+using Mail.Services.Data.Enums;
+using SqlSugar;
 
 namespace Mail.Services.Data
 {
-    internal class MailFolderData
+    [SugarTable]
+    internal class MailFolderData : DbEntity
     {
-        public string Id { get; }
+        public MailFolderData()
+        {
+            ChildFolders = new List<MailFolderData>(0);
+        }
 
-        public string Name { get; }
+        [SugarColumn(IsPrimaryKey = true)] public new string Id { get; set; }
 
-        public MailFolderType Type { get; }
+        public string Name { get; set; }
+
+        public MailFolderType Type { get; set; }
         public bool IsHidden { get; set; }
 
-        public IList<MailFolderData> ChildFolders { get; }
+        [SugarColumn(IsIgnore = true)] public IList<MailFolderData> ChildFolders { get; set; }
 
+        public MailType MailType { get; set; }
+
+        /// <summary>
+        /// 最高级为""
+        /// </summary>
         public string ParentFolderId { get; set; } = "";
+
         public int ChildFolderCount { get; set; }
 
-        public MailFolderData(string id, string name, MailFolderType type, IList<MailFolderData> ChildFolders)
+        public MailFolderData(string id, string name, MailFolderType type,
+            IList<MailFolderData> ChildFolders,
+            MailType MailType)
         {
             Id = id;
             Name = name;
             Type = type;
             this.ChildFolders = ChildFolders;
+            this.MailType = MailType;
         }
 
-        public override string ToString()
+        public void RecursionChildFolderToObservableCollection(ISqlSugarClient Client)
         {
-            return
-                $"{nameof(Id)}: {Id}, {nameof(Name)}: {Name}, {nameof(Type)}: {Type}, {nameof(IsHidden)}: {IsHidden}, {nameof(ChildFolders)}: {ChildFolders}";
+            var coll = new ObservableCollection<MailFolderData>();
+            coll.AddRange(ChildFolders);
+
+            Client.GetDbOperationEvent().SaveEvent += Entity =>
+            {
+                if (Entity is MailFolderData data && data.ParentFolderId == Id)
+                {
+                    ChildFolders.Add(data);
+                }
+            };
+            Client.GetDbOperationEvent().RemoveEvent += Entity =>
+            {
+                if (Entity is MailFolderData data && data.ParentFolderId == Id)
+                {
+                    ChildFolders.Remove(data);
+                }
+            };
+            ChildFolders = coll;
+            foreach (var mailFolderData in ChildFolders)
+            {
+                mailFolderData.RecursionChildFolderToObservableCollection(Client);
+            }
         }
     }
 }

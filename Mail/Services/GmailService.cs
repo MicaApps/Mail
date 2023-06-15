@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
+using Mail.Services.Data.Enums;
 
 namespace Mail.Services
 {
@@ -14,6 +15,8 @@ namespace Mail.Services
         public GmailService() : base(WebAccountProviderType.Any)
         {
         }
+
+        public override MailType MailType => MailType.Gmail;
 
         public override IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             CancellationToken CancelToken = default)
