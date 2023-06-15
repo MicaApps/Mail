@@ -38,9 +38,6 @@ namespace Mail.Services
     {
         private static readonly SemaphoreSlim GetMailMessageAttachmentsLock = new(1);
         private GraphServiceClient? Client;
-        private ISqlSugarClient DbClient => App.Services.GetService<ISqlSugarClient>()!;
-
-        private GraphServiceClient GetClient() => Client ??= Provider.GetClient();
 
         public OutlookService() : base(WebAccountProviderType.Msa)
         {
@@ -50,6 +47,8 @@ namespace Mail.Services
                 MailFoldersTree.Add(f);
             };
         }
+
+        private ISqlSugarClient DbClient => App.Services.GetService<ISqlSugarClient>()!;
 
         protected override string[] Scopes { get; } =
         {
@@ -64,6 +63,9 @@ namespace Mail.Services
             "offline_access",
             "Mail.Send"
         };
+
+        public override MailType MailType => MailType.Outlook;
+        public override ObservableCollection<MailFolderData> MailFoldersTree { get; } = new();
 
         public async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, bool focused,
             uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
@@ -112,6 +114,8 @@ namespace Mail.Services
             }
         }
 
+        private GraphServiceClient GetClient() => Client ??= Provider.GetClient();
+
         private MailFolderItemRequestBuilder GetDefatultMailFolderBuilder(MailFolderType Type)
         {
             string FolderString = Type switch
@@ -152,9 +156,6 @@ namespace Mail.Services
 
             return null;
         }
-
-        public override MailType MailType => MailType.Outlook;
-        public override ObservableCollection<MailFolderData> MailFoldersTree { get; } = new();
 
         public override async IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)

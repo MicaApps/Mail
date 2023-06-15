@@ -136,7 +136,6 @@
     <Compile Include="Extensions\DbClientExtension.cs"/>
     <Compile Include="Extensions\DbOperationEvent.cs"/>
     <Compile Include="Extensions\Graph\MsalProvider.cs"/>
-    <Compile Include="Extensions\ObservableCollectionExtension.cs"/>
     <Compile Include="Extensions\RunCatch.cs"/>
     <Compile Include="Interfaces\DbEntity.cs"/>
     <Compile Include="Models\EditMailOption.cs"/>
@@ -145,16 +144,16 @@
     </Compile>
     <Compile Include="Services\CacheService.cs"/>
     <Compile Include="Services\Data\Enums\EditMailType.cs"/>
-    <Compile Include="Services\Data\Enums\MailType.cs" />
-    <Compile Include="Services\Data\IMailMessageAttachmentData.cs" />
-    <Compile Include="Services\Data\MailFolderData.cs" />
-    <Compile Include="Services\Data\MailFolderDetailData.cs" />
-    <Compile Include="Services\Data\MailMessageFileAttachmentData.cs" />
-    <Compile Include="Services\Data\MailMessageAttachmentData.cs" />
-    <Compile Include="Services\Data\MailMessageContentData.cs" />
-    <Compile Include="Services\Data\MailMessageData.cs" />
-    <Compile Include="Services\Data\MailMessageRecipientData.cs" />
-    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs" />
+    <Compile Include="Services\Data\Enums\MailType.cs"/>
+    <Compile Include="Services\Data\IMailMessageAttachmentData.cs"/>
+    <Compile Include="Services\Data\MailFolderData.cs"/>
+    <Compile Include="Services\Data\MailFolderDetailData.cs"/>
+    <Compile Include="Services\Data\MailMessageFileAttachmentData.cs"/>
+    <Compile Include="Services\Data\MailMessageAttachmentData.cs"/>
+    <Compile Include="Services\Data\MailMessageContentData.cs"/>
+    <Compile Include="Services\Data\MailMessageData.cs"/>
+    <Compile Include="Services\Data\MailMessageRecipientData.cs"/>
+    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs"/>
     <Compile Include="Services\Data\AccountModel.cs" />
     <Compile Include="Services\Data\ContactModel.cs" />
     <Compile Include="Extensions\DependencyObjectExtension.cs" />

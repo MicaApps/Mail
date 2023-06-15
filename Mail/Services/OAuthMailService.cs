@@ -25,12 +25,6 @@ namespace Mail.Services
         public abstract MailType MailType { get; }
         public abstract ObservableCollection<MailFolderData> MailFoldersTree { get; }
 
-        /// <summary>
-        /// 已加载的第一层文件夹数据
-        /// <p>key: folderId</p>
-        /// </summary>
-        public Dictionary<string, MailFolderData> LoadedMailFolderDataTree { get; } = new();
-
         public BaseProvider Provider { get; }
 
         protected abstract string[] Scopes { get; }
