@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
-using Windows.UI.Xaml.Navigation;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
@@ -23,6 +23,7 @@ namespace Mail.Services
         private IMailService MailServiceImplementation;
         public AccountModel? CurrentAccount { get; set; }
         public abstract MailType MailType { get; }
+        public abstract ObservableCollection<MailFolderData> MailFoldersTree { get; }
 
         /// <summary>
         /// 已加载的第一层文件夹数据
@@ -82,7 +83,7 @@ namespace Mail.Services
             return Task.FromResult(true);
         }
 
-        public abstract IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(NavigationMode NavigationMode,
+        public abstract IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             CancellationToken CancelToken = default);
 
         public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,

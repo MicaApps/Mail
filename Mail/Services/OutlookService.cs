@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
-using Windows.UI.Xaml.Navigation;
 using CommunityToolkit.Authentication;
 using Mail.Extensions;
 using Mail.Extensions.Graph;
@@ -45,6 +44,11 @@ namespace Mail.Services
 
         public OutlookService() : base(WebAccountProviderType.Msa)
         {
+            DbClient.GetDbOperationEvent().SaveEvent += Entity =>
+            {
+                if (Entity is not MailFolderData { ParentFolderId: "" } f) return;
+                MailFoldersTree.Add(f);
+            };
         }
 
         protected override string[] Scopes { get; } =
@@ -128,8 +132,17 @@ namespace Mail.Services
         {
             try
             {
-                var mailFolder = await GetClient().Me.MailFolders[name].GetAsync();
-                if (!Enum.TryParse(name, true, out MailFolderType type)) type = MailFolderType.Other;
+                var mailFolder = await GetClient().Me.MailFolders[name].GetAsync(cancellationToken: CancellationToken);
+                var type = name switch
+                {
+                    "Inbox" => MailFolderType.Inbox,
+                    "archive" => MailFolderType.Archive,
+                    "deleteditems" => MailFolderType.Deleted,
+                    "junkemail" => MailFolderType.Junk,
+                    "sentitems" => MailFolderType.SentItems,
+                    "drafts" => MailFolderType.Drafts,
+                    _ => MailFolderType.Other
+                };
                 SaveSuperMailFolderData(mailFolder, type, CancellationToken);
             }
             catch (Exception e)
@@ -141,45 +154,49 @@ namespace Mail.Services
         }
 
         public override MailType MailType => MailType.Outlook;
+        public override ObservableCollection<MailFolderData> MailFoldersTree { get; } = new();
 
-        public override async IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(NavigationMode NavigationMode,
+        public override async IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
+            var folderData = await DbClient.Queryable<MailFolderData>().Where(x => x.Type == MailFolderType.Inbox)
+                .Where(x => x.MailType == MailType.Outlook).FirstAsync(CancelToken);
+            if (folderData == null)
+            {
+                await Task.WhenAll(DefaultFolderTaskAsync("inbox", CancelToken),
+                    DefaultFolderTaskAsync("archive", CancelToken),
+                    DefaultFolderTaskAsync("deleteditems", CancelToken),
+                    DefaultFolderTaskAsync("junkemail", CancelToken),
+                    DefaultFolderTaskAsync("sentitems", CancelToken),
+                    DefaultFolderTaskAsync("syncissues", CancelToken),
+                    DefaultFolderTaskAsync("drafts", CancelToken));
+            }
+
             var treeAsync = await DbClient.Queryable<MailFolderData>()
                 .Where(x => x.MailType == MailType)
                 .ToTreeAsync(x => x.ChildFolders, x => x.ParentFolderId, "");
-            if (treeAsync.Count > 0)
+
+            foreach (var mailFolderData in treeAsync)
             {
-                foreach (var mailFolderData in treeAsync)
-                {
-                    LoadedMailFolderDataTree[mailFolderData.Id] = mailFolderData;
-                    yield return mailFolderData;
-                }
+                mailFolderData.RecursionChildFolderToObservableCollection(DbClient);
+
+                MailFoldersTree.Add(mailFolderData);
+                yield return mailFolderData;
             }
 
-            if (NavigationMode != NavigationMode.New)
-            {
-                yield break;
-            }
+            LoadSuperMailFolderList(CancelToken);
+        }
 
-            var foldersBuilder = GetClient().Me.MailFolders;
-            var folders = foldersBuilder.GetAsync(config =>
+        private async Task LoadSuperMailFolderList(CancellationToken CancelToken)
+        {
+            var folders = await GetClient().Me.MailFolders.GetAsync(config =>
                 {
                     const string n = nameof(MailFolder.DisplayName);
                     config.QueryParameters.Filter = $"{n} ne 'outbox'";
                 },
                 cancellationToken: CancelToken);
-            var result = await Task.WhenAll(folders,
-                DefaultFolderTaskAsync("inbox", CancelToken),
-                DefaultFolderTaskAsync("archive", CancelToken),
-                DefaultFolderTaskAsync("deleteditems", CancelToken),
-                DefaultFolderTaskAsync("junkemail", CancelToken),
-                DefaultFolderTaskAsync("sentitems", CancelToken),
-                DefaultFolderTaskAsync("syncissues", CancelToken),
-                DefaultFolderTaskAsync("drafts", CancelToken)
-            );
 
-            foreach (var mailFolder in result[0]?.Value ?? new List<MailFolder>(0))
+            foreach (var mailFolder in folders.Value)
             {
                 SaveSuperMailFolderData(mailFolder, MailFolderType.Other, CancelToken);
             }
@@ -191,17 +208,16 @@ namespace Mail.Services
             var folderData = new MailFolderData(mailFolder.Id,
                 mailFolder.DisplayName,
                 MailFolderType,
-                new ObservableCollection<MailFolderData>(),
+                new List<MailFolderData>(0),
                 MailType.Outlook)
             {
                 ChildFolderCount = mailFolder.ChildFolderCount ?? 0,
             };
+            folderData.RecursionChildFolderToObservableCollection(DbClient);
 
-            DbClient.SaveOrUpdate(folderData, CancellationToken: CancelToken);
-            var tasks = new List<Task>();
+            await DbClient.SaveOrUpdate(folderData, CancellationToken: CancelToken);
 
-            if (folderData.ChildFolderCount > 0) tasks.Add(LoadMailChildFolderAsync(folderData, CancelToken));
-            await Task.WhenAll(tasks);
+            if (folderData.ChildFolderCount > 0) LoadMailChildFolderAsync(folderData, CancelToken);
         }
 
         private async Task LoadMailChildFolderAsync(MailFolderData ParentMailFolder,
@@ -210,18 +226,18 @@ namespace Mail.Services
             var folders = await GetClient().Me.MailFolders[ParentMailFolder.Id].ChildFolders
                 .GetAsync(cancellationToken: CancelToken);
 
-            //ParentMailFolder.ChildFolders.Clear();
             foreach (var mailFolder in folders.Value)
             {
                 var childMailFolder = new MailFolderData(mailFolder.Id,
                     mailFolder.DisplayName,
                     MailFolderType.Other,
-                    new ObservableCollection<MailFolderData>(),
+                    new List<MailFolderData>(0),
                     MailType.Outlook)
                 {
                     ParentFolderId = ParentMailFolder.Id,
                     ChildFolderCount = mailFolder.ChildFolderCount ?? 0
                 };
+                childMailFolder.RecursionChildFolderToObservableCollection(DbClient);
 
                 await DbClient.SaveOrUpdate(childMailFolder, CancelToken);
 
@@ -231,7 +247,6 @@ namespace Mail.Services
                 }
             }
         }
-
 
         public override async Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type,
             CancellationToken CancelToken = default)

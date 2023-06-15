@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Navigation;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
@@ -19,7 +18,7 @@ namespace Mail.Services
 
         public override MailType MailType => MailType.Gmail;
 
-        public override IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(NavigationMode NavigationMode,
+        public override IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();

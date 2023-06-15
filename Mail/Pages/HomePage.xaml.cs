@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.Core;
@@ -53,8 +54,6 @@ namespace Mail.Pages
             }
 
             Loaded += HomePage_Loaded;
-            MailFolderSource.CollectionChanged +=
-                ObservableCollectionExtension<MailFolderData>.CollectionChanged_DbHandle;
         }
 
         private void SetupTitleBar()
@@ -90,8 +89,9 @@ namespace Mail.Pages
             try
             {
                 // the specified folder could not be found in the store
-                await foreach (var item in Service.GetMailSuperFoldersAsync(NavigationMode.New)
-                                   .OrderBy(item => item.Type))
+                var orderedAsyncEnumerable = Service.GetMailSuperFoldersAsync()
+                    .OrderBy(item => item.Type);
+                await foreach (var item in orderedAsyncEnumerable)
                 {
                     if (item.Type == MailFolderType.Other && isFirstOther)
                     {
@@ -109,6 +109,18 @@ namespace Mail.Pages
             }
 
             NavView.SelectedItem = MailFolderSource.FirstOrDefault(item => item is MailFolderData);
+
+            Service.MailFoldersTree.CollectionChanged += (Sender, Args) =>
+            {
+                //Trace.WriteLine($"Tree Changed: {Enum.GetName(typeof(NotifyCollectionChangedAction),Args.Action)} : {JsonConvert.SerializeObject(Args.NewItems)}");
+                foreach (var item in Args.NewItems)
+                {
+                    if (Args.Action == NotifyCollectionChangedAction.Add)
+                        MailFolderSource.Add(item);
+                    else if (Args.Action == NotifyCollectionChangedAction.Remove)
+                        MailFolderSource.Remove(item);
+                }
+            };
         }
 
         private void SystemBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)

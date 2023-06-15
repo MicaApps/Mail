@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Mail.Extensions;
 using Mail.Interfaces;
 using Mail.Services.Data.Enums;
@@ -11,6 +12,7 @@ namespace Mail.Services.Data
     {
         public MailFolderData()
         {
+            ChildFolders = new List<MailFolderData>(0);
         }
 
         [SugarColumn(IsPrimaryKey = true)] public new string Id { get; set; }
@@ -19,7 +21,8 @@ namespace Mail.Services.Data
 
         public MailFolderType Type { get; set; }
         public bool IsHidden { get; set; }
-        [SugarColumn(IsIgnore = true)] public ObservableCollection<MailFolderData> ChildFolders { get; set; }
+
+        [SugarColumn(IsIgnore = true)] public IList<MailFolderData> ChildFolders { get; set; }
 
         public MailType MailType { get; set; }
 
@@ -31,16 +34,40 @@ namespace Mail.Services.Data
         public int ChildFolderCount { get; set; }
 
         public MailFolderData(string id, string name, MailFolderType type,
-            ObservableCollection<MailFolderData> ChildFolders,
+            IList<MailFolderData> ChildFolders,
             MailType MailType)
         {
             Id = id;
             Name = name;
             Type = type;
             this.ChildFolders = ChildFolders;
-            this.ChildFolders.CollectionChanged +=
-                ObservableCollectionExtension<MailFolderData>.CollectionChanged_DbHandle;
             this.MailType = MailType;
+        }
+
+        public void RecursionChildFolderToObservableCollection(ISqlSugarClient Client)
+        {
+            var coll = new ObservableCollection<MailFolderData>();
+            coll.AddRange(ChildFolders);
+
+            Client.GetDbOperationEvent().SaveEvent += Entity =>
+            {
+                if (Entity is MailFolderData data && data.ParentFolderId == Id)
+                {
+                    ChildFolders.Add(data);
+                }
+            };
+            Client.GetDbOperationEvent().RemoveEvent += Entity =>
+            {
+                if (Entity is MailFolderData data && data.ParentFolderId == Id)
+                {
+                    ChildFolders.Remove(data);
+                }
+            };
+            ChildFolders = coll;
+            foreach (var mailFolderData in ChildFolders)
+            {
+                mailFolderData.RecursionChildFolderToObservableCollection(Client);
+            }
         }
     }
 }

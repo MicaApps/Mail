@@ -132,18 +132,19 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\ContactToAvatarConverter.cs" />
+    <Compile Include="Converters\ContactToAvatarConverter.cs"/>
     <Compile Include="Extensions\DbClientExtension.cs"/>
-    <Compile Include="Extensions\Graph\MsalProvider.cs" />
+    <Compile Include="Extensions\DbOperationEvent.cs"/>
+    <Compile Include="Extensions\Graph\MsalProvider.cs"/>
     <Compile Include="Extensions\ObservableCollectionExtension.cs"/>
-    <Compile Include="Extensions\RunCatch.cs" />
+    <Compile Include="Extensions\RunCatch.cs"/>
     <Compile Include="Interfaces\DbEntity.cs"/>
-    <Compile Include="Models\EditMailOption.cs" />
+    <Compile Include="Models\EditMailOption.cs"/>
     <Compile Include="Pages\EditMail.xaml.cs">
       <DependentUpon>EditMail.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Services\CacheService.cs" />
-    <Compile Include="Services\Data\Enums\EditMailType.cs" />
+    <Compile Include="Services\CacheService.cs"/>
+    <Compile Include="Services\Data\Enums\EditMailType.cs"/>
     <Compile Include="Services\Data\Enums\MailType.cs" />
     <Compile Include="Services\Data\IMailMessageAttachmentData.cs" />
     <Compile Include="Services\Data\MailFolderData.cs" />

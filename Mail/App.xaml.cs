@@ -27,6 +27,7 @@ namespace Mail
             var services = new ServiceCollection();
             RegisterServices(services);
             Services = services.BuildServiceProvider();
+
             Suspending += OnSuspending;
         }
 
@@ -58,14 +59,12 @@ namespace Mail
                             }
                         },
                     });
-
                     //调式代码 用来打印SQL 
                     client.Aop.OnLogExecuting = (sql, pars) =>
                     {
                         Trace.WriteLine(
                             $"ExecSql: {sql}\r\n{client.Utilities.SerializeObject(pars.ToDictionary(it => it.ParameterName, it => it.Value))}");
                     };
-
                     client.DbMaintenance.CreateDatabase();
                     client.CodeFirst.InitTables<MailFolderData>();
                     return client;
