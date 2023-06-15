@@ -334,11 +334,6 @@
       <Version>6.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="EntityFramework">
-      <HintPath>..\..\..\..\.nuget\packages\entityframework\6.4.4\lib\net40\EntityFramework.dll</HintPath>
-    </Reference>
-  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
