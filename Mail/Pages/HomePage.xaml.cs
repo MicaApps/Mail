@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.Core;
@@ -23,6 +24,7 @@ namespace Mail.Pages
         private readonly ObservableCollection<AccountModel> AccountSource = new();
 
         private readonly ObservableCollection<object> MailFolderSource = new();
+        private readonly IMailService Service;
 
         public HomePage()
         {
@@ -35,12 +37,13 @@ namespace Mail.Pages
             //TODO: Test only and should remove this later
             try
             {
-                var service = App.Services.GetService<OutlookService>();
-
-                MsalProvider Provider = service.Provider as MsalProvider;
+                var service = App.Services.GetService<OutlookService>()!;
+                Service = service;
+                var Provider = service.Provider as MsalProvider;
                 var model = new AccountModel(
                     Provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value,
-                    Provider.Account.Username);
+                    Provider.Account.Username,
+                    service.MailType);
                 AccountSource.Add(model);
 
                 service.CurrentAccount = model;
@@ -49,7 +52,6 @@ namespace Mail.Pages
             {
                 throw;
             }
-
 
             Loaded += HomePage_Loaded;
         }
@@ -81,17 +83,19 @@ namespace Mail.Pages
         {
             base.OnNavigatedTo(e);
             if (e.NavigationMode != NavigationMode.New) return;
-
+            // 这是分割线
             MailFolderSource.Add(0);
             var isFirstOther = true;
             try
             {
                 // the specified folder could not be found in the store
-                await foreach (var item in App.Services.GetService<OutlookService>()!.GetMailSuperFoldersAsync()
-                                   .OrderBy(item => item.Type))
+                var orderedAsyncEnumerable = Service.GetMailSuperFoldersAsync()
+                    .OrderBy(item => item.Type);
+                await foreach (var item in orderedAsyncEnumerable)
                 {
                     if (item.Type == MailFolderType.Other && isFirstOther)
                     {
+                        // 这是分割线
                         MailFolderSource.Add(1);
                         isFirstOther = false;
                     }
@@ -105,6 +109,18 @@ namespace Mail.Pages
             }
 
             NavView.SelectedItem = MailFolderSource.FirstOrDefault(item => item is MailFolderData);
+
+            Service.MailFoldersTree.CollectionChanged += (Sender, Args) =>
+            {
+                //Trace.WriteLine($"Tree Changed: {Enum.GetName(typeof(NotifyCollectionChangedAction),Args.Action)} : {JsonConvert.SerializeObject(Args.NewItems)}");
+                foreach (var item in Args.NewItems)
+                {
+                    if (Args.Action == NotifyCollectionChangedAction.Add)
+                        MailFolderSource.Add(item);
+                    else if (Args.Action == NotifyCollectionChangedAction.Remove)
+                        MailFolderSource.Remove(item);
+                }
+            };
         }
 
         private void SystemBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
