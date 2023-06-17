@@ -79,8 +79,10 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     VerticalContentAlignment="Center"
-                    PlaceholderText="Search ">
-                <AutoSuggestBox.Resources>
+                x:Uid="Search"
+                    >
+
+            <AutoSuggestBox.Resources>
                     <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
                         <LinearGradientBrush.RelativeTransform>
                             <ScaleTransform ScaleY="-1" CenterY="0.5" />
