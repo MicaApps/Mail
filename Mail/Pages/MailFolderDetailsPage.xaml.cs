@@ -112,8 +112,11 @@ namespace Mail.Pages
                     EmptyContentText.Text = "No available email";
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+#if DEBUG
+                Trace.WriteLine(e);
+#endif
                 EmptyContentText.Text = "Sync failed";
             }
         }

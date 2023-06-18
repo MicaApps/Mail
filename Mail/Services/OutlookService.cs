@@ -19,7 +19,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
 using Microsoft.Graph.Me.MailFolders.Item;
-using Microsoft.Graph.Me.MailFolders.Item.Messages;
 using Microsoft.Graph.Me.Messages.Item.Attachments.CreateUploadSession;
 using Microsoft.Graph.Me.Messages.Item.Forward;
 using Microsoft.Graph.Me.Messages.Item.Move;
@@ -80,14 +79,13 @@ namespace Mail.Services
                 type = "Other";
             }
 
-            var Builder =
-                IProviderExtension.GetClient(Provider).Me.MailFolders[RootFolderId].Messages;
+            var Builder = GetClient().Me.MailFolders[RootFolderId].Messages;
             var request = Builder.GetAsync(requestConfiguration =>
             {
                 var queryParameters = requestConfiguration.QueryParameters;
                 queryParameters.Filter =
                     $"sentDateTime ge 1900-01-01T00:00:00Z and inferenceClassification eq '{type}'";
-                queryParameters.Orderby = new string[] { "sentDateTime desc" };
+                queryParameters.Orderby = new[] { "sentDateTime desc" };
                 queryParameters.Skip = (int)StartIndex;
                 queryParameters.Top = (int)Count;
             }, CancelToken);
@@ -95,10 +93,10 @@ namespace Mail.Services
             {
                 CancelToken.ThrowIfCancellationRequested();
 
-                yield return new MailMessageData(Message.Subject,
+                yield return new MailMessageData(RootFolderId, Message.Subject,
                     Message.Id,
                     Message.SentDateTime,
-                    new MailMessageRecipientData(Message.Sender.EmailAddress.Name, Message.Sender.EmailAddress.Address),
+                    new MailMessageRecipientData(Message.Sender.EmailAddress.Address, Message.Sender.EmailAddress.Name),
                     Message.ToRecipients.Select((Recipient) =>
                         new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
                     Message.CcRecipients.Select((Recipient) =>
@@ -293,10 +291,9 @@ namespace Mail.Services
         public override async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId,
             uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
-            MessagesRequestBuilder Builder =
-                IProviderExtension.GetClient(Provider).Me.MailFolders[RootFolderId].Messages;
+            var Builder = GetClient().Me.MailFolders[RootFolderId].Messages;
 
-            foreach (Message Message in (await Builder
+            foreach (Message message in (await Builder
                          .GetAsync(requestOptions =>
                          {
                              requestOptions.QueryParameters.Skip = (int)StartIndex;
@@ -306,24 +303,33 @@ namespace Mail.Services
                 CancelToken.ThrowIfCancellationRequested();
 
                 // the var may be null
-                var MessageSender = Message.Sender;
-                yield return new MailMessageData(Message.Subject,
-                    Message.Id,
-                    Message.SentDateTime,
-                    new MailMessageRecipientData(MessageSender?.EmailAddress.Name ?? "",
-                        MessageSender?.EmailAddress.Address ?? ""),
-                    Message.ToRecipients.Select((Recipient) =>
+                var messageSender = message.Sender;
+                var messageData = new MailMessageData(RootFolderId, message.Subject,
+                    message.Id,
+                    message.SentDateTime,
+                    new MailMessageRecipientData(messageSender?.EmailAddress.Name ?? "",
+                        messageSender?.EmailAddress.Address ?? ""),
+                    message.ToRecipients.Select((Recipient) =>
                         new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
-                    Message.CcRecipients.Select((Recipient) =>
+                    message.CcRecipients.Select((Recipient) =>
                         new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
-                    Message.BccRecipients.Select((Recipient) =>
+                    message.BccRecipients.Select((Recipient) =>
                         new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
-                    new MailMessageContentData(Message.Body.Content, Message.BodyPreview,
-                        (MailMessageContentType)Message.Body.ContentType),
-                    Message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
+                    new MailMessageContentData(message.Body.Content, message.BodyPreview,
+                        (MailMessageContentType)message.Body.ContentType),
+                    message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
                         Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size),
                         Attachment.LastModifiedDateTime.GetValueOrDefault())) ??
                     Enumerable.Empty<MailMessageAttachmentData>());
+
+                // 为了插入映射的接受者类型, 这里手动处理中间数据插入
+                DbClient.SaveOrUpdate(messageData.GetRecipientData());
+                DbClient.InsertNav(messageData)
+                    .Include(x => x.Sender)
+                    .Include(x => x.Content)
+                    .ExecuteCommandAsync();
+
+                yield return messageData;
             }
         }
 

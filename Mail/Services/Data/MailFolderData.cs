@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Mail.Extensions;
 using Mail.Interfaces;
@@ -10,6 +11,7 @@ namespace Mail.Services.Data
     [SugarTable]
     internal class MailFolderData : DbEntity
     {
+        [Obsolete("这是给框架用的", true)]
         public MailFolderData()
         {
             ChildFolders = new List<MailFolderData>(0);

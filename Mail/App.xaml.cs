@@ -59,14 +59,20 @@ namespace Mail
                             }
                         },
                     });
+#if DEBUG
                     //调式代码 用来打印SQL 
                     client.Aop.OnLogExecuting = (sql, pars) =>
                     {
                         Trace.WriteLine(
                             $"ExecSql: {sql}\r\n{client.Utilities.SerializeObject(pars.ToDictionary(it => it.ParameterName, it => it.Value))}");
                     };
+#endif
                     client.DbMaintenance.CreateDatabase();
                     client.CodeFirst.InitTables<MailFolderData>();
+                    client.CodeFirst.InitTables<MailMessageData>();
+                    client.CodeFirst.InitTables<MailMessageContentData>();
+                    client.CodeFirst.InitTables<MailMessageRecipientData>();
+
                     return client;
                 })
                 .BuildServiceProvider();
