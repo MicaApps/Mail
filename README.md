@@ -4,6 +4,15 @@
     <p align="center">E-Mail client with WinUI style redeisgn.</p>
 </p>
 
+## Download
+<a style="margin-left:24px" href="https://www.microsoft.com/store/productId/9NVMM1QDW3QB">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://get.microsoft.com/images/en-us%20light.svg" />
+        <source media="(prefers-color-scheme: light)" srcset="https://get.microsoft.com/images/en-us%20dark.svg" />
+        <img style="vertical-align:middle" src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Download DiskInfo" />
+    </picture>
+</a>
+
 ## Target
 
 Aim at providing UWP Mail for Windows.
