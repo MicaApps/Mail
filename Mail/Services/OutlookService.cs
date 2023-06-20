@@ -135,7 +135,7 @@ namespace Mail.Services
                 var mailFolder = await GetClient().Me.MailFolders[name].GetAsync(cancellationToken: CancellationToken);
                 var type = name switch
                 {
-                    "Inbox" => MailFolderType.Inbox,
+                    "inbox" => MailFolderType.Inbox,
                     "archive" => MailFolderType.Archive,
                     "deleteditems" => MailFolderType.Deleted,
                     "junkemail" => MailFolderType.Junk,
