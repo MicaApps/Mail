@@ -12,7 +12,8 @@ using Nito.AsyncEx;
 
 namespace Mail.Services.Collection
 {
-    internal sealed class MailIncrementalLoadingObservableCollection<T> : ObservableCollection<T>,
+    internal sealed class MailIncrementalLoadingObservableCollection :
+        ObservableCollection<MailMessageListDetailViewModel>,
         ISupportIncrementalLoading
     {
         private readonly MailFolderData MailFolder;
@@ -35,9 +36,10 @@ namespace Mail.Services.Collection
             {
                 using (await IncrementalLoadingLocker.LockAsync(CancelToken))
                 {
-                    await foreach (MailMessageData unused in FetchDataSet(RequestedCount, CancelToken))
+                    await foreach (var data in FetchDataSet(RequestedCount, CancelToken))
                     {
                         CancelToken.ThrowIfCancellationRequested();
+                        Add(new MailMessageListDetailViewModel(data));
                         LoadCounter++;
                     }
                 }

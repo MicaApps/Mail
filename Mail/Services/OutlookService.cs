@@ -66,11 +66,15 @@ namespace Mail.Services
         async IAsyncEnumerable<MailMessageData> IMailService.IFocusFilterSupport.GetMailMessageAsync(
             LoadMailMessageOption option, [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
+            foreach (var message in GetCacheMessageData(option))
+            {
+                MemoryCache.Set(message.Id, message);
+                yield return message;
+            }
+
             var type = option.IsFocusedTab ? "Focused" : "Other";
             var rootFolderId = option.FolderId;
-
             var builder = GetClient().Me.MailFolders[rootFolderId].Messages;
-
             var enumerable = (await builder.GetAsync(requestConfiguration =>
             {
                 var queryParameters = requestConfiguration.QueryParameters;
@@ -84,11 +88,39 @@ namespace Mail.Services
             foreach (var message in enumerable)
             {
                 CancelToken.ThrowIfCancellationRequested();
+                if (MemoryCache.Get(message.Id) is not null)
+                {
+                    continue;
+                }
 
                 var messageData = GenAndSaveMailMessageData(rootFolderId, message, type);
 
                 yield return messageData;
             }
+        }
+
+        private IEnumerable<MailMessageData> GetCacheMessageData(LoadMailMessageOption Option)
+        {
+            var focused = Option.IsFocusedTab ? "Focused" : "Other";
+            var messageList = DbClient.Queryable<MailMessageData>()
+                .Includes(x => x.Content)
+                .Mapper((x, cache) =>
+                {
+                    x.Sender = DbClient.Queryable<MailMessageRecipientData>()
+                        .Where(recipient => recipient.Id.Equals(x.Id))
+                        .Where(recipient => recipient.RecipientType == RecipientType.Sender)
+                        .First();
+                })
+                .Includes(x => x.To.Where(recipient => recipient.RecipientType == RecipientType.To).ToList())
+                .Includes(x => x.CC.Where(recipient => recipient.RecipientType == RecipientType.Cc).ToList())
+                .Includes(x => x.Bcc.Where(recipient => recipient.RecipientType == RecipientType.Bcc).ToList())
+                .Where(x => x.FolderId.Equals(Option.FolderId))
+                .Where(x => x.InferenceClassification.Equals(focused))
+                .Skip(Option.StartIndex)
+                .Take(Option.LoadCount)
+                .OrderByDescending(x => x.SentTime)
+                .ToList();
+            return messageList;
         }
 
         private MailMessageData GenAndSaveMailMessageData(string RootFolderId, Message message, string type = "Focused")
@@ -111,10 +143,13 @@ namespace Mail.Services
                 Enumerable.Empty<MailMessageAttachmentData>(), type);
 
             // 为了插入映射的接受者类型, 这里手动处理中间数据插入
-            DbClient.SaveOrUpdate(messageData.GetRecipientData());
-            DbClient.InsertNav(messageData)
-                .Include(x => x.Content)
-                .ExecuteCommandAsync();
+            Task.Run(() =>
+            {
+                DbClient.SaveOrUpdate(messageData.GetRecipientData());
+                DbClient.InsertNav(messageData)
+                    .Include(x => x.Content)
+                    .ExecuteCommandAsync();
+            });
             return messageData;
         }
 
@@ -258,53 +293,15 @@ namespace Mail.Services
             return rootFolder;
         }
 
-        public override async Task LoadMailMessage(LoadMailMessageOption Option, Action<MailMessageData> func,
-            CancellationToken CancelToken = default)
-        {
-            if (Option.IsFocusedTab && this is IMailService.IFocusFilterSupport support)
-            {
-                await foreach (var unused in support.GetMailMessageAsync(Option, CancelToken: CancelToken))
-                    Trace.WriteLine($"LoadMailMessage: {nameof(IMailService.IFocusFilterSupport)}");
-            }
-            else
-            {
-                await foreach (var unused in GetMailMessageAsync(Option, CancelToken: CancelToken))
-                    Trace.WriteLine($"LoadMailMessage: {nameof(IMailService)}");
-            }
-
-            var messageList = await DbClient.Queryable<MailMessageData>()
-                .Includes(x => x.Content)
-                .Mapper((x, cache) =>
-                {
-                    x.Sender = DbClient.Queryable<MailMessageRecipientData>()
-                        .Where(recipient => recipient.Id.Equals(x.Id))
-                        .Where(recipient => recipient.RecipientType == RecipientType.Sender)
-                        .First();
-                })
-                .Includes(x => x.To.Where(recipient => recipient.RecipientType == RecipientType.To).ToList())
-                .Includes(x => x.CC.Where(recipient => recipient.RecipientType == RecipientType.Cc).ToList())
-                .Includes(x => x.Bcc.Where(recipient => recipient.RecipientType == RecipientType.Bcc).ToList())
-                .Where(x => x.FolderId.Equals(Option.FolderId))
-                .OrderByDescending(x => x.SentTime)
-                .ToListAsync(CancelToken);
-
-            foreach (var data in messageList)
-            {
-                func.Invoke(data);
-            }
-
-            DbClient.GetDbOperationEvent().ExecEvent += (Entity, Type) =>
-            {
-                if (Entity is MailMessageData data && Type == DataFilterType.InsertByObject)
-                {
-                    func.Invoke(data);
-                }
-            };
-        }
-
         public override async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption option,
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
+            foreach (var message in GetCacheMessageData(option))
+            {
+                MemoryCache.Set(message.Id, message);
+                yield return message;
+            }
+
             var rootFolderId = option.FolderId;
             var builder = GetClient().Me.MailFolders[rootFolderId].Messages;
 
@@ -316,6 +313,10 @@ namespace Mail.Services
                          }, CancelToken)).Value)
             {
                 CancelToken.ThrowIfCancellationRequested();
+                if (MemoryCache.Get(message.Id) is not null)
+                {
+                    continue;
+                }
 
                 var messageData = GenAndSaveMailMessageData(option.FolderId, message);
 

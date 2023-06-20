@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
@@ -81,12 +80,6 @@ namespace Mail.Services
         public override Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model)
         {
             throw new System.NotImplementedException();
-        }
-
-        public override Task LoadMailMessage(LoadMailMessageOption Option, Action<MailMessageData> Action,
-            CancellationToken CancelToken = default)
-        {
-            throw new NotImplementedException();
         }
     }
 }

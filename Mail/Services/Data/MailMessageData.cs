@@ -22,10 +22,8 @@ public sealed class MailMessageData : DbEntity
     [SugarColumn(IsPrimaryKey = true)] public new string Id { get; set; }
 
     public DateTimeOffset? SentTime { get; set; }
-    public string SenderId { get; set; }
 
-    [Navigate(NavigateType.OneToOne, nameof(SenderId))]
-    public MailMessageRecipientData Sender { get; set; }
+    [SugarColumn(IsIgnore = true)] public MailMessageRecipientData Sender { get; set; }
 
     [SugarColumn(IsIgnore = true)]
     [Navigate(NavigateType.OneToMany, nameof(Id))]

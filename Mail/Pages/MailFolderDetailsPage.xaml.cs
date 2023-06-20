@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace Mail.Pages
     public sealed partial class MailFolderDetailsPage : Page
     {
         private readonly AsyncLock SelectionChangeLocker = new();
-        private MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>? PreviewSource;
+        private MailIncrementalLoadingObservableCollection? PreviewSource;
         private MailFolderData? NavigationData;
         private bool IsFocusedTab { get; set; } = true;
         private IMailService Service;
@@ -87,20 +88,27 @@ namespace Mail.Pages
                 App.Services.GetService<ICacheService>()!.AddOrReplaceCache(contacts);
 
                 var isFocusedTab = IsFocusedTab && data.Type == MailFolderType.Inbox;
+                var option = new LoadMailMessageOption(data.Id, isFocusedTab);
+
                 DetailsView.ItemsSource = PreviewSource =
-                    new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(service,
+                    new MailIncrementalLoadingObservableCollection(service,
                         mailFolder,
                         IsFocusTab: isFocusedTab);
 
-                service.LoadMailMessage(new LoadMailMessageOption(FolderId: data.Id, IsFocusedTab: isFocusedTab),
-                    Data =>
-                    {
-                        if (Data.FolderId.Equals(data.Id))
-                        {
-                            Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                                () => { PreviewSource.Add(new MailMessageListDetailViewModel(Data)); });
-                        }
-                    });
+                IAsyncEnumerable<MailMessageData> dataSet;
+                if (data.Type == MailFolderType.Inbox && service is IMailService.IFocusFilterSupport filterService)
+                {
+                    dataSet = filterService.GetMailMessageAsync(option);
+                }
+                else
+                {
+                    dataSet = service.GetMailMessageAsync(option);
+                }
+
+                await foreach (var messageData in dataSet)
+                {
+                    PreviewSource.Add(new MailMessageListDetailViewModel(messageData));
+                }
 
                 if (PreviewSource.Count == 0)
                 {

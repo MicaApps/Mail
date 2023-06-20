@@ -135,8 +135,5 @@ namespace Mail.Services
             StorageFile StorageFile, CancellationToken CancelToken = default);
 
         public abstract Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);
-
-        public abstract Task LoadMailMessage(LoadMailMessageOption Option, Action<MailMessageData> Action,
-            CancellationToken CancelToken = default);
     }
 }

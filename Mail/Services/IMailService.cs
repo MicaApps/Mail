@@ -70,8 +70,5 @@ namespace Mail.Services
         Task<bool> MailMoveAsync(string mailMessageId, string folderId);
 
         Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);
-
-        Task LoadMailMessage(LoadMailMessageOption Option, Action<MailMessageData> Action,
-            CancellationToken CancelToken = default);
     }
 }
