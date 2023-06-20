@@ -140,6 +140,7 @@
       <Compile Include="Extensions\Graph\MsalProvider.cs"/>
       <Compile Include="Extensions\RunCatch.cs"/>
       <Compile Include="Models\EditMailOption.cs"/>
+      <Compile Include="Models\LoadMailMessageOption.cs"/>
       <Compile Include="Pages\BlankPage.xaml.cs">
           <DependentUpon>BlankPage.xaml</DependentUpon>
       </Compile>

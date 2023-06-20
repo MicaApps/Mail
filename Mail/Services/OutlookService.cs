@@ -17,7 +17,6 @@ using Mail.Services.Data;
 using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph;
-using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.Messages.Item.Attachments.CreateUploadSession;
 using Microsoft.Graph.Me.Messages.Item.Forward;
 using Microsoft.Graph.Me.Messages.Item.Move;
@@ -64,69 +63,62 @@ namespace Mail.Services
         public override MailType MailType => MailType.Outlook;
         public override ObservableCollection<MailFolderData> MailFoldersTree { get; } = new();
 
-        public async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, bool focused,
-            uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
+        async IAsyncEnumerable<MailMessageData> IMailService.IFocusFilterSupport.GetMailMessageAsync(
+            LoadMailMessageOption option, [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
-            var type = focused ? "Focused" : "Other";
+            var type = option.IsFocusedTab ? "Focused" : "Other";
+            var rootFolderId = option.FolderId;
 
-            var builder = GetClient().Me.MailFolders[RootFolderId].Messages;
-            var request = builder.GetAsync(requestConfiguration =>
+            var builder = GetClient().Me.MailFolders[rootFolderId].Messages;
+
+            var enumerable = (await builder.GetAsync(requestConfiguration =>
             {
                 var queryParameters = requestConfiguration.QueryParameters;
                 queryParameters.Filter =
                     $"sentDateTime ge 1900-01-01T00:00:00Z and inferenceClassification eq '{type}'";
                 queryParameters.Orderby = new[] { "sentDateTime desc" };
-                queryParameters.Skip = (int)StartIndex;
-                queryParameters.Top = (int)Count;
-            }, CancelToken);
+                queryParameters.Skip = option.StartIndex;
+                queryParameters.Top = option.LoadCount;
+            }, CancelToken)).Value;
 
-            foreach (var message in (await request).Value)
+            foreach (var message in enumerable)
             {
                 CancelToken.ThrowIfCancellationRequested();
 
-                var messageData = new MailMessageData(RootFolderId, message.Subject,
-                    message.Id,
-                    message.SentDateTime,
-                    new MailMessageRecipientData(message.Sender.EmailAddress.Name, message.Sender.EmailAddress.Address),
-                    message.ToRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                    message.CcRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                    message.BccRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                    new MailMessageContentData(message.Body.Content, message.BodyPreview,
-                        (MailMessageContentType)message.Body.ContentType),
-                    message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
-                        Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size),
-                        Attachment.LastModifiedDateTime.GetValueOrDefault())) ??
-                    Enumerable.Empty<MailMessageAttachmentData>(), type);
-
-                // 为了插入映射的接受者类型, 这里手动处理中间数据插入
-                DbClient.SaveOrUpdate(messageData.GetRecipientData());
-                DbClient.InsertNav(messageData)
-                    .Include(x => x.Content)
-                    .ExecuteCommandAsync();
+                var messageData = GenAndSaveMailMessageData(rootFolderId, message, type);
 
                 yield return messageData;
             }
         }
 
-        private GraphServiceClient GetClient() => Client ??= Provider.GetClient();
-
-        private MailFolderItemRequestBuilder GetDefatultMailFolderBuilder(MailFolderType Type)
+        private MailMessageData GenAndSaveMailMessageData(string RootFolderId, Message message, string type = "Focused")
         {
-            string FolderString = Type switch
-            {
-                MailFolderType.Inbox => "inbox",
-                MailFolderType.Drafts => "drafts",
-                MailFolderType.SentItems => "sentitems",
-                MailFolderType.Deleted => "deleteditems",
-                MailFolderType.Junk => "junkemail",
-                MailFolderType.Archive => "archive",
-                _ => throw new NotSupportedException()
-            };
-            return GetClient().Me.MailFolders[FolderString];
+            var messageData = new MailMessageData(RootFolderId, message.Subject,
+                message.Id,
+                message.SentDateTime,
+                new MailMessageRecipientData(message.Sender.EmailAddress.Name, message.Sender.EmailAddress.Address),
+                message.ToRecipients.Select((Recipient) =>
+                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
+                message.CcRecipients.Select((Recipient) =>
+                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
+                message.BccRecipients.Select((Recipient) =>
+                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
+                new MailMessageContentData(message.Body.Content, message.BodyPreview,
+                    (MailMessageContentType)message.Body.ContentType),
+                message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
+                    Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size),
+                    Attachment.LastModifiedDateTime.GetValueOrDefault())) ??
+                Enumerable.Empty<MailMessageAttachmentData>(), type);
+
+            // 为了插入映射的接受者类型, 这里手动处理中间数据插入
+            DbClient.SaveOrUpdate(messageData.GetRecipientData());
+            DbClient.InsertNav(messageData)
+                .Include(x => x.Content)
+                .ExecuteCommandAsync();
+            return messageData;
         }
+
+        private GraphServiceClient GetClient() => Client ??= Provider.GetClient();
 
         private async Task<MailFolderCollectionResponse?> DefaultFolderTaskAsync(string name,
             CancellationToken CancellationToken)
@@ -266,10 +258,20 @@ namespace Mail.Services
             return rootFolder;
         }
 
-
-        public override async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId,
-            uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
+        public override async Task LoadMailMessage(LoadMailMessageOption Option, Action<MailMessageData> func,
+            CancellationToken CancelToken = default)
         {
+            if (Option.IsFocusedTab && this is IMailService.IFocusFilterSupport support)
+            {
+                await foreach (var unused in support.GetMailMessageAsync(Option, CancelToken: CancelToken))
+                    Trace.WriteLine($"LoadMailMessage: {nameof(IMailService.IFocusFilterSupport)}");
+            }
+            else
+            {
+                await foreach (var unused in GetMailMessageAsync(Option, CancelToken: CancelToken))
+                    Trace.WriteLine($"LoadMailMessage: {nameof(IMailService)}");
+            }
+
             var messageList = await DbClient.Queryable<MailMessageData>()
                 .Includes(x => x.Content)
                 .Mapper((x, cache) =>
@@ -282,45 +284,40 @@ namespace Mail.Services
                 .Includes(x => x.To.Where(recipient => recipient.RecipientType == RecipientType.To).ToList())
                 .Includes(x => x.CC.Where(recipient => recipient.RecipientType == RecipientType.Cc).ToList())
                 .Includes(x => x.Bcc.Where(recipient => recipient.RecipientType == RecipientType.Bcc).ToList())
-                .Where(x => x.FolderId.Equals(RootFolderId))
+                .Where(x => x.FolderId.Equals(Option.FolderId))
+                .OrderByDescending(x => x.SentTime)
                 .ToListAsync(CancelToken);
 
-            var Builder = GetClient().Me.MailFolders[RootFolderId].Messages;
+            foreach (var data in messageList)
+            {
+                func.Invoke(data);
+            }
 
-            foreach (Message message in (await Builder
+            DbClient.GetDbOperationEvent().ExecEvent += (Entity, Type) =>
+            {
+                if (Entity is MailMessageData data && Type == DataFilterType.InsertByObject)
+                {
+                    func.Invoke(data);
+                }
+            };
+        }
+
+        public override async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption option,
+            [EnumeratorCancellation] CancellationToken CancelToken = default)
+        {
+            var rootFolderId = option.FolderId;
+            var builder = GetClient().Me.MailFolders[rootFolderId].Messages;
+
+            foreach (Message message in (await builder
                          .GetAsync(requestOptions =>
                          {
-                             requestOptions.QueryParameters.Skip = (int)StartIndex;
-                             requestOptions.QueryParameters.Top = (int)Count;
+                             requestOptions.QueryParameters.Skip = option.StartIndex;
+                             requestOptions.QueryParameters.Top = option.LoadCount;
                          }, CancelToken)).Value)
             {
                 CancelToken.ThrowIfCancellationRequested();
 
-                // the var may be null
-                var messageSender = message.Sender;
-                var messageData = new MailMessageData(RootFolderId, message.Subject,
-                    message.Id,
-                    message.SentDateTime,
-                    new MailMessageRecipientData(messageSender?.EmailAddress.Name ?? "",
-                        messageSender?.EmailAddress.Address ?? ""),
-                    message.ToRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                    message.CcRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                    message.BccRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                    new MailMessageContentData(message.Body.Content, message.BodyPreview,
-                        (MailMessageContentType)message.Body.ContentType),
-                    message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
-                        Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size),
-                        Attachment.LastModifiedDateTime.GetValueOrDefault())) ??
-                    Enumerable.Empty<MailMessageAttachmentData>());
-
-                // 为了插入映射的接受者类型, 这里手动处理中间数据插入
-                DbClient.SaveOrUpdate(messageData.GetRecipientData());
-                DbClient.InsertNav(messageData)
-                    .Include(x => x.Content)
-                    .ExecuteCommandAsync();
+                var messageData = GenAndSaveMailMessageData(option.FolderId, message);
 
                 yield return messageData;
             }

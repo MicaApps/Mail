@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
@@ -30,8 +31,8 @@ namespace Mail.Services
             throw new System.NotImplementedException();
         }
 
-        public override IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, uint StartIndex = 0,
-            uint Count = 30, CancellationToken CancelToken = default)
+        public override IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
+            CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();
         }
@@ -80,6 +81,12 @@ namespace Mail.Services
         public override Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model)
         {
             throw new System.NotImplementedException();
+        }
+
+        public override Task LoadMailMessage(LoadMailMessageOption Option, Action<MailMessageData> Action,
+            CancellationToken CancelToken = default)
+        {
+            throw new NotImplementedException();
         }
     }
 }

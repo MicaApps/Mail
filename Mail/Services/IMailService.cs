@@ -29,8 +29,8 @@ namespace Mail.Services
         public Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default);
 
-        public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, uint StartIndex = 0,
-            uint Count = 30, CancellationToken CancelToken = default);
+        public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
+            CancellationToken CancelToken = default);
 
         public Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
@@ -38,8 +38,8 @@ namespace Mail.Services
 
         interface IFocusFilterSupport
         {
-            public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, bool focused,
-                uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
+            public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption Option,
+                CancellationToken CancelToken = default);
         }
 
         public IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
@@ -70,5 +70,8 @@ namespace Mail.Services
         Task<bool> MailMoveAsync(string mailMessageId, string folderId);
 
         Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);
+
+        Task LoadMailMessage(LoadMailMessageOption Option, Action<MailMessageData> Action,
+            CancellationToken CancelToken = default);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -87,25 +86,21 @@ namespace Mail.Pages
                 var contacts = await service.GetContactsAsync();
                 App.Services.GetService<ICacheService>()!.AddOrReplaceCache(contacts);
 
+                var isFocusedTab = IsFocusedTab && data.Type == MailFolderType.Inbox;
                 DetailsView.ItemsSource = PreviewSource =
-                    new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(service, data.Type,
-                        mailFolder, (messageData) => new MailMessageListDetailViewModel(messageData),
-                        IsFocusTab: IsFocusedTab);
+                    new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(service,
+                        mailFolder,
+                        IsFocusTab: isFocusedTab);
 
-                IAsyncEnumerable<MailMessageData> dataSet;
-                if (data.Type == MailFolderType.Inbox && service is IMailService.IFocusFilterSupport filterService)
-                {
-                    dataSet = filterService.GetMailMessageAsync(data.Id, IsFocusedTab);
-                }
-                else
-                {
-                    dataSet = service.GetMailMessageAsync(mailFolder.Id);
-                }
-
-                await foreach (var messageData in dataSet)
-                {
-                    PreviewSource.Add(new MailMessageListDetailViewModel(messageData));
-                }
+                service.LoadMailMessage(new LoadMailMessageOption(FolderId: data.Id, IsFocusedTab: isFocusedTab),
+                    Data =>
+                    {
+                        if (Data.FolderId.Equals(data.Id))
+                        {
+                            Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                () => { PreviewSource.Add(new MailMessageListDetailViewModel(Data)); });
+                        }
+                    });
 
                 if (PreviewSource.Count == 0)
                 {
