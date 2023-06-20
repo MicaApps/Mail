@@ -25,6 +25,7 @@ namespace Mail.Services.Data
         public bool IsHidden { get; set; }
 
         [SugarColumn(IsIgnore = true)] public IList<MailFolderData> ChildFolders { get; set; }
+        public int TotalItemCount { get; set; }
 
         public MailType MailType { get; set; }
 
@@ -37,12 +38,14 @@ namespace Mail.Services.Data
 
         public MailFolderData(string id, string name, MailFolderType type,
             IList<MailFolderData> ChildFolders,
+            int? TotalItemCount,
             MailType MailType)
         {
             Id = id;
             Name = name;
             Type = type;
             this.ChildFolders = ChildFolders;
+            this.TotalItemCount = TotalItemCount ?? 0;
             this.MailType = MailType;
         }
 

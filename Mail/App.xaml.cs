@@ -80,7 +80,7 @@ namespace Mail
                         db.Aop.OnLogExecuting = (sql, pars) =>
                         {
                             Trace.WriteLine(
-                                $"ExecSql: {sql}\r\n{db.Utilities.SerializeObject(pars.ToDictionary(it => it.ParameterName, it => it.Value))}");
+                                $"ExecSql: {sql}\r\n{db.Utilities.SerializeObject(pars.ToDictionary(it => it.ParameterName, it => it.Value))}\n");
                         };
 #endif
                     });

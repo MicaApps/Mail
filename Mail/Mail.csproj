@@ -152,7 +152,6 @@
       <Compile Include="Services\Data\Enums\RecipientType.cs"/>
       <Compile Include="Services\Data\IMailMessageAttachmentData.cs"/>
       <Compile Include="Services\Data\MailFolderData.cs"/>
-      <Compile Include="Services\Data\MailFolderDetailData.cs"/>
       <Compile Include="Services\Data\MailMessageFileAttachmentData.cs"/>
       <Compile Include="Services\Data\MailMessageAttachmentData.cs"/>
       <Compile Include="Services\Data\MailMessageContentData.cs"/>

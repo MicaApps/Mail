@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Mail.Interfaces;
 using SqlSugar;
 
 namespace Mail.Extensions;
@@ -43,7 +42,7 @@ public static class DbClientExtension
     }
 
     public static async Task<int> SaveOrUpdate<T>(this ISqlSugarClient Client, IEnumerable<T> entity,
-        CancellationToken CancellationToken = default) where T : DbEntity, new()
+        CancellationToken CancellationToken = default) where T : class, new()
     {
         var dbEntities = entity.ToList();
         var x = await Client.Storageable(dbEntities).ToStorageAsync();

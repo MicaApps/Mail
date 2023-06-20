@@ -24,25 +24,13 @@ namespace Mail.Services
             throw new System.NotImplementedException();
         }
 
-        public override Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
-            CancellationToken CancelToken = default)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type,
+        public override Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();
         }
 
         public override IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, uint StartIndex = 0,
-            uint Count = 30, CancellationToken CancelToken = default)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0,
             uint Count = 30, CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();

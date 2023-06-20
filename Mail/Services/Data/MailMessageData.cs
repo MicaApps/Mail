@@ -14,6 +14,7 @@ public sealed class MailMessageData : DbEntity
     {
     }
 
+    public string InferenceClassification { get; }
     public string FolderId { get; set; }
     public string Title { get; set; }
 
@@ -47,8 +48,9 @@ public sealed class MailMessageData : DbEntity
         MailMessageRecipientData Sender,
         IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> Cc,
         IEnumerable<MailMessageRecipientData> Bcc, MailMessageContentData Content,
-        IEnumerable<MailMessageAttachmentData> Attachments)
+        IEnumerable<MailMessageAttachmentData> Attachments, string InferenceClassification = "Focused")
     {
+        this.InferenceClassification = InferenceClassification;
         this.FolderId = FolderId;
         this.Title = Title;
         this.Id = Id;
