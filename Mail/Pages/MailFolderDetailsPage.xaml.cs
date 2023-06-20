@@ -209,6 +209,9 @@ namespace Mail.Pages
                 }
             }
 
+            // 处理表格
+            original = Regex.Replace(original, @"border(-left|-right|-top|-bottom)*:(\S*)\s*windowtext", "border$1:$2 white");
+            
             return original;
         }
         
