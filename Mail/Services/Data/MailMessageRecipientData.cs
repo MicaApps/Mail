@@ -14,14 +14,14 @@ public sealed class MailMessageRecipientData : DbEntity
     {
     }
 
-    public string Name { get; set; }
-    [SugarColumn(IsPrimaryKey = true)] public string Address { get; set; }
-
     /// <summary>
     /// 关联的邮件消息Id
     /// </summary>
     [SugarColumn(IsPrimaryKey = true)]
     public new string Id { get; set; }
+
+    public string Name { get; set; }
+    [SugarColumn(IsPrimaryKey = true)] public string Address { get; set; }
 
     [SugarColumn(IsPrimaryKey = true)] public RecipientType RecipientType { get; set; }
 

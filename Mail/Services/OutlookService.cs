@@ -87,13 +87,13 @@ namespace Mail.Services
                 var messageData = new MailMessageData(RootFolderId, message.Subject,
                     message.Id,
                     message.SentDateTime,
-                    new MailMessageRecipientData(message.Sender.EmailAddress.Address, message.Sender.EmailAddress.Name),
+                    new MailMessageRecipientData(message.Sender.EmailAddress.Name, message.Sender.EmailAddress.Address),
                     message.ToRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
                     message.CcRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
                     message.BccRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
                     new MailMessageContentData(message.Body.Content, message.BodyPreview,
                         (MailMessageContentType)message.Body.ContentType),
                     message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
@@ -104,7 +104,6 @@ namespace Mail.Services
                 // 为了插入映射的接受者类型, 这里手动处理中间数据插入
                 DbClient.SaveOrUpdate(messageData.GetRecipientData());
                 DbClient.InsertNav(messageData)
-                    .Include(x => x.Sender)
                     .Include(x => x.Content)
                     .ExecuteCommandAsync();
 
@@ -267,9 +266,25 @@ namespace Mail.Services
             return rootFolder;
         }
 
+
         public override async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId,
             uint StartIndex = 0, uint Count = 30, [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
+            var messageList = await DbClient.Queryable<MailMessageData>()
+                .Includes(x => x.Content)
+                .Mapper((x, cache) =>
+                {
+                    x.Sender = DbClient.Queryable<MailMessageRecipientData>()
+                        .Where(recipient => recipient.Id.Equals(x.Id))
+                        .Where(recipient => recipient.RecipientType == RecipientType.Sender)
+                        .First();
+                })
+                .Includes(x => x.To.Where(recipient => recipient.RecipientType == RecipientType.To).ToList())
+                .Includes(x => x.CC.Where(recipient => recipient.RecipientType == RecipientType.Cc).ToList())
+                .Includes(x => x.Bcc.Where(recipient => recipient.RecipientType == RecipientType.Bcc).ToList())
+                .Where(x => x.FolderId.Equals(RootFolderId))
+                .ToListAsync(CancelToken);
+
             var Builder = GetClient().Me.MailFolders[RootFolderId].Messages;
 
             foreach (Message message in (await Builder
@@ -289,11 +304,11 @@ namespace Mail.Services
                     new MailMessageRecipientData(messageSender?.EmailAddress.Name ?? "",
                         messageSender?.EmailAddress.Address ?? ""),
                     message.ToRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
                     message.CcRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
                     message.BccRecipients.Select((Recipient) =>
-                        new MailMessageRecipientData(Recipient.EmailAddress.Address, Recipient.EmailAddress.Name)),
+                        new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
                     new MailMessageContentData(message.Body.Content, message.BodyPreview,
                         (MailMessageContentType)message.Body.ContentType),
                     message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
@@ -304,7 +319,6 @@ namespace Mail.Services
                 // 为了插入映射的接受者类型, 这里手动处理中间数据插入
                 DbClient.SaveOrUpdate(messageData.GetRecipientData());
                 DbClient.InsertNav(messageData)
-                    .Include(x => x.Sender)
                     .Include(x => x.Content)
                     .ExecuteCommandAsync();
 

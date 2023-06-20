@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Mail.Interfaces;
-using Newtonsoft.Json;
+using Mail.Services.Data.Enums;
 using SqlSugar;
 
 namespace Mail.Services.Data;
 
 [SugarTable]
+[SugarIndex("MailMessageData_FolderId_Index", nameof(FolderId), OrderByType.Desc)]
 public sealed class MailMessageData : DbEntity
 {
     [Obsolete("这是给框架用的", true)]
@@ -21,23 +22,22 @@ public sealed class MailMessageData : DbEntity
     [SugarColumn(IsPrimaryKey = true)] public new string Id { get; set; }
 
     public DateTimeOffset? SentTime { get; set; }
-
-    [JsonIgnore] public string SenderId => Sender.Address;
+    public string SenderId { get; set; }
 
     [Navigate(NavigateType.OneToOne, nameof(SenderId))]
     public MailMessageRecipientData Sender { get; set; }
 
     [SugarColumn(IsIgnore = true)]
     [Navigate(NavigateType.OneToMany, nameof(Id))]
-    public IList<MailMessageRecipientData> To { get; set; }
+    public List<MailMessageRecipientData> To { get; set; }
 
     [SugarColumn(IsIgnore = true)]
     [Navigate(NavigateType.OneToMany, nameof(Id))]
-    public IList<MailMessageRecipientData> CC { get; set; }
+    public List<MailMessageRecipientData> CC { get; set; }
 
     [SugarColumn(IsIgnore = true)]
     [Navigate(NavigateType.OneToMany, nameof(Id))]
-    public IList<MailMessageRecipientData> Bcc { get; set; }
+    public List<MailMessageRecipientData> Bcc { get; set; }
 
     [SugarColumn(IsIgnore = true)] public IList<IMailMessageAttachmentData> Attachments { get; private set; }
 
@@ -57,6 +57,7 @@ public sealed class MailMessageData : DbEntity
         this.SentTime = SentTime;
         this.Sender = Sender;
         this.Sender.Id = Id;
+        Sender.RecipientType = RecipientType.Sender;
 
         this.To = new List<MailMessageRecipientData>(To);
         this.CC = new List<MailMessageRecipientData>(Cc);

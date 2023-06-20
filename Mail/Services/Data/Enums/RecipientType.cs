@@ -10,5 +10,6 @@ public enum RecipientType
 {
     To,
     Cc,
-    Bcc
+    Bcc,
+    Sender
 }
