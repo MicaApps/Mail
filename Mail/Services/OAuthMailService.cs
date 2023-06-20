@@ -11,7 +11,9 @@ using Mail.Models;
 using Mail.Services.Data;
 using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
+using SqlSugar;
 
 namespace Mail.Services
 {
@@ -19,11 +21,12 @@ namespace Mail.Services
     internal abstract class OAuthMailService : IMailService
     {
         private readonly IPublicClientApplication ClientApplication;
-        protected static readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
+        protected static IMemoryCache MemoryCache => App.Services.GetService<IMemoryCache>()!;
         private IMailService MailServiceImplementation;
         public AccountModel? CurrentAccount { get; set; }
         public abstract MailType MailType { get; }
         public abstract ObservableCollection<MailFolderData> MailFoldersTree { get; }
+        protected ISqlSugarClient DbClient { get; }
 
         public BaseProvider Provider { get; }
 
@@ -35,6 +38,8 @@ namespace Mail.Services
 
         protected OAuthMailService(WebAccountProviderType Type)
         {
+            DbClient = App.Services.GetService<ISqlSugarClient>()!;
+
             ClientApplication = PublicClientApplicationBuilder.Create(Secrect.AadClientId)
                 .WithClientName("MailService")
                 .WithClientVersion("1.0.0")
@@ -67,9 +72,9 @@ namespace Mail.Services
             await Provider.SignOutAsync();
         }
 
-        MemoryCache IMailService.GetCache()
+        IMemoryCache IMailService.GetCache()
         {
-            return MemoryCache;
+            return OAuthMailService.MemoryCache;
         }
 
         public virtual Task<bool> InitSeriviceAsync()

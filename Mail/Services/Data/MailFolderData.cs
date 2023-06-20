@@ -51,20 +51,24 @@ namespace Mail.Services.Data
             var coll = new ObservableCollection<MailFolderData>();
             coll.AddRange(ChildFolders);
 
-            Client.GetDbOperationEvent().SaveEvent += Entity =>
+            Client.GetDbOperationEvent().ExecEvent += (Entity, DataFilterType) =>
             {
+                if (DataFilterType != DataFilterType.InsertByObject) return;
                 if (Entity is MailFolderData data && data.ParentFolderId == Id)
                 {
                     ChildFolders.Add(data);
                 }
             };
-            Client.GetDbOperationEvent().RemoveEvent += Entity =>
+
+            Client.GetDbOperationEvent().ExecEvent += (Entity, DataFilterType) =>
             {
+                if (DataFilterType != DataFilterType.DeleteByObject) return;
                 if (Entity is MailFolderData data && data.ParentFolderId == Id)
                 {
                     ChildFolders.Remove(data);
                 }
             };
+
             ChildFolders = coll;
             foreach (var mailFolderData in ChildFolders)
             {

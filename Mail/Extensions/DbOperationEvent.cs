@@ -1,4 +1,4 @@
-﻿using Mail.Interfaces;
+﻿using SqlSugar;
 
 namespace Mail.Extensions;
 
@@ -8,30 +8,14 @@ namespace Mail.Extensions;
 /// 创建者: GaN<br/>
 /// 创建时间: 2023/06/15
 /// </summary>
-public class DbOperationEvent<T> where T : DbEntity
+public class DbOperationEvent
 {
-    public delegate void DbSave(T entity);
+    public delegate void DataExecuting(object entity, DataFilterType Type);
 
-    public delegate void DbUpdate(T entity);
+    public event DataExecuting? ExecEvent;
 
-    public delegate void DbRemove(T entity);
-
-    public event DbSave? SaveEvent;
-    public event DbUpdate? UpdateEvent;
-    public event DbRemove? RemoveEvent;
-
-    public virtual void OnSave(T Entity)
+    public void OnExecEvent(object Entity, DataFilterType Type)
     {
-        SaveEvent?.Invoke(Entity);
-    }
-
-    public virtual void OnUpdate(T Entity)
-    {
-        UpdateEvent?.Invoke(Entity);
-    }
-
-    public virtual void OnRemove(T Entity)
-    {
-        RemoveEvent?.Invoke(Entity);
+        ExecEvent?.Invoke(Entity, Type);
     }
 }

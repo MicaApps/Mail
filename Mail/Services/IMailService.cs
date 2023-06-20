@@ -20,7 +20,7 @@ namespace Mail.Services
         AccountModel? CurrentAccount { get; }
         MailType MailType { get; }
         public ObservableCollection<MailFolderData> MailFoldersTree { get; }
-        MemoryCache GetCache();
+        IMemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
 

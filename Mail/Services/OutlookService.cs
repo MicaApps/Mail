@@ -16,7 +16,6 @@ using Mail.Models;
 using Mail.Services.Data;
 using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
 using Microsoft.Graph.Me.MailFolders.Item;
 using Microsoft.Graph.Me.Messages.Item.Attachments.CreateUploadSession;
@@ -40,14 +39,13 @@ namespace Mail.Services
 
         public OutlookService() : base(WebAccountProviderType.Msa)
         {
-            DbClient.GetDbOperationEvent().SaveEvent += Entity =>
+            DbClient.GetDbOperationEvent().ExecEvent += (Entity, Type) =>
             {
+                if (Type != DataFilterType.InsertByObject) return;
                 if (Entity is not MailFolderData { ParentFolderId: "" } f) return;
                 MailFoldersTree.Add(f);
             };
         }
-
-        private ISqlSugarClient DbClient => App.Services.GetService<ISqlSugarClient>()!;
 
         protected override string[] Scopes { get; } =
         {
@@ -159,7 +157,7 @@ namespace Mail.Services
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
             var folderData = await DbClient.Queryable<MailFolderData>().Where(x => x.Type == MailFolderType.Inbox)
-                .Where(x => x.MailType == MailType.Outlook).FirstAsync(CancelToken);
+                .Where(x => x.MailType == MailType.Outlook).FirstAsync();
             if (folderData == null)
             {
                 await Task.WhenAll(DefaultFolderTaskAsync("inbox", CancelToken),

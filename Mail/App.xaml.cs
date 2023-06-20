@@ -7,9 +7,11 @@ using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Mail.Extensions;
 using Mail.Pages;
 using Mail.Services;
 using Mail.Services.Data;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;
 using SqlSugar;
@@ -38,7 +40,8 @@ namespace Mail
 
             services.AddSingleton<OutlookService, OutlookService>()
                 .AddSingleton<ICacheService, CacheService>()
-                .AddSingleton<ISqlSugarClient>(_ =>
+                .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))
+                .AddSingleton<ISqlSugarClient>(factory =>
                 {
                     var client = new SqlSugarScope(new ConnectionConfig
                     {
@@ -58,21 +61,35 @@ namespace Mail
                                 }
                             }
                         },
-                    });
-#if DEBUG
-                    //调式代码 用来打印SQL 
-                    client.Aop.OnLogExecuting = (sql, pars) =>
+                    }, db =>
                     {
-                        Trace.WriteLine(
-                            $"ExecSql: {sql}\r\n{client.Utilities.SerializeObject(pars.ToDictionary(it => it.ParameterName, it => it.Value))}");
-                    };
+                        var cache = factory.GetRequiredService<IMemoryCache>();
+                        db.Aop.DataExecuting = (_, entityInfo) =>
+                        {
+                            var value = entityInfo.EntityValue;
+                            var key = entityInfo.OperationType + value.GetHashCode();
+                            if (cache.Get(key) is not null) return;
+
+                            cache.Set(key, 1, TimeSpan.FromSeconds(2));
+                            db.GetDbOperationEvent().OnExecEvent(value, entityInfo.OperationType);
+                        };
+                        //db.Aop.DataExecuted = (entity, entityInfo) => { Trace.WriteLine($"DataExecuted: {entity}"); };
+
+#if DEBUG
+                        //调式代码 用来打印SQL 
+                        db.Aop.OnLogExecuting = (sql, pars) =>
+                        {
+                            Trace.WriteLine(
+                                $"ExecSql: {sql}\r\n{db.Utilities.SerializeObject(pars.ToDictionary(it => it.ParameterName, it => it.Value))}");
+                        };
 #endif
+                    });
+
                     client.DbMaintenance.CreateDatabase();
                     client.CodeFirst.InitTables<MailFolderData>();
                     client.CodeFirst.InitTables<MailMessageData>();
                     client.CodeFirst.InitTables<MailMessageContentData>();
                     client.CodeFirst.InitTables<MailMessageRecipientData>();
-
                     return client;
                 })
                 .BuildServiceProvider();
