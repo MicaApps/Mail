@@ -133,6 +133,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ContactToAvatarConverter.cs" />
+    <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\DbClientExtension.cs"/>
     <Compile Include="Extensions\DbOperationEvent.cs"/>
     <Compile Include="Interfaces\DbEntity.cs"/>

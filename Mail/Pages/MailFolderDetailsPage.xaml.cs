@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -20,8 +21,11 @@ using Mail.Services.Data;
 using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Uwp;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
+using Microsoft.Toolkit.Uwp.Helpers;
+using ColorHelper = Windows.UI.ColorHelper;
 
 namespace Mail.Pages
 {
@@ -118,6 +122,96 @@ namespace Mail.Pages
             }
         }
 
+        private string ConvertContentTheme(string original, bool rawText = false)
+        {
+            if (Application.Current.RequestedTheme != ApplicationTheme.Dark) return original;
+
+            if (rawText)
+            {
+                return original;
+            }
+            else
+            {
+                const string darkCss =
+                    "<style>body{color: white;background: transparent !important; background-color: transparent !important;}</style>";
+                const string regexPattern = """(bgcolor|background|color|background-color)\s*(\:|\=\")\s*(\S*)([\;\"])""";
+
+                var matches = Regex.Matches(original, regexPattern);
+                foreach (Match match in matches)
+                {
+                    try
+                    {
+                        Color originalColor;
+                        if (match.Groups[3].Value.StartsWith("rgba"))
+                        {
+                            var rgbaStr = match.Groups[3].Value.Substring(5).TrimEnd(')');
+                            var rgbaArr = rgbaStr.Split(',');
+                            originalColor = Color.FromArgb((byte)(double.Parse(rgbaArr[3])*255), Byte.Parse(rgbaArr[0]),
+                                                           Byte.Parse(rgbaArr[1]), Byte.Parse(rgbaArr[2]));
+                        }else if (match.Groups[3].Value.StartsWith("rgb"))
+                        {
+                            var rgbStr = match.Groups[3].Value.Substring(4).TrimEnd(')');
+                            var rgbArr = rgbStr.Split(',');
+                            originalColor = Color.FromArgb(255, Byte.Parse(rgbArr[0]),
+                                                           Byte.Parse(rgbArr[1]), Byte.Parse(rgbArr[2]));
+                        }
+                        else
+                        {
+                            originalColor = ColorExtensions.ParseColor(match.Groups[3].Value, null);
+                        }
+
+                        
+                        var hslColor = originalColor.ToHsl();
+                        
+                        // 合理调整此处区间以便正常拉取色调
+                        if (hslColor.L >= 0.70)
+                        {
+                            hslColor.L = 1 - hslColor.L;
+                        }
+                        else if (hslColor.L <= 0.30)
+                        {
+                            hslColor.L = 1 - hslColor.L;
+                        }
+                        
+                        var color = Microsoft.Toolkit.Uwp.Helpers.ColorHelper.FromHsl(
+                            hslColor.H, hslColor.S, hslColor.L, hslColor.A);
+
+                        if (match.Groups[1].Value.StartsWith('b') && hslColor.L is > 0.90 or < 0.10)
+                        {
+
+
+                                original = original.Replace(match.Value,
+                                                        match.Groups[1].Value + match.Groups[2].Value + "transparent" +
+                                                        match.Groups[4].Value);
+                                continue;                           
+                            
+                        }
+                        
+                        original = original.Replace(match.Value,
+                                                        match.Groups[1].Value + match.Groups[2].Value + $"#{color.R:X2}{color.G:X2}{color.B:X2}" +
+                                                        match.Groups[4].Value);
+                    }
+                    catch
+                    {
+                        //ignore
+                    }
+                }
+
+
+                if (original.Contains("<body>"))
+                {
+                    original = original.Insert(original.IndexOf("<body>", StringComparison.Ordinal) + 6, darkCss);
+                }
+
+                if (original.Contains("<html>"))
+                {
+                    original =  original.Insert(original.IndexOf("<html>", StringComparison.Ordinal) + 6, darkCss);
+                }
+            }
+
+            return original;
+        }
+        
         private async void ListDetailsView_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if ((e.OriginalSource as FrameworkElement)?.DataContext is not MailMessageListDetailViewModel model) return;
@@ -136,11 +230,7 @@ namespace Mail.Pages
 
                         var replace = model.Content;
 
-                        if (model.ContentType == MailMessageContentType.Text)
-                        {
-                            replace =
-                                @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{replace}</body></html>";
-                        }
+                        replace = ConvertContentTheme(replace, model.ContentType == MailMessageContentType.Text);
 
                         browser.NavigateToString(replace);
                         break;
@@ -165,11 +255,7 @@ namespace Mail.Pages
 
             var replace = Rgx.Replace(model.Content, ReplaceWord);
 
-            if (model.ContentType == MailMessageContentType.Text)
-            {
-                replace =
-                    @$"<html><head><style type=""text/css"">body{{color: #000; background-color: transparent;}}</style></head><body>{replace}</body></html>";
-            }
+            replace = ConvertContentTheme(replace, model.ContentType == MailMessageContentType.Text);
 
             await Dispatcher.RunAsync(CoreDispatcherPriority.High, () => browser.NavigateToString(replace));
         }
