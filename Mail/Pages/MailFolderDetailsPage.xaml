@@ -21,7 +21,7 @@
 
 
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="ms-appx:///Resources/Dictionary1.xaml"/>
+                <ResourceDictionary Source="ms-appx:///Resources/MicaBackdropStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <Style x:Key="TransTextBoxStyle" TargetType="TextBox">
