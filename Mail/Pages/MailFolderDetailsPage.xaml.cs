@@ -88,8 +88,10 @@ namespace Mail.Pages
                 var mailFolder = await service.GetMailFolderDetailAsync(data.Id);
 
                 // Load Contacts to Cache
+               /*
                 var contacts = await service.GetContactsAsync();
                 App.Services.GetService<ICacheService>()!.AddOrReplaceCache(contacts);
+               */
 
                 DetailsView.ItemsSource = PreviewSource =
                     new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(service, data.Type,
