@@ -134,9 +134,9 @@
     </Compile>
     <Compile Include="Converters\ContactToAvatarConverter.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
-    <Compile Include="Extensions\DbClientExtension.cs"/>
-    <Compile Include="Extensions\DbOperationEvent.cs"/>
-    <Compile Include="Interfaces\DbEntity.cs"/>
+    <Compile Include="Extensions\DbClientExtension.cs" />
+    <Compile Include="Extensions\DbOperationEvent.cs" />
+    <Compile Include="Interfaces\DbEntity.cs" />
     <Compile Include="Extensions\Graph\MsalProvider.cs" />
     <Compile Include="Extensions\RunCatch.cs" />
     <Compile Include="Models\EditMailOption.cs" />
@@ -146,18 +146,18 @@
     <Compile Include="Pages\EditMail.xaml.cs">
       <DependentUpon>EditMail.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Services\CacheService.cs"/>
-    <Compile Include="Services\Data\Enums\EditMailType.cs"/>
-    <Compile Include="Services\Data\Enums\MailType.cs"/>
-    <Compile Include="Services\Data\IMailMessageAttachmentData.cs"/>
-    <Compile Include="Services\Data\MailFolderData.cs"/>
-    <Compile Include="Services\Data\MailFolderDetailData.cs"/>
-    <Compile Include="Services\Data\MailMessageFileAttachmentData.cs"/>
-    <Compile Include="Services\Data\MailMessageAttachmentData.cs"/>
-    <Compile Include="Services\Data\MailMessageContentData.cs"/>
-    <Compile Include="Services\Data\MailMessageData.cs"/>
-    <Compile Include="Services\Data\MailMessageRecipientData.cs"/>
-    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs"/>
+    <Compile Include="Services\CacheService.cs" />
+    <Compile Include="Services\Data\Enums\EditMailType.cs" />
+    <Compile Include="Services\Data\Enums\MailType.cs" />
+    <Compile Include="Services\Data\IMailMessageAttachmentData.cs" />
+    <Compile Include="Services\Data\MailFolderData.cs" />
+    <Compile Include="Services\Data\MailFolderDetailData.cs" />
+    <Compile Include="Services\Data\MailMessageFileAttachmentData.cs" />
+    <Compile Include="Services\Data\MailMessageAttachmentData.cs" />
+    <Compile Include="Services\Data\MailMessageContentData.cs" />
+    <Compile Include="Services\Data\MailMessageData.cs" />
+    <Compile Include="Services\Data\MailMessageRecipientData.cs" />
+    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs" />
     <Compile Include="Services\Data\AccountModel.cs" />
     <Compile Include="Services\Data\ContactModel.cs" />
     <Compile Include="Extensions\DependencyObjectExtension.cs" />
@@ -292,6 +292,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\Dictionary1.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Authentication.Uwp">
@@ -299,6 +303,9 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Labs.Uwp.SettingsControls">
       <Version>0.0.13</Version>
+    </PackageReference>
+    <PackageReference Include="MicaForUWP">
+      <Version>0.1.9</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory">
       <Version>8.0.0-preview.4.23259.5</Version>
