@@ -463,16 +463,16 @@
                                 <ResourceDictionary>
                                     <ResourceDictionary.ThemeDictionaries>
                                         <ResourceDictionary x:Key="Light">
-                                            <SolidColorBrush x:Key="DialogColor" Color="#07000000" />
+                                            <SolidColorBrush x:Key="BlankPageIconForegroundMaskColor" Color="#07000000" />
                                         </ResourceDictionary>
                                         <ResourceDictionary x:Key="Dark">
-                                            <SolidColorBrush x:Key="DialogColor" Color="#17FFFFFF" />
+                                            <SolidColorBrush x:Key="BlankPageIconForegroundMaskColor" Color="#17FFFFFF" />
                                         </ResourceDictionary>
                                     </ResourceDictionary.ThemeDictionaries>
 
 
                                     <Style TargetType="PathIcon">
-                                        <Setter Property="Foreground" Value="{StaticResource DialogColor}" />
+                                        <Setter Property="Foreground" Value="{StaticResource BlankPageIconForegroundMaskColor}" />
                                     </Style>
 
                                 </ResourceDictionary>
