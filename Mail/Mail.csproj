@@ -136,12 +136,12 @@
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\DbClientExtension.cs" />
     <Compile Include="Extensions\DbOperationEvent.cs" />
-    <Compile Include="Extensions\MailMessageDataExtentions.cs"/>
+    <Compile Include="Extensions\MailMessageDataExtentions.cs" />
     <Compile Include="Interfaces\DbEntity.cs" />
     <Compile Include="Extensions\Graph\MsalProvider.cs" />
     <Compile Include="Extensions\RunCatch.cs" />
     <Compile Include="Models\EditMailOption.cs" />
-    <Compile Include="Models\LoadMailMessageOption.cs"/>
+    <Compile Include="Models\LoadMailMessageOption.cs" />
     <Compile Include="Pages\BlankPage.xaml.cs">
       <DependentUpon>BlankPage.xaml</DependentUpon>
     </Compile>
@@ -151,7 +151,7 @@
     <Compile Include="Services\CacheService.cs" />
     <Compile Include="Services\Data\Enums\EditMailType.cs" />
     <Compile Include="Services\Data\Enums\MailType.cs" />
-    <Compile Include="Services\Data\Enums\RecipientType.cs"/>
+    <Compile Include="Services\Data\Enums\RecipientType.cs" />
     <Compile Include="Services\Data\IMailMessageAttachmentData.cs" />
     <Compile Include="Services\Data\MailFolderData.cs" />
     <Compile Include="Services\Data\MailMessageFileAttachmentData.cs" />
@@ -254,6 +254,9 @@
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <PRIResource Include="Strings\ja-JP\Resources.resw" />
+    <PRIResource Include="Strings\ko-KR\Resources.resw" />
+    <PRIResource Include="Strings\fi-FI\Resources.resw" />
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
   </ItemGroup>
@@ -337,7 +340,7 @@
       <Version>5.1.2</Version>
     </PackageReference>
     <PackageReference Include="SqlSugar">
-        <Version>5.1.4.84</Version>
+      <Version>5.1.4.84</Version>
     </PackageReference>
     <PackageReference Include="System.Data.SQLite">
       <Version>1.0.118</Version>
