@@ -1,6 +1,6 @@
 ﻿using SqlSugar;
 
-namespace Mail.Extensions;
+namespace Mail.Events;
 
 /// <summary>
 /// comment<br/>

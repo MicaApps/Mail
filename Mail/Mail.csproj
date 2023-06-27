@@ -133,9 +133,9 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ContactToAvatarConverter.cs" />
+    <Compile Include="Events\DbOperationEvent.cs"/>
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\DbClientExtension.cs" />
-    <Compile Include="Extensions\DbOperationEvent.cs" />
     <Compile Include="Extensions\MailMessageDataExtentions.cs"/>
     <Compile Include="Interfaces\DbEntity.cs" />
     <Compile Include="Extensions\Graph\MsalProvider.cs" />
@@ -193,6 +193,7 @@
     <Compile Include="Services\IMailService.cs" />
     <Compile Include="Services\OAuthMailService.cs" />
     <Compile Include="Services\OutlookService.cs" />
+    <Compile Include="Events\MailMessageEvent.cs"/>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
