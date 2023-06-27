@@ -32,7 +32,7 @@ namespace Mail.Pages
     public sealed partial class MailFolderDetailsPage : Page
     {
         private readonly AsyncLock SelectionChangeLocker = new();
-        private MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>? PreviewSource;
+        private MailIncrementalLoadingObservableCollection? PreviewSource;
         private MailFolderData? NavigationData;
         private bool IsFocusedTab { get; set; } = true;
         private IMailService Service;
@@ -93,19 +93,22 @@ namespace Mail.Pages
                 App.Services.GetService<ICacheService>()!.AddOrReplaceCache(contacts);
                */
 
+                var isFocusedTab = IsFocusedTab && data.Type == MailFolderType.Inbox;
+                var option = new LoadMailMessageOption(data.Id, isFocusedTab);
+
                 DetailsView.ItemsSource = PreviewSource =
-                    new MailIncrementalLoadingObservableCollection<MailMessageListDetailViewModel>(service, data.Type,
-                        mailFolder, (messageData) => new MailMessageListDetailViewModel(messageData),
-                        IsFocusTab: IsFocusedTab);
+                    new MailIncrementalLoadingObservableCollection(service,
+                        mailFolder,
+                        IsFocusTab: isFocusedTab);
 
                 IAsyncEnumerable<MailMessageData> dataSet;
                 if (data.Type == MailFolderType.Inbox && service is IMailService.IFocusFilterSupport filterService)
                 {
-                    dataSet = filterService.GetMailMessageAsync(data.Id, IsFocusedTab);
+                    dataSet = filterService.GetMailMessageAsync(option);
                 }
                 else
                 {
-                    dataSet = service.GetMailMessageAsync(mailFolder.Id);
+                    dataSet = service.GetMailMessageAsync(option);
                 }
 
                 await foreach (var messageData in dataSet)
@@ -118,8 +121,11 @@ namespace Mail.Pages
                     EmptyContentText.Text = "No available email";
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+#if DEBUG
+                Trace.WriteLine(e);
+#endif
                 EmptyContentText.Text = "Sync failed";
             }
         }

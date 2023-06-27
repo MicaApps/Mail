@@ -20,23 +20,17 @@ namespace Mail.Services
         AccountModel? CurrentAccount { get; }
         MailType MailType { get; }
         public ObservableCollection<MailFolderData> MailFoldersTree { get; }
-        MemoryCache GetCache();
+        IMemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
 
         public IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(CancellationToken CancelToken = default);
 
-        public Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
+        public Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default);
 
-        public Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type,
+        public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
             CancellationToken CancelToken = default);
-
-        public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, uint StartIndex = 0,
-            uint Count = 30, CancellationToken CancelToken = default);
-
-        public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0,
-            uint Count = 30, CancellationToken CancelToken = default);
 
         public Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
@@ -44,8 +38,8 @@ namespace Mail.Services
 
         interface IFocusFilterSupport
         {
-            public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, bool focused,
-                uint StartIndex = 0, uint Count = 30, CancellationToken CancelToken = default);
+            public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption Option,
+                CancellationToken CancelToken = default);
         }
 
         public IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(

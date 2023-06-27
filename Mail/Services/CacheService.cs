@@ -5,9 +5,8 @@ namespace Mail.Services;
 
 public class CacheService : ICacheService
 {
-
     private readonly Dictionary<Type, object> Caches = new();
-    
+
     public void AddOrReplaceCache<T>(T cache) where T : class
     {
         Caches[typeof(T)] = cache;

@@ -136,10 +136,12 @@
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\DbClientExtension.cs" />
     <Compile Include="Extensions\DbOperationEvent.cs" />
+    <Compile Include="Extensions\MailMessageDataExtentions.cs"/>
     <Compile Include="Interfaces\DbEntity.cs" />
     <Compile Include="Extensions\Graph\MsalProvider.cs" />
     <Compile Include="Extensions\RunCatch.cs" />
     <Compile Include="Models\EditMailOption.cs" />
+    <Compile Include="Models\LoadMailMessageOption.cs"/>
     <Compile Include="Pages\BlankPage.xaml.cs">
       <DependentUpon>BlankPage.xaml</DependentUpon>
     </Compile>
@@ -149,9 +151,9 @@
     <Compile Include="Services\CacheService.cs" />
     <Compile Include="Services\Data\Enums\EditMailType.cs" />
     <Compile Include="Services\Data\Enums\MailType.cs" />
+    <Compile Include="Services\Data\Enums\RecipientType.cs"/>
     <Compile Include="Services\Data\IMailMessageAttachmentData.cs" />
     <Compile Include="Services\Data\MailFolderData.cs" />
-    <Compile Include="Services\Data\MailFolderDetailData.cs" />
     <Compile Include="Services\Data\MailMessageFileAttachmentData.cs" />
     <Compile Include="Services\Data\MailMessageAttachmentData.cs" />
     <Compile Include="Services\Data\MailMessageContentData.cs" />
@@ -335,7 +337,7 @@
       <Version>5.1.2</Version>
     </PackageReference>
     <PackageReference Include="SqlSugar">
-      <Version>5.1.4.83</Version>
+        <Version>5.1.4.84</Version>
     </PackageReference>
     <PackageReference Include="System.Data.SQLite">
       <Version>1.0.118</Version>

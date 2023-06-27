@@ -11,7 +11,9 @@ using Mail.Models;
 using Mail.Services.Data;
 using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
+using SqlSugar;
 
 namespace Mail.Services
 {
@@ -19,11 +21,12 @@ namespace Mail.Services
     internal abstract class OAuthMailService : IMailService
     {
         private readonly IPublicClientApplication ClientApplication;
-        protected static readonly MemoryCache MemoryCache = new(new MemoryCacheOptions());
+        protected static IMemoryCache MemoryCache => App.Services.GetService<IMemoryCache>()!;
         private IMailService MailServiceImplementation;
         public AccountModel? CurrentAccount { get; set; }
         public abstract MailType MailType { get; }
         public abstract ObservableCollection<MailFolderData> MailFoldersTree { get; }
+        protected ISqlSugarClient DbClient { get; }
 
         public BaseProvider Provider { get; }
 
@@ -35,6 +38,8 @@ namespace Mail.Services
 
         protected OAuthMailService(WebAccountProviderType Type)
         {
+            DbClient = App.Services.GetService<ISqlSugarClient>()!;
+
             ClientApplication = PublicClientApplicationBuilder.Create(Secrect.AadClientId)
                 .WithClientName("MailService")
                 .WithClientVersion("1.0.0")
@@ -67,9 +72,9 @@ namespace Mail.Services
             await Provider.SignOutAsync();
         }
 
-        MemoryCache IMailService.GetCache()
+        IMemoryCache IMailService.GetCache()
         {
-            return MemoryCache;
+            return OAuthMailService.MemoryCache;
         }
 
         public virtual Task<bool> InitSeriviceAsync()
@@ -80,17 +85,11 @@ namespace Mail.Services
         public abstract IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             CancellationToken CancelToken = default);
 
-        public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(string RootFolderId,
+        public abstract Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default);
 
-        public abstract Task<MailFolderDetailData> GetMailFolderDetailAsync(MailFolderType Type,
+        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
             CancellationToken CancelToken = default);
-
-        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(string RootFolderId, uint StartIndex = 0,
-            uint Count = 30, CancellationToken CancelToken = default);
-
-        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(MailFolderType Type, uint StartIndex = 0,
-            uint Count = 30, CancellationToken CancelToken = default);
 
         public abstract Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
@@ -131,7 +130,6 @@ namespace Mail.Services
             CancellationToken CancelToken = default);
 
         public abstract Task<bool> MailMoveAsync(string mailMessageId, string folderId);
-
 
         public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
             StorageFile StorageFile, CancellationToken CancelToken = default);
