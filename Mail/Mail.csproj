@@ -129,54 +129,55 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-      <Compile Include="App.xaml.cs">
-          <DependentUpon>App.xaml</DependentUpon>
-      </Compile>
-      <Compile Include="Converters\ContactToAvatarConverter.cs"/>
-      <Compile Include="Extensions\DbClientExtension.cs"/>
-      <Compile Include="Extensions\DbOperationEvent.cs"/>
-      <Compile Include="Extensions\MailMessageDataExtentions.cs"/>
-      <Compile Include="Interfaces\DbEntity.cs"/>
-      <Compile Include="Extensions\Graph\MsalProvider.cs"/>
-      <Compile Include="Extensions\RunCatch.cs"/>
-      <Compile Include="Models\EditMailOption.cs"/>
-      <Compile Include="Models\LoadMailMessageOption.cs"/>
-      <Compile Include="Pages\BlankPage.xaml.cs">
-          <DependentUpon>BlankPage.xaml</DependentUpon>
-      </Compile>
-      <Compile Include="Pages\EditMail.xaml.cs">
-          <DependentUpon>EditMail.xaml</DependentUpon>
-      </Compile>
-      <Compile Include="Services\CacheService.cs"/>
-      <Compile Include="Services\Data\Enums\EditMailType.cs"/>
-      <Compile Include="Services\Data\Enums\MailType.cs"/>
-      <Compile Include="Services\Data\Enums\RecipientType.cs"/>
-      <Compile Include="Services\Data\IMailMessageAttachmentData.cs"/>
-      <Compile Include="Services\Data\MailFolderData.cs"/>
-      <Compile Include="Services\Data\MailMessageFileAttachmentData.cs"/>
-      <Compile Include="Services\Data\MailMessageAttachmentData.cs"/>
-      <Compile Include="Services\Data\MailMessageContentData.cs"/>
-      <Compile Include="Services\Data\MailMessageData.cs"/>
-      <Compile Include="Services\Data\MailMessageRecipientData.cs"/>
-      <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs"/>
-      <Compile Include="Services\Data\AccountModel.cs"/>
-      <Compile Include="Services\Data\ContactModel.cs"/>
-      <Compile Include="Extensions\DependencyObjectExtension.cs"/>
-      <Compile Include="Models\MailMessageListDetailViewModel.cs"/>
-      <Compile Include="Services\Data\MailFolderType.cs"/>
-      <Compile Include="Services\Data\MailMessageContentType.cs"/>
-      <Compile Include="Extensions\ICollectionExtension.cs"/>
-      <Compile Include="Extensions\Graph\IProviderExtension.cs"/>
-      <Compile Include="MainPage.xaml.cs">
-          <DependentUpon>MainPage.xaml</DependentUpon>
-      </Compile>
-      <Compile Include="Pages\HomePage.xaml.cs">
-          <DependentUpon>HomePage.xaml</DependentUpon>
-      </Compile>
-      <Compile Include="Pages\LoginPage.xaml.cs">
-          <DependentUpon>LoginPage.xaml</DependentUpon>
-      </Compile>
-      <Compile Include="Pages\MailFolderDetailsPage.xaml.cs">
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\ContactToAvatarConverter.cs" />
+    <Compile Include="Extensions\ColorExtensions.cs" />
+    <Compile Include="Extensions\DbClientExtension.cs" />
+    <Compile Include="Extensions\DbOperationEvent.cs" />
+    <Compile Include="Extensions\MailMessageDataExtentions.cs"/>
+    <Compile Include="Interfaces\DbEntity.cs" />
+    <Compile Include="Extensions\Graph\MsalProvider.cs" />
+    <Compile Include="Extensions\RunCatch.cs" />
+    <Compile Include="Models\EditMailOption.cs" />
+    <Compile Include="Models\LoadMailMessageOption.cs"/>
+    <Compile Include="Pages\BlankPage.xaml.cs">
+      <DependentUpon>BlankPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\EditMail.xaml.cs">
+      <DependentUpon>EditMail.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Services\CacheService.cs" />
+    <Compile Include="Services\Data\Enums\EditMailType.cs" />
+    <Compile Include="Services\Data\Enums\MailType.cs" />
+    <Compile Include="Services\Data\Enums\RecipientType.cs"/>
+    <Compile Include="Services\Data\IMailMessageAttachmentData.cs" />
+    <Compile Include="Services\Data\MailFolderData.cs" />
+    <Compile Include="Services\Data\MailMessageFileAttachmentData.cs" />
+    <Compile Include="Services\Data\MailMessageAttachmentData.cs" />
+    <Compile Include="Services\Data\MailMessageContentData.cs" />
+    <Compile Include="Services\Data\MailMessageData.cs" />
+    <Compile Include="Services\Data\MailMessageRecipientData.cs" />
+    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs" />
+    <Compile Include="Services\Data\AccountModel.cs" />
+    <Compile Include="Services\Data\ContactModel.cs" />
+    <Compile Include="Extensions\DependencyObjectExtension.cs" />
+    <Compile Include="Models\MailMessageListDetailViewModel.cs" />
+    <Compile Include="Services\Data\MailFolderType.cs" />
+    <Compile Include="Services\Data\MailMessageContentType.cs" />
+    <Compile Include="Extensions\ICollectionExtension.cs" />
+    <Compile Include="Extensions\Graph\IProviderExtension.cs" />
+    <Compile Include="MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\HomePage.xaml.cs">
+      <DependentUpon>HomePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\LoginPage.xaml.cs">
+      <DependentUpon>LoginPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\MailFolderDetailsPage.xaml.cs">
       <DependentUpon>MailFolderDetailsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\SettingsPage.xaml.cs">
@@ -293,6 +294,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\MicaBackdropStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Authentication.Uwp">
@@ -300,6 +305,9 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Labs.Uwp.SettingsControls">
       <Version>0.0.13</Version>
+    </PackageReference>
+    <PackageReference Include="MicaForUWP">
+      <Version>0.1.9</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory">
       <Version>8.0.0-preview.4.23259.5</Version>
@@ -338,13 +346,10 @@
       <Version>6.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-      <Folder Include="Services\Data\Mapping\"/>
-  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
-    <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets"/>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
