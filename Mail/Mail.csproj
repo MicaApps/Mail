@@ -193,7 +193,6 @@
     <Compile Include="Services\IMailService.cs" />
     <Compile Include="Services\OAuthMailService.cs" />
     <Compile Include="Services\OutlookService.cs" />
-    <Compile Include="Events\MailMessageEvent.cs"/>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

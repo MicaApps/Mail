@@ -57,10 +57,7 @@ namespace Mail.Services
             Trace.WriteLine($"AuthService: {e.NewState}");
         }
 
-        public async Task SignInAsync()
-        {
-            await Provider.SignInAsync();
-        }
+        public abstract Task SignInAsync();
 
         public async Task<bool> SignInSilentAsync()
         {

@@ -1,11 +1,11 @@
-﻿using Mail.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Toolkit.Uwp;
-using System;
+﻿using System;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Mail.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Uwp;
 
 namespace Mail.Pages
 {
@@ -58,8 +58,12 @@ namespace Mail.Pages
                     ErrorMessageBar.IsOpen = true;
                     ErrorMessageBar.Message = ex.Message;
                 });
-                
             }
+        }
+
+        private async void GmailLogin_Click(object Sender, RoutedEventArgs E)
+        {
+            await App.Services.GetService<GmailService>()!.SignInAsync();
         }
     }
 }

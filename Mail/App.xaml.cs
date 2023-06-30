@@ -36,8 +36,9 @@ namespace Mail
         private void RegisterServices(IServiceCollection services)
         {
             var connectionString = $"DataSource={ApplicationData.Current.LocalFolder.Path}\\mail.db";
+#if DEBUG
             Trace.WriteLine($"{nameof(connectionString)}Path: {connectionString}");
-
+#endif
             services.AddSingleton<OutlookService, OutlookService>()
                 .AddSingleton<ICacheService, CacheService>()
                 .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))

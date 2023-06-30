@@ -181,6 +181,11 @@ namespace Mail.Services
             return null;
         }
 
+        public override async Task SignInAsync()
+        {
+            await Provider.SignInAsync();
+        }
+
         public override async IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
