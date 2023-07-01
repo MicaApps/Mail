@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;
 using SqlSugar;
 using ICacheService = Mail.Services.ICacheService;
+using System.Threading.Tasks;
 
 namespace Mail
 {
@@ -26,18 +27,58 @@ namespace Mail
         public App()
         {
             InitializeComponent();
+            UnhandledException += App_UnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             var services = new ServiceCollection();
             RegisterServices(services);
-            Services = services.BuildServiceProvider();
 
+            Services = services.BuildServiceProvider();
             Suspending += OnSuspending;
+        }
+
+        private async void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+        {
+            await LogExceptionAsync(e.ExceptionObject as Exception);
+        }
+
+        private async void App_UnhandledException(object sender, Windows.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            // Handle exception whne app is release buid.
+#if !DEBUG
+           e.Handled = true;
+#endif
+           await LogExceptionAsync(e.Exception);
+        }
+
+        private async Task LogExceptionAsync(Exception e)
+        {
+            Trace.WriteLine("log exception");
+            Trace.WriteLine(e.Message);
+            Trace.WriteLine(e.StackTrace);
+            //Save log file when app is release build.
+#if !DEBUG
+            try
+            {
+                var cacheFolder = ApplicationData.Current.LocalCacheFolder;
+                var logs = await cacheFolder.CreateFolderAsync("logs", CreationCollisionOption.OpenIfExists);
+                var timestamp = DateTime.Now.ToString("yyyyMMddhhmmfff");
+                var logFile = await logs.CreateFileAsync($"unhandled_error_{timestamp}.log");
+                await FileIO.WriteTextAsync(logFile, $"{e.Message}\r\n{e.StackTrace}");
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("error on save log");
+                Trace.WriteLine(ex.Message);
+                Trace.WriteLine(ex.StackTrace);
+            }
+#endif
         }
 
         private void RegisterServices(IServiceCollection services)
         {
             var connectionString = $"DataSource={ApplicationData.Current.LocalFolder.Path}\\mail.db";
             Trace.WriteLine($"{nameof(connectionString)}Path: {connectionString}");
-
+            
             services.AddSingleton<OutlookService, OutlookService>()
                 .AddSingleton<ICacheService, CacheService>()
                 .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))
@@ -102,6 +143,7 @@ namespace Mail
 
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
+            
             OnLaunchedOrActivated(e);
         }
 
