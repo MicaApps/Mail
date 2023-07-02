@@ -74,7 +74,7 @@ namespace Mail.Models
         }
 
         public string SentTime => InnerData.SentTime.HasValue
-            ? InnerData.SentTime.Value.DateTime.ToString("yyyy/M/dd")
+            ? InnerData.SentTime.Value.ToString("yyyy/M/dd")
             : string.Empty;
 
         private readonly MailMessageData InnerData;

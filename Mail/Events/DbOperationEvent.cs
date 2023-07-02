@@ -1,4 +1,4 @@
-﻿using SqlSugar;
+﻿using FreeSql.Aop;
 
 namespace Mail.Events;
 
@@ -10,11 +10,11 @@ namespace Mail.Events;
 /// </summary>
 public class DbOperationEvent
 {
-    public delegate void DataExecuting(object entity, DataFilterType Type);
+    public delegate void DataExecuting(object entity, CurdType Type);
 
     public event DataExecuting? ExecEvent;
 
-    public void OnExecEvent(object Entity, DataFilterType Type)
+    public void OnExecEvent(object Entity, CurdType Type)
     {
         ExecEvent?.Invoke(Entity, Type);
     }

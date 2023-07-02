@@ -13,7 +13,6 @@ using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
-using SqlSugar;
 
 namespace Mail.Services
 {
@@ -26,7 +25,7 @@ namespace Mail.Services
         public AccountModel? CurrentAccount { get; set; }
         public abstract MailType MailType { get; }
         public abstract ObservableCollection<MailFolderData> MailFoldersTree { get; }
-        protected ISqlSugarClient DbClient { get; }
+        protected IFreeSql DbClient { get; }
 
         public BaseProvider Provider { get; }
 
@@ -38,7 +37,7 @@ namespace Mail.Services
 
         protected OAuthMailService(WebAccountProviderType Type)
         {
-            DbClient = App.Services.GetService<ISqlSugarClient>()!;
+            DbClient = App.Services.GetService<IFreeSql>()!;
 
             ClientApplication = PublicClientApplicationBuilder.Create(Secrect.AadClientId)
                 .WithClientName("MailService")

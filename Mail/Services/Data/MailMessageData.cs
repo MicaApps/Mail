@@ -1,46 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
-using Mail.Interfaces;
+using FreeSql.DataAnnotations;
 using Mail.Services.Data.Enums;
-using SqlSugar;
 
 namespace Mail.Services.Data;
 
-[SugarTable]
-[SugarIndex("MailMessageData_FolderId_Index", nameof(FolderId), OrderByType.Desc)]
-public sealed class MailMessageData : DbEntity
+[Table]
+public sealed class MailMessageData
 {
     [Obsolete("这是给框架用的", true)]
     public MailMessageData()
     {
     }
 
-    public string InferenceClassification { get; }
+    [Column(IsPrimary = true)] public string Id { get; set; }
+    [Column(StringLength = 128)] public string InferenceClassification { get; set; }
     public string FolderId { get; set; }
     public string Title { get; set; }
 
-    [SugarColumn(IsPrimaryKey = true)] public new string Id { get; set; }
+    public DateTime? SentTime { get; set; }
 
-    public DateTimeOffset? SentTime { get; set; }
+    [Navigate(nameof(Id))] public MailMessageRecipientData Sender { get; set; }
 
-    [SugarColumn(IsIgnore = true)] public MailMessageRecipientData Sender { get; set; }
+    [Navigate(nameof(Id))] public IList<MailMessageRecipientData> To { get; set; }
 
-    [SugarColumn(IsIgnore = true)]
-    [Navigate(NavigateType.OneToMany, nameof(Id))]
-    public List<MailMessageRecipientData> To { get; set; }
+    [Navigate(nameof(Id))] public IList<MailMessageRecipientData> CC { get; set; }
 
-    [SugarColumn(IsIgnore = true)]
-    [Navigate(NavigateType.OneToMany, nameof(Id))]
-    public List<MailMessageRecipientData> CC { get; set; }
+    [Navigate(nameof(Id))] public IList<MailMessageRecipientData> Bcc { get; set; }
 
-    [SugarColumn(IsIgnore = true)]
-    [Navigate(NavigateType.OneToMany, nameof(Id))]
-    public List<MailMessageRecipientData> Bcc { get; set; }
-
-    [SugarColumn(IsIgnore = true)] public IList<IMailMessageAttachmentData> Attachments { get; private set; }
-
-    [Navigate(NavigateType.OneToOne, nameof(Id))]
-    public MailMessageContentData Content { get; private set; }
+    public IList<IMailMessageAttachmentData> Attachments { get; private set; }
+    [Navigate(nameof(Id))] public MailMessageContentData Content { get; set; }
 
     public MailMessageData(string FolderId, string Title, string Id, DateTimeOffset? SentTime,
         MailMessageRecipientData Sender,
@@ -52,7 +41,7 @@ public sealed class MailMessageData : DbEntity
         this.FolderId = FolderId;
         this.Title = Title;
         this.Id = Id;
-        this.SentTime = SentTime;
+        this.SentTime = SentTime?.UtcDateTime;
         this.Sender = Sender;
         this.Sender.Id = Id;
         Sender.RecipientType = RecipientType.Sender;
@@ -68,7 +57,7 @@ public sealed class MailMessageData : DbEntity
     {
         this.Title = Title;
         this.Id = Id;
-        this.SentTime = SentTime;
+        this.SentTime = SentTime?.UtcDateTime;
         this.Sender = Sender;
     }
 

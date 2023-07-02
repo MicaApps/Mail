@@ -306,6 +306,12 @@
     <PackageReference Include="CommunityToolkit.Labs.Uwp.SettingsControls">
       <Version>0.0.13</Version>
     </PackageReference>
+    <PackageReference Include="FreeSql">
+      <Version>3.2.697</Version>
+    </PackageReference>
+    <PackageReference Include="FreeSql.Provider.Sqlite">
+      <Version>3.2.697</Version>
+    </PackageReference>
     <PackageReference Include="MicaForUWP">
       <Version>0.1.9</Version>
     </PackageReference>
@@ -335,12 +341,6 @@
     </PackageReference>
     <PackageReference Include="Nito.AsyncEx">
       <Version>5.1.2</Version>
-    </PackageReference>
-    <PackageReference Include="SqlSugar">
-        <Version>5.1.4.84</Version>
-    </PackageReference>
-    <PackageReference Include="System.Data.SQLite">
-      <Version>1.0.118</Version>
     </PackageReference>
     <PackageReference Include="System.Interactive.Async">
       <Version>6.0.1</Version>

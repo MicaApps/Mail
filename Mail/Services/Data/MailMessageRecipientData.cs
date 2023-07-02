@@ -1,13 +1,12 @@
 ﻿using System;
-using Mail.Interfaces;
+using FreeSql.DataAnnotations;
 using Mail.Services.Data.Enums;
 using Newtonsoft.Json;
-using SqlSugar;
 
 namespace Mail.Services.Data;
 
-[SugarTable]
-public sealed class MailMessageRecipientData : DbEntity
+[Table]
+public sealed class MailMessageRecipientData
 {
     [Obsolete("这是给框架用的", true)]
     public MailMessageRecipientData()
@@ -17,19 +16,18 @@ public sealed class MailMessageRecipientData : DbEntity
     /// <summary>
     /// 关联的邮件消息Id
     /// </summary>
-    [SugarColumn(IsPrimaryKey = true)]
-    public new string Id { get; set; }
+    [Column(IsPrimary = true)]
+    public string Id { get; set; }
 
     public string Name { get; set; }
-    [SugarColumn(IsPrimaryKey = true)] public string Address { get; set; }
+    [Column(IsPrimary = true)] public string Address { get; set; }
 
-    [SugarColumn(IsPrimaryKey = true)] public RecipientType RecipientType { get; set; }
+    [Column(IsPrimary = true)] public RecipientType RecipientType { get; set; }
 
     /// <summary>
     /// Outlook Message Compatible
     /// </summary>
     [JsonProperty("EmailAddress")]
-    [SugarColumn(IsIgnore = true)]
     public object EmailAddress => new { Name, Address };
 
     public MailMessageRecipientData(string Name, string Address)

@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Mail.Events;
-using SqlSugar;
+﻿using Mail.Events;
 
 namespace Mail.Extensions;
 
@@ -17,44 +12,8 @@ public static class DbClientExtension
 {
     private static readonly DbOperationEvent DbOperationEvent = new();
 
-    /// <summary>
-    /// 只有扩展方法会调用, 懒得写ISqlSugarClient的AOP
-    /// </summary>
-    /// <param name="Client"></param>
-    /// <returns></returns>
-    public static DbOperationEvent GetDbOperationEvent(this ISqlSugarClient Client)
+    public static DbOperationEvent GetDbOperationEvent(this IFreeSql Client)
     {
         return DbOperationEvent;
-    }
-
-    public static async Task<int> SaveOrUpdate<T>(this ISqlSugarClient Client, T entity,
-        CancellationToken CancellationToken = default) where T : class, new()
-    {
-        var x = await Client.Storageable(entity).ToStorageAsync();
-        var executeCommandAsync = await x.AsInsertable.ExecuteCommandAsync(CancellationToken);
-        if (executeCommandAsync > 0)
-        {
-            return executeCommandAsync;
-        }
-
-        var commandAsync = await x.AsUpdateable.ExecuteCommandAsync(CancellationToken);
-
-        return commandAsync;
-    }
-
-    public static async Task<int> SaveOrUpdate<T>(this ISqlSugarClient Client, IEnumerable<T> entity,
-        CancellationToken CancellationToken = default) where T : class, new()
-    {
-        var dbEntities = entity.ToList();
-        var x = await Client.Storageable(dbEntities).ToStorageAsync();
-        var executeCommandAsync = await x.AsInsertable.ExecuteCommandAsync(CancellationToken);
-        if (executeCommandAsync > 0)
-        {
-            return executeCommandAsync;
-        }
-
-        var commandAsync = await x.AsUpdateable.ExecuteCommandAsync(CancellationToken);
-
-        return commandAsync;
     }
 }

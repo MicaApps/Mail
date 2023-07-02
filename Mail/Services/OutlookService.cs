@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
 using CommunityToolkit.Authentication;
+using FreeSql.Aop;
 using Mail.Extensions;
 using Mail.Extensions.Graph;
 using Mail.Models;
@@ -27,7 +28,6 @@ using Microsoft.Graph.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Newtonsoft.Json;
-using SqlSugar;
 
 namespace Mail.Services
 {
@@ -40,7 +40,7 @@ namespace Mail.Services
         {
             DbClient.GetDbOperationEvent().ExecEvent += (Entity, Type) =>
             {
-                if (Type != DataFilterType.InsertByObject) return;
+                if (Type != CurdType.Insert) return;
                 if (Entity is not MailFolderData { ParentFolderId: "" } f) return;
                 MailFoldersTree.Add(f);
             };
@@ -102,20 +102,15 @@ namespace Mail.Services
         private IEnumerable<MailMessageData> GetCacheMessageData(LoadMailMessageOption Option)
         {
             var focused = Option.IsFocusedTab ? "Focused" : "Other";
-            var messageList = DbClient.Queryable<MailMessageData>()
-                .Includes(x => x.Content)
-                .Mapper((x, cache) =>
-                {
-                    x.Sender = DbClient.Queryable<MailMessageRecipientData>()
-                        .Where(recipient => recipient.Id.Equals(x.Id))
-                        .Where(recipient => recipient.RecipientType == RecipientType.Sender)
-                        .First();
-                })
-                .Includes(x => x.To.Where(recipient => recipient.RecipientType == RecipientType.To).ToList())
-                .Includes(x => x.CC.Where(recipient => recipient.RecipientType == RecipientType.Cc).ToList())
-                .Includes(x => x.Bcc.Where(recipient => recipient.RecipientType == RecipientType.Bcc).ToList())
-                .Where(x => x.FolderId.Equals(Option.FolderId))
-                .Where(x => x.InferenceClassification.Equals(focused))
+            var messageList = DbClient.Select<MailMessageData>()
+                .Include(x => x.Content)
+                .LeftJoin(x => x.Sender.Id == x.Id && x.Sender.RecipientType == RecipientType.Sender)
+                .IncludeMany(x => x.To, x => x.Where(recipient => recipient.RecipientType == RecipientType.To).ToList())
+                .IncludeMany(x => x.CC, x => x.Where(recipient => recipient.RecipientType == RecipientType.Cc).ToList())
+                .IncludeMany(x => x.Bcc,
+                    x => x.Where(recipient => recipient.RecipientType == RecipientType.Bcc).ToList())
+                .Where(x => x.FolderId == Option.FolderId)
+                .Where(x => x.InferenceClassification == focused)
                 .Skip(Option.StartIndex)
                 .Take(Option.LoadCount)
                 .OrderByDescending(x => x.SentTime)
@@ -135,7 +130,7 @@ namespace Mail.Services
                     new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
                 message.BccRecipients.Select((Recipient) =>
                     new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                new MailMessageContentData(message.Body.Content, message.BodyPreview,
+                new MailMessageContentData(message.Id, message.Body.Content, message.BodyPreview,
                     (MailMessageContentType)message.Body.ContentType),
                 message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
                     Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size),
@@ -145,10 +140,15 @@ namespace Mail.Services
             // 为了插入映射的接受者类型, 这里手动处理中间数据插入
             Task.Run(() =>
             {
-                DbClient.SaveOrUpdate(messageData.GetRecipientData());
-                DbClient.InsertNav(messageData)
-                    .Include(x => x.Content)
-                    .ExecuteCommandAsync();
+                DbClient.InsertOrUpdate<MailMessageRecipientData>()
+                    .SetSource(messageData.GetRecipientData())
+                    .ExecuteAffrowsAsync();
+
+                DbClient.InsertOrUpdate<MailMessageContentData>().SetSource(messageData.Content).ExecuteAffrowsAsync();
+
+                DbClient.InsertOrUpdate<MailMessageData>()
+                    .SetSource(messageData)
+                    .ExecuteAffrowsAsync();
             });
             return messageData;
         }
@@ -204,7 +204,7 @@ namespace Mail.Services
 
             var treeAsync = await DbClient.Queryable<MailFolderData>()
                 .Where(x => x.MailType == MailType)
-                .ToTreeAsync(x => x.ChildFolders, x => x.ParentFolderId, "");
+                .ToTreeListAsync(cancellationToken: CancelToken);
 
             foreach (var mailFolderData in treeAsync)
             {
@@ -253,7 +253,9 @@ namespace Mail.Services
                 folderData.Type = dbD.Type;
             }
 
-            await DbClient.SaveOrUpdate(folderData, CancellationToken: CancelToken);
+            await DbClient.InsertOrUpdate<MailFolderData>()
+                .SetSource(folderData)
+                .ExecuteAffrowsAsync(CancelToken);
 
             if (folderData.ChildFolderCount > 0) LoadMailChildFolderAsync(folderData, CancelToken);
         }
@@ -276,7 +278,9 @@ namespace Mail.Services
                 };
                 childMailFolder.RecursionChildFolderToObservableCollection(DbClient);
 
-                await DbClient.SaveOrUpdate(childMailFolder, CancelToken);
+                await DbClient.InsertOrUpdate<MailFolderData>()
+                    .SetSource(childMailFolder)
+                    .ExecuteAffrowsAsync(CancelToken);
 
                 if (childMailFolder.ChildFolderCount > 0)
                 {
@@ -289,9 +293,11 @@ namespace Mail.Services
             CancellationToken CancelToken = default)
         {
             var treeAsync = await DbClient.Queryable<MailFolderData>()
+                .Where(x => x.ParentFolderId == RootFolderId)
                 .Where(x => x.MailType == MailType)
-                .ToTreeAsync(x => x.ChildFolders, x => x.ParentFolderId, RootFolderId);
-            var rootFolder = await DbClient.Queryable<MailFolderData>().Where(x => x.Id.Equals(RootFolderId))
+                .ToTreeListAsync(cancellationToken: CancelToken);
+
+            var rootFolder = await DbClient.Queryable<MailFolderData>().Where(x => x.Id == RootFolderId)
                 .FirstAsync(CancelToken);
             rootFolder.ChildFolders = treeAsync;
 
