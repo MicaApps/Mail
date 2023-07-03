@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using FreeSql.Aop;
 using FreeSql.DataAnnotations;
 using Mail.Extensions;
@@ -55,10 +56,26 @@ internal class MailFolderData
 
         Client.GetDbOperationEvent().ExecEvent += (Entity, DataFilterType) =>
         {
-            if (DataFilterType != CurdType.Insert) return;
-            if (Entity is MailFolderData data && data.ParentFolderId == Id)
+            if (DataFilterType is not (CurdType.Insert or CurdType.InsertOrUpdate)) return;
+            if (Entity is not MailFolderData data) return;
+
+            var first = ChildFolders.FirstOrDefault(x => x.Id.Equals(data.Id));
+            var indexOf = ChildFolders.IndexOf(first);
+            if (indexOf == -1)
             {
+                if (!data.ParentFolderId.Equals(Id)) return;
                 ChildFolders.Add(data);
+            }
+            else
+            {
+                if (data.ParentFolderId.Equals(Id))
+                {
+                    ChildFolders[indexOf] = data;
+                }
+                else
+                {
+                    ChildFolders.Remove(first);
+                }
             }
         };
 

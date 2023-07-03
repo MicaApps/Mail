@@ -60,7 +60,6 @@ namespace Mail
                         operationEvent.OnExecEvent(s, e.CurdType);
                     };
 
-
                     return db;
                 })
                 .BuildServiceProvider();

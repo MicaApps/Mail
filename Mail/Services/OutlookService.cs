@@ -40,9 +40,29 @@ namespace Mail.Services
         {
             DbClient.GetDbOperationEvent().ExecEvent += (Entity, Type) =>
             {
-                if (Type != CurdType.Insert) return;
-                if (Entity is not MailFolderData { ParentFolderId: "" } f) return;
-                MailFoldersTree.Add(f);
+                if (Type is not (CurdType.Insert or CurdType.InsertOrUpdate)) return;
+                if (Entity is not MailFolderData dbFolder) return;
+
+                var collFirst = MailFoldersTree.FirstOrDefault(x => x.Id.Equals(dbFolder.Id));
+                if (collFirst is null)
+                {
+                    if (dbFolder.ParentFolderId.IsNullOrEmpty())
+                    {
+                        MailFoldersTree.Add(dbFolder);
+                    }
+
+                    return;
+                }
+
+                var collIndex = MailFoldersTree.IndexOf(collFirst);
+                if (dbFolder.ParentFolderId.IsNullOrEmpty())
+                {
+                    MailFoldersTree[collIndex] = dbFolder;
+                }
+                else
+                {
+                    MailFoldersTree.Remove(collFirst);
+                }
             };
         }
 
