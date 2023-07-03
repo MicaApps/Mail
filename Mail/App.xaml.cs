@@ -7,10 +7,12 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using FreeSql;
+using FreeSql.Sqlite;
 using Mail.Extensions;
 using Mail.Pages;
 using Mail.Services;
 using Mail.Services.Data;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;
@@ -42,11 +44,13 @@ namespace Mail
                 .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))
                 .AddSingleton<IFreeSql>(_ =>
                 {
-                    var db = new FreeSqlBuilder().UseConnectionString(DataType.Sqlite, connectionString)
+                    var db = new FreeSqlBuilder().UseConnectionFactory(DataType.Sqlite,
+                            () => new SqliteConnection(connectionString), typeof(SqliteProvider<>))
 #if DEBUG
                         .UseMonitorCommand(cmd => Trace.WriteLine($"执行的sql: {cmd.CommandText}\n"))
 #endif
                         .UseAutoSyncStructure(true)
+                        .UseNoneCommandParameter(true)
                         .Build();
 
                     db.CodeFirst.SyncStructure<MailFolderData>();
