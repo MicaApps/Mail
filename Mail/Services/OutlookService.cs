@@ -266,7 +266,7 @@ namespace Mail.Services
             };
             folderData.RecursionChildFolderToObservableCollection(DbClient);
 
-            var dbD = await DbClient.Queryable<MailFolderData>().Where(x => x.Id.Equals(mailFolder.Id))
+            var dbD = await DbClient.Queryable<MailFolderData>().Where(x => x.Id == mailFolder.Id)
                 .FirstAsync(CancelToken);
             if (dbD is not null && dbD.Type != MailFolderType.Other)
             {
