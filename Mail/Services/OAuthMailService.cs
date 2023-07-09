@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using Chloe;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
@@ -14,122 +15,120 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 
-namespace Mail.Services
+namespace Mail.Services;
+
+// TODO: Re-Implement OAuthProvider, PCA and MsalProvider only support Microsoft Account
+internal abstract class OAuthMailService : IMailService
 {
-    // TODO: Re-Implement OAuthProvider, PCA and MsalProvider only support Microsoft Account
-    internal abstract class OAuthMailService : IMailService
+    private readonly IPublicClientApplication ClientApplication;
+    private IMailService MailServiceImplementation;
+
+    protected OAuthMailService(WebAccountProviderType Type)
     {
-        private readonly IPublicClientApplication ClientApplication;
-        protected static IMemoryCache MemoryCache => App.Services.GetService<IMemoryCache>()!;
-        private IMailService MailServiceImplementation;
-        public AccountModel? CurrentAccount { get; set; }
-        public abstract MailType MailType { get; }
-        public abstract ObservableCollection<MailFolderData> MailFoldersTree { get; }
-        protected IFreeSql DbClient { get; }
+        ClientApplication = PublicClientApplicationBuilder.Create(Secrect.AadClientId)
+            .WithClientName("MailService")
+            .WithClientVersion("1.0.0")
+            .WithAuthority("https://login.microsoftonline.com/common")
+            .WithDefaultRedirectUri()
+            .WithBroker()
+            .Build();
 
-        public BaseProvider Provider { get; }
+        Provider = new MsalProvider(ClientApplication, Scopes);
+        Provider.StateChanged += Provider_StateChanged;
+    }
 
-        protected abstract string[] Scopes { get; }
+    protected static IMemoryCache MemoryCache => App.Services.GetService<IMemoryCache>()!;
+    protected IDbContext DbClient => App.Services.GetService<IDbContext>()!;
 
-        public virtual bool IsSupported => true;
+    public BaseProvider Provider { get; }
 
-        public virtual bool IsSignIn => Provider.State == ProviderState.SignedIn;
+    protected abstract string[] Scopes { get; }
+    public AccountModel? CurrentAccount { get; set; }
+    public abstract MailType MailType { get; }
+    public abstract ObservableCollection<MailFolderData> MailFoldersTree { get; }
 
-        protected OAuthMailService(WebAccountProviderType Type)
-        {
-            DbClient = App.Services.GetService<IFreeSql>()!;
+    public virtual bool IsSupported => true;
 
-            ClientApplication = PublicClientApplicationBuilder.Create(Secrect.AadClientId)
-                .WithClientName("MailService")
-                .WithClientVersion("1.0.0")
-                .WithAuthority("https://login.microsoftonline.com/common")
-                .WithDefaultRedirectUri()
-                .WithBroker(true)
-                .Build();
+    public virtual bool IsSignIn => Provider.State == ProviderState.SignedIn;
 
-            Provider = new MsalProvider(ClientApplication, Scopes);
-            Provider.StateChanged += Provider_StateChanged;
-        }
+    IMemoryCache IMailService.GetCache()
+    {
+        return MemoryCache;
+    }
 
-        private void Provider_StateChanged(object sender, ProviderStateChangedEventArgs e)
-        {
-            Trace.WriteLine($"AuthService: {e.NewState}");
-        }
+    public virtual Task<bool> InitSeriviceAsync()
+    {
+        return Task.FromResult(true);
+    }
 
-        public abstract Task SignInAsync();
+    public abstract IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
+        CancellationToken CancelToken = default);
 
-        public async Task<bool> SignInSilentAsync()
-        {
-            return await Provider.TrySilentSignInAsync();
-        }
+    public abstract Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
+        CancellationToken CancelToken = default);
 
-        public async Task SignOutAsync(IAccount account)
-        {
-            await Provider.SignOutAsync();
-        }
+    public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
+        CancellationToken CancelToken = default);
 
-        IMemoryCache IMailService.GetCache()
-        {
-            return OAuthMailService.MemoryCache;
-        }
+    public abstract Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
-        public virtual Task<bool> InitSeriviceAsync()
-        {
-            return Task.FromResult(true);
-        }
+    public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 
-        public abstract IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
-            CancellationToken CancelToken = default);
+    public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
+        MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
-        public abstract Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
-            CancellationToken CancelToken = default);
+    public abstract Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
 
-        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
-            CancellationToken CancelToken = default);
+    /// <summary>
+    ///     如果成功, 请将Model的id设置为服务返回的id
+    /// </summary>
+    /// <param name="Model">执行成功后, Model会被设置id</param>
+    /// <returns></returns>
+    public abstract Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model);
 
-        public abstract Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
+    public abstract Task<bool> MailSendAsync(MailMessageListDetailViewModel Model);
 
-        public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
+    public abstract Task<bool> MailReplyAsync(MailMessageListDetailViewModel Model, string ReplyContent,
+        bool IsAll = false);
 
-        public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
-            MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
+    public abstract Task<bool> MailForwardAsync(MailMessageListDetailViewModel Model, string ForwardContent);
 
-        public abstract Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
+    /// <summary>
+    ///     大文件上传(>3mb)
+    /// </summary>
+    /// <param name="Model"></param>
+    /// <param name="BasicProperties"></param>
+    /// <param name="StorageFile"></param>
+    /// <param name="UploadedSliceCallback"></param>
+    /// <param name="CancelToken"></param>
+    /// <returns></returns>
+    public abstract Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
+        BasicProperties BasicProperties,
+        StorageFile StorageFile,
+        Action<long> UploadedSliceCallback,
+        CancellationToken CancelToken = default);
 
-        /// <summary>
-        /// 如果成功, 请将Model的id设置为服务返回的id
-        /// </summary>
-        /// <param name="Model">执行成功后, Model会被设置id</param>
-        /// <returns></returns>
-        public abstract Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model);
+    public abstract Task<bool> MailMoveAsync(string mailMessageId, string folderId);
 
-        public abstract Task<bool> MailSendAsync(MailMessageListDetailViewModel Model);
+    public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
+        StorageFile StorageFile, CancellationToken CancelToken = default);
 
-        public abstract Task<bool> MailReplyAsync(MailMessageListDetailViewModel Model, string ReplyContent,
-            bool IsAll = false);
+    public abstract Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);
 
-        public abstract Task<bool> MailForwardAsync(MailMessageListDetailViewModel Model, string ForwardContent);
+    private void Provider_StateChanged(object sender, ProviderStateChangedEventArgs e)
+    {
+        Trace.WriteLine($"AuthService: {e.NewState}");
+    }
 
-        /// <summary>
-        /// 大文件上传(>3mb)
-        /// </summary>
-        /// <param name="Model"></param>
-        /// <param name="BasicProperties"></param>
-        /// <param name="StorageFile"></param>
-        /// <param name="UploadedSliceCallback"></param>
-        /// <param name="CancelToken"></param>
-        /// <returns></returns>
-        public abstract Task UploadAttachmentSessionAsync(MailMessageListDetailViewModel Model,
-            BasicProperties BasicProperties,
-            StorageFile StorageFile,
-            Action<long> UploadedSliceCallback,
-            CancellationToken CancelToken = default);
+    public abstract Task SignInAsync();
 
-        public abstract Task<bool> MailMoveAsync(string mailMessageId, string folderId);
+    public async Task<bool> SignInSilentAsync()
+    {
+        return await Provider.TrySilentSignInAsync();
+    }
 
-        public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
-            StorageFile StorageFile, CancellationToken CancelToken = default);
-
-        public abstract Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);
+    public async Task SignOutAsync(IAccount account)
+    {
+        await Provider.SignOutAsync();
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using FreeSql.DataAnnotations;
+using Chloe.Annotations;
 
 namespace Mail.Services.Data;
 
@@ -11,9 +11,9 @@ public sealed class MailMessageContentData
     {
     }
 
-    [Column(IsPrimary = true)] public string Id { get; set; }
+    [Column(IsPrimaryKey = true)] public string Id { get; set; }
 
-    [Column(StringLength = -1)] public string Content { get; set; }
+    public string Content { get; set; }
 
     public string ContentPreview { get; set; }
 

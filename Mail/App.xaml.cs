@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Data;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using FreeSql;
-using FreeSql.Sqlite;
+using Chloe;
+using Chloe.Infrastructure;
 using Mail.Extensions;
 using Mail.Pages;
 using Mail.Services;
-using Mail.Services.Data;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,28 +41,9 @@ namespace Mail
             services.AddSingleton<OutlookService, OutlookService>()
                 .AddSingleton<ICacheService, CacheService>()
                 .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))
-                .AddSingleton<IFreeSql>(_ =>
+                .AddTransient<IDbContext>(_ =>
                 {
-                    var db = new FreeSqlBuilder().UseConnectionFactory(DataType.Sqlite,
-                            () => new SqliteConnection(connectionString), typeof(SqliteProvider<>))
-#if DEBUG
-                        .UseMonitorCommand(cmd => Trace.WriteLine($"执行的sql: {cmd.CommandText}\n"))
-#endif
-                        .UseAutoSyncStructure(true)
-                        .UseNoneCommandParameter(true)
-                        .Build();
-
-                    db.CodeFirst.SyncStructure<MailFolderData>();
-                    db.CodeFirst.SyncStructure<MailMessageData>();
-                    db.CodeFirst.SyncStructure<MailMessageContentData>();
-                    db.CodeFirst.SyncStructure<MailMessageRecipientData>();
-
-                    db.Aop.CurdAfter += (s, e) =>
-                    {
-                        var operationEvent = db.GetDbOperationEvent();
-                        operationEvent.OnExecEvent(s, e.CurdType);
-                    };
-
+                    var db = new CustomDbContext(new SQLiteConnectionFactory(connectionString));
                     return db;
                 })
                 .BuildServiceProvider();
@@ -103,7 +83,7 @@ namespace Mail
 
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
-            SuspendingDeferral Deferral = e.SuspendingOperation.GetDeferral();
+            var Deferral = e.SuspendingOperation.GetDeferral();
 
             try
             {
@@ -117,5 +97,21 @@ namespace Mail
                 Deferral.Complete();
             }
         }
+    }
+}
+
+public class SQLiteConnectionFactory : IDbConnectionFactory
+{
+    private readonly string _connString;
+
+    public SQLiteConnectionFactory(string connString)
+    {
+        _connString = connString;
+    }
+
+    public IDbConnection CreateConnection()
+    {
+        var conn = new SqliteConnection(_connString);
+        return conn;
     }
 }

@@ -19,8 +19,8 @@ namespace Mail.Models
 
         public string Id
         {
-            get => InnerData.Id;
-            set => InnerData.Id = value;
+            get => InnerData.MessageId;
+            set => InnerData.MessageId = value;
         }
 
         [JsonProperty("bodyPreview")] // Outlook: first 255 char

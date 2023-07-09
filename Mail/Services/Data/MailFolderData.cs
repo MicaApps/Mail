@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using FreeSql.Aop;
-using FreeSql.DataAnnotations;
+using Chloe;
+using Chloe.Annotations;
 using Mail.Extensions;
 using Mail.Services.Data.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Mail.Services.Data;
 
@@ -17,24 +18,6 @@ internal class MailFolderData
     {
         ChildFolders = new List<MailFolderData>(0);
     }
-
-    [Column(IsPrimary = true)] public string Id { get; set; }
-
-    public string Name { get; set; }
-
-    public MailFolderType Type { get; set; }
-    public bool IsHidden { get; set; }
-    [Navigate(nameof(ParentFolderId))] public IList<MailFolderData> ChildFolders { get; set; }
-    public int TotalItemCount { get; set; }
-
-    public MailType MailType { get; set; }
-
-    /// <summary>
-    /// 最高级为""
-    /// </summary>
-    public string ParentFolderId { get; set; } = "";
-
-    public int ChildFolderCount { get; set; }
 
     public MailFolderData(string id, string name, MailFolderType type,
         IList<MailFolderData> ChildFolders,
@@ -49,14 +32,33 @@ internal class MailFolderData
         this.MailType = MailType;
     }
 
-    public void RecursionChildFolderToObservableCollection(IFreeSql Client)
+    [Column(IsPrimaryKey = true)] public string Id { get; set; }
+
+    public string Name { get; set; }
+
+    public MailFolderType Type { get; set; }
+    public bool IsHidden { get; set; }
+    [Navigation(nameof(ParentFolderId))] public IList<MailFolderData> ChildFolders { get; set; }
+    public int TotalItemCount { get; set; }
+
+    public MailType MailType { get; set; }
+
+    /// <summary>
+    ///     最高级为""
+    /// </summary>
+    public string ParentFolderId { get; set; } = "";
+
+    public int ChildFolderCount { get; set; }
+
+    public void RecursionChildFolderToObservableCollection()
     {
+        using var client = App.Services.GetService<IDbContext>()!;
         var coll = new ObservableCollection<MailFolderData>();
         coll.AddRange(ChildFolders);
 
-        Client.GetDbOperationEvent().ExecEvent += (Entity, DataFilterType) =>
+        client.GetDbOperationEvent().ExecEvent += (Entity, DataFilterType) =>
         {
-            if (DataFilterType is not (CurdType.Insert or CurdType.InsertOrUpdate)) return;
+            if (DataFilterType is not (OperationType.Insert or OperationType.Update)) return;
             if (Entity is not MailFolderData data) return;
 
             var first = ChildFolders.FirstOrDefault(x => x.Id.Equals(data.Id));
@@ -69,29 +71,19 @@ internal class MailFolderData
             else
             {
                 if (data.ParentFolderId.Equals(Id))
-                {
                     ChildFolders[indexOf] = data;
-                }
                 else
-                {
                     ChildFolders.Remove(first);
-                }
             }
         };
 
-        Client.GetDbOperationEvent().ExecEvent += (Entity, DataFilterType) =>
+        client.GetDbOperationEvent().ExecEvent += (Entity, DataFilterType) =>
         {
-            if (DataFilterType != CurdType.Delete) return;
-            if (Entity is MailFolderData data && data.ParentFolderId == Id)
-            {
-                ChildFolders.Remove(data);
-            }
+            if (DataFilterType != OperationType.Delete) return;
+            if (Entity is MailFolderData data && data.ParentFolderId == Id) ChildFolders.Remove(data);
         };
 
         ChildFolders = coll;
-        foreach (var mailFolderData in ChildFolders)
-        {
-            mailFolderData.RecursionChildFolderToObservableCollection(Client);
-        }
+        foreach (var mailFolderData in ChildFolders) mailFolderData.RecursionChildFolderToObservableCollection();
     }
 }

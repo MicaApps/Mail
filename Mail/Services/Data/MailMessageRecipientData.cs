@@ -1,5 +1,5 @@
 ﻿using System;
-using FreeSql.DataAnnotations;
+using Chloe.Annotations;
 using Mail.Services.Data.Enums;
 using Newtonsoft.Json;
 
@@ -14,15 +14,21 @@ public sealed class MailMessageRecipientData
     }
 
     /// <summary>
+    /// 数据库生成的id
+    /// </summary>
+    [Column(IsPrimaryKey = true)]
+    [AutoIncrement]
+    public int Id { get; set; }
+
+    /// <summary>
     /// 关联的邮件消息Id
     /// </summary>
-    [Column(IsPrimary = true)]
-    public string Id { get; set; }
+    public string MessageId { get; set; }
 
     public string Name { get; set; }
-    [Column(IsPrimary = true)] public string Address { get; set; }
+    [Column(IsPrimaryKey = true)] public string Address { get; set; }
 
-    [Column(IsPrimary = true)] public RecipientType RecipientType { get; set; }
+    [Column(IsPrimaryKey = true)] public RecipientType RecipientType { get; set; }
 
     /// <summary>
     /// Outlook Message Compatible

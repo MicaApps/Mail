@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using FreeSql.Aop;
-using FreeSql.Internal.CommonProvider;
+﻿using Mail.Services.Data.Enums;
 
 namespace Mail.Events;
 
@@ -12,25 +10,12 @@ namespace Mail.Events;
 /// </summary>
 public class DbOperationEvent
 {
-    public delegate void DataExecuting(object entity, CurdType Type);
+    public delegate void DataExecuting(object entity, OperationType Type);
 
     public event DataExecuting? ExecEvent;
 
-    public void OnExecEvent(object Entity, CurdType Type)
+    public void OnExecEvent(object Entity, OperationType Type)
     {
-        if (Type == CurdType.InsertOrUpdate)
-        {
-            var InsertOrUpdateFiled = Entity.GetType().GetField(nameof(InsertOrUpdateProvider<object>._source));
-
-            var then = (IEnumerable)InsertOrUpdateFiled?.GetValue(Entity);
-            foreach (var o in then)
-            {
-                ExecEvent?.Invoke(o, Type);
-            }
-        }
-        else
-        {
-            ExecEvent?.Invoke(Entity, Type);
-        }
+        ExecEvent?.Invoke(Entity, Type);
     }
 }
