@@ -34,6 +34,7 @@ public sealed class MailMessageRecipientData
     /// Outlook Message Compatible
     /// </summary>
     [JsonProperty("EmailAddress")]
+    [NotMapped]
     public object EmailAddress => new { Name, Address };
 
     public MailMessageRecipientData(string Name, string Address)
