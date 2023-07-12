@@ -127,16 +127,56 @@ namespace Mail.Services
             {
                 var messageList = db.Query<MailMessageData>()
                     .Include(x => x.Content)
-                    .Include(x => x.Sender.MessageId == x.MessageId && x.Sender.RecipientType == RecipientType.Sender)
-                    .IncludeMany(x => x.To.Where(recipient => recipient.RecipientType == RecipientType.To).ToList())
-                    .IncludeMany(x => x.CC.Where(recipient => recipient.RecipientType == RecipientType.Cc).ToList())
-                    .IncludeMany(x => x.Bcc.Where(recipient => recipient.RecipientType == RecipientType.Bcc).ToList())
                     .Where(x => x.FolderId == Option.FolderId)
                     .Where(x => x.InferenceClassification == focused)
                     .Skip(Option.StartIndex)
                     .Take(Option.LoadCount)
                     .OrderByDesc(x => x.SentTime)
                     .ToList();
+
+                Parallel.ForEach(messageList, item =>
+                {
+                    using var dbContext = DbClient;
+                    var sender = dbContext.Query<MailMessageRecipientData>()
+                        .Where(x => x.MessageId == item.MessageId)
+                        .Where(x => x.RecipientType == RecipientType.Sender)
+                        .FirstOrDefault();
+                    if (sender is not null)
+                    {
+                        item.Sender = sender;
+                    }
+
+                    {
+                        var toList = dbContext.Query<MailMessageRecipientData>()
+                            .Where(x => x.MessageId == item.MessageId)
+                            .Where(x => x.RecipientType == RecipientType.To)
+                            .ToList();
+                        if (toList.IsNullOrEmpty())
+                        {
+                            item.To = toList;
+                        }
+                    }
+                    {
+                        var toList = dbContext.Query<MailMessageRecipientData>()
+                            .Where(x => x.MessageId == item.MessageId)
+                            .Where(x => x.RecipientType == RecipientType.Cc)
+                            .ToList();
+                        if (toList.IsNullOrEmpty())
+                        {
+                            item.CC = toList;
+                        }
+                    }
+                    {
+                        var toList = dbContext.Query<MailMessageRecipientData>()
+                            .Where(x => x.MessageId == item.MessageId)
+                            .Where(x => x.RecipientType == RecipientType.Bcc)
+                            .ToList();
+                        if (toList.IsNullOrEmpty())
+                        {
+                            item.Bcc = toList;
+                        }
+                    }
+                });
                 return messageList;
             }
             catch (Exception e)

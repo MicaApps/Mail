@@ -58,8 +58,7 @@ public sealed class MailMessageData
     [Navigation(nameof(MessageId))] public IList<MailMessageRecipientData> CC { get; set; }
 
     [Navigation(nameof(MessageId))] public IList<MailMessageRecipientData> Bcc { get; set; }
-
-    public IList<IMailMessageAttachmentData> Attachments { get; private set; }
+    [NotMapped] public IList<IMailMessageAttachmentData> Attachments { get; private set; }
     [Navigation(nameof(MessageId))] public MailMessageContentData Content { get; set; }
 
     public static MailMessageData Empty(MailMessageRecipientData Sender)

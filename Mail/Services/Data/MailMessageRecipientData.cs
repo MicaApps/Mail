@@ -26,9 +26,9 @@ public sealed class MailMessageRecipientData
     public string MessageId { get; set; }
 
     public string Name { get; set; }
-    [Column(IsPrimaryKey = true)] public string Address { get; set; }
+    public string Address { get; set; }
 
-    [Column(IsPrimaryKey = true)] public RecipientType RecipientType { get; set; }
+    public RecipientType RecipientType { get; set; }
 
     /// <summary>
     /// Outlook Message Compatible

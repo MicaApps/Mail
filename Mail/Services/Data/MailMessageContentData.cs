@@ -11,7 +11,7 @@ public sealed class MailMessageContentData
     {
     }
 
-    [Column(IsPrimaryKey = true)] public string Id { get; set; }
+    [Column(IsPrimaryKey = true)] public string MessageId { get; set; }
 
     public string Content { get; set; }
 
@@ -22,7 +22,7 @@ public sealed class MailMessageContentData
     public MailMessageContentData(string MessageId, string Content, string ContentPreview,
         MailMessageContentType ContentType)
     {
-        Id = MessageId;
+        this.MessageId = MessageId;
         this.Content = Content;
         this.ContentPreview = ContentPreview;
         this.ContentType = ContentType;
