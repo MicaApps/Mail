@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
-using Chloe;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
@@ -38,7 +37,7 @@ internal abstract class OAuthMailService : IMailService
     }
 
     protected static IMemoryCache MemoryCache => App.Services.GetService<IMemoryCache>()!;
-    protected IDbContext DbClient => App.Services.GetService<IDbContext>()!;
+    protected LocalCacheService LocalCache => App.Services.GetService<LocalCacheService>()!;
 
     public BaseProvider Provider { get; }
 

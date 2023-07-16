@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Mail.Services.Data;
 
 [Table]
-internal class MailFolderData
+public class MailFolderData
 {
     [Obsolete("这是给框架用的", true)]
     public MailFolderData()

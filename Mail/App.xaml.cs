@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Diagnostics;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
@@ -40,6 +41,7 @@ namespace Mail
 #endif
             services.AddSingleton<OutlookService, OutlookService>()
                 .AddSingleton<ICacheService, CacheService>()
+                .AddSingleton<LocalCacheService>()
                 .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))
                 .AddTransient<IDbContext>(_ =>
                 {

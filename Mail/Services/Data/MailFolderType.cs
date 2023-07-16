@@ -1,6 +1,6 @@
 ﻿namespace Mail.Services.Data
 {
-    internal enum MailFolderType
+    public enum MailFolderType
     {
         Inbox,
         SentItems,
