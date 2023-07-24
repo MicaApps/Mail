@@ -11,3 +11,4 @@
 - Mail View - Conversation View https://github.com/MicaApps/Mail/issues/44
 - Rules for mails from third parties
 - Localization （240+）
+- Contact Management https://github.com/MicaApps/Contact
