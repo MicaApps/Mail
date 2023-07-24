@@ -19,6 +19,10 @@ Aim at providing UWP Mail for Windows.
 
 ![Concept](https://user-images.githubusercontent.com/6630660/222345692-16ca601a-9e86-4d81-a3f4-3c4773e31b88.png)
 
+## Roadmap
+
+
+
 ## O-Auth
 - [Azure Active Directory](https://github.com/DiskTools/Mail/tree/GraphAuth)
 
