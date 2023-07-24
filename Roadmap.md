@@ -7,3 +7,4 @@
 - Basic Outlook/Gmail api support https://github.com/MicaApps/Mail/issues/81
 - Basic mail protocol support https://github.com/MicaApps/Mail/issues/3
 - Search https://github.com/MicaApps/Mail/issues/79
+- Mail Cache https://github.com/MicaApps/Mail/issues/17
