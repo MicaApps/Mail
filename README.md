@@ -21,7 +21,7 @@ Aim at providing UWP Mail for Windows.
 
 ## Roadmap
 
-https://github.com/MicaApps/Mail/blob/main/Roadmap.md
+the [latest features](Roadmap.md) that we planned.
 
 ## O-Auth
 - [Azure Active Directory](https://github.com/DiskTools/Mail/tree/GraphAuth)
