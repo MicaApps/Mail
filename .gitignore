@@ -5,7 +5,6 @@
 /.vs
 /Mail/bin/
 /Mail/obj/
-/Mail/Secrect.cs
 /.idea
 /Mail/AppPackages
 /Mail/Mail.csproj.user
