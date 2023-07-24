@@ -23,22 +23,34 @@ Aim at providing UWP Mail for Windows.
 - [Azure Active Directory](https://github.com/DiskTools/Mail/tree/GraphAuth)
 
 ## Build
-### 1. Add `CommunityToolkitLab` nuget source guide , see :
-https://github.com/CommunityToolkit/Labs-Windows
 
-### 2. Create `Secret.cs` in the `Mail` folder, the source code like this
+### NuGet Config
+
+Use the `nuget.config` file in the root of the repository to configure the NuGet sources for the solution.
+
+or you should add the following nuget source:
+
+* `https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json`
+
+### Add `Secret.cs` 
+
+Create `Secret.cs` file in `build` folder, and add the following code:
+
 ```
 namespace Mail
 {
-    internal class Secrect
+    internal class Secret
     {
+        // You should replace it with your own AAD ClientId in Azure Active Directory.
         public static readonly string AadClientId = "Your AAD ClientId";
     }
 }
 
 ```
 
+or you can find one in group file in development group.
+
+
 ## Contribution
+
 You should not develop and commit code directly based on the `main` branch, but instead create your own branch, submit a `Pull Request` after the code is completed, and merge into the `main` branch after `Code Review` by others.
-
-

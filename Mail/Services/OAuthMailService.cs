@@ -40,7 +40,7 @@ namespace Mail.Services
         {
             DbClient = App.Services.GetService<ISqlSugarClient>()!;
 
-            ClientApplication = PublicClientApplicationBuilder.Create(Secrect.AadClientId)
+            ClientApplication = PublicClientApplicationBuilder.Create(Secret.AadClientId)
                 .WithClientName("MailService")
                 .WithClientVersion("1.0.0")
                 .WithAuthority("https://login.microsoftonline.com/common")
