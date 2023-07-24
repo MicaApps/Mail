@@ -10,3 +10,4 @@
 - Mail Cache https://github.com/MicaApps/Mail/issues/17
 - Mail View - Conversation View https://github.com/MicaApps/Mail/issues/44
 - Rules for mails from third parties
+- Localization （240+）
