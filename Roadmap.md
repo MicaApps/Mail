@@ -5,4 +5,5 @@
 
 ## Mail
 - Basic Outlook/Gmail api support
-- Basic 
+- Basic mail protocol support https://github.com/MicaApps/Mail/issues/3
+- 
