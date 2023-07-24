@@ -4,6 +4,6 @@
 - Aim at replacing the Windows Mail UWP
 
 ## Mail
-- Basic Outlook/Gmail api support
+- Basic Outlook/Gmail api support https://github.com/MicaApps/Mail/issues/81
 - Basic mail protocol support https://github.com/MicaApps/Mail/issues/3
 - Search https://github.com/MicaApps/Mail/issues/79
