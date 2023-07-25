@@ -3,6 +3,10 @@ name: Mail CI Build
 on:
   workflow_dispatch:
 
+concurrency:
+  group: ${{github.workflow}}-${{github.event.pull_request.number || github.ref}}
+  cancel-in-progress: true
+
 jobs:
   CIBuild:
     runs-on: windows-latest
@@ -13,6 +17,7 @@ jobs:
       ProjectName: Mail
       CertThumbprint: C53D2D8CC27ACFF93AA2D54F8D6ADEE85C665F32
       SolutionPath: ${{github.workspace}}\Mail.sln
+      BuildSecretPath: ${{github.workspace}}\build\Secret.cs
       CertificationPath: ${{github.workspace}}\Mail_SignCert.pfx
       CIOutputPath: ${{github.workspace}}\Output\CI
       TargetWindowsSDKVersion: 10.0.22621.1778
@@ -40,7 +45,7 @@ jobs:
         with:
           nuget-version: latest
 
-      - name: Set Client Certificate Secret Value
+      - name: Download And Install Latest Windows SDK As Requirement
         run: |
           try {
               $CurrentSDKVersion = $(Get-Item "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0").GetValue("ProductVersion")
@@ -73,25 +78,16 @@ jobs:
           $pfxBase64 = [System.Convert]::FromBase64String("${{secrets.SIGNCERT}}")
           [IO.File]::WriteAllBytes("$env:CertificationPath", $pfxBase64)
 
-      - name: Import the SignCert to CerStore
-        run: |
-          Add-Type -AssemblyName System.Security
-          $Cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2("$env:CertificationPath", "${{secrets.SIGNCERTPASSWORD}}", [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet)
-          $Store = New-Object System.Security.Cryptography.X509Certificates.X509Store -ArgumentList "MY", CurrentUser
-          $Store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]"ReadWrite")
-          $Store.Add($Cert)
-          $Store.Close()
-
       - name: Set Build Secret Value
         run: |
-          $AzureDirectorySecret = '${{secrets.AADSECRET}}'
+          $AADSecret = '${{secrets.AADSECRET}}'
           $TargetContent = Get-Content -Path $env:BuildSecretPath
-          $TargetContent -Replace '<Mail-AAD-Secret-Value>', $AzureDirectorySecret | Set-Content -Path $env:BuildSecretPath -Encoding UTF8
+          $TargetContent -Replace '<Mail-AAD-Secret-Value>', $AADSecret | Set-Content -Path $env:BuildSecretPath -Encoding UTF8
 
       - name: Restore the solution
         run: nuget restore $env:SolutionPath
 
-      - name: Build the sideload pacakge
+      - name: Build the CI pacakge
         run: msbuild $env:SolutionPath /nologo /nr:false /t:Clean /p:Configuration=$env:Configuration /t:${{env.ProjectName}}:Rebuild /p:Platform=$env:Platform /p:UapAppxPackageBuildMode=$env:AppxPackageBuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:CertificationPath /p:PackageCertificatePassword=${{secrets.SIGNCERTPASSWORD}} /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageDir=${{env.CIOutputPath}}\
         env:
           Platform: x64
