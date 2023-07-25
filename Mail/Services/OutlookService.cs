@@ -327,9 +327,21 @@ namespace Mail.Services
         private async Task<IReadOnlyList<Attachment>> GetMailMessageAttachmentsAsync(string messageId,
             CancellationToken cancellationToken = default)
         {
-            return (await IProviderExtension.GetClient(Provider).Me.Messages[messageId]
-                .GetAsync((Options) => Options.QueryParameters.Expand = new string[] { "attachments" },
-                    cancellationToken)).Attachments;
+            var message = await IProviderExtension.GetClient(Provider).Me.Messages[messageId]
+                .Attachments
+                .GetAsync(Option =>
+                {
+                    Option.QueryParameters.Select = new[]
+                    {
+                        "Id",
+                        "Name",
+                        "Size",
+                        "lastModifiedDateTime",
+                        "isInline",
+                        "contentType"
+                    };
+                }, cancellationToken);
+            return message.Value;
         }
 
         public override async Task<IReadOnlyList<ContactModel>> GetContactsAsync(
@@ -375,7 +387,7 @@ namespace Mail.Services
                          .Where((Attachment) => !Attachment.IsInline.GetValueOrDefault()).OfType<FileAttachment>())
             {
                 yield return new MailMessageFileAttachmentData(Attachment.Name, Attachment.Id,
-                    Attachment.ContentType, (ulong)Attachment.ContentBytes.Length, default,
+                    Attachment.ContentType, (ulong)Attachment.Size, Attachment.LastModifiedDateTime ?? default,
                     Attachment.ContentBytes);
             }
         }
