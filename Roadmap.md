@@ -1,14 +1,15 @@
 # Roadmap
 
-- Individual Mail/People(Contact)/Calander UWP Client
-- Aim at replacing the Windows Mail UWP
+- Development of separate Mail, People (Contact), and Calendar UWP Clients
+- Striving to replace the existing Windows Mail UWP
 
 ## Mail
-- Basic Outlook/Gmail api support https://github.com/MicaApps/Mail/issues/81
-- Basic mail protocol support https://github.com/MicaApps/Mail/issues/3
-- Search https://github.com/MicaApps/Mail/issues/79
-- Mail Cache https://github.com/MicaApps/Mail/issues/17
-- Mail View - Conversation View https://github.com/MicaApps/Mail/issues/44
-- Rules for mails from third parties
-- Localization （240+）
-- Contact Management https://github.com/MicaApps/Contact
+
+- Fundamental support for Outlook/Gmail API. More details at <https://github.com/MicaApps/Mail/issues/81>
+- Primary mail protocol support. Visit <https://github.com/MicaApps/Mail/issues/3> for further information
+- Mail search capabilities. Refer to <https://github.com/MicaApps/Mail/issues/79> for specifics
+- Mail Caching. Find more info at <https://github.com/MicaApps/Mail/issues/17>
+- Conversation View for Mail. See <https://github.com/MicaApps/Mail/issues/44> for detailed discussion
+- Establishing rules for emails from third-party sources
+- Localization support for 240+ languages
+- Contact management features. Learn more at <https://github.com/MicaApps/Contact>
