@@ -1,11 +1,9 @@
-﻿using System;
-using Windows.ApplicationModel.Core;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Mail.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Toolkit.Uwp;
+using System;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 namespace Mail.Pages
 {
@@ -53,17 +51,9 @@ namespace Mail.Pages
             }
             catch (Exception ex)
             {
-                await CoreWindow.GetForCurrentThread().DispatcherQueue.EnqueueAsync(() =>
-                {
-                    ErrorMessageBar.IsOpen = true;
-                    ErrorMessageBar.Message = ex.Message;
-                });
+                ErrorMessageBar.IsOpen = true;
+                ErrorMessageBar.Message = ex.Message;
             }
-        }
-
-        private async void GmailLogin_Click(object Sender, RoutedEventArgs E)
-        {
-            await App.Services.GetService<GmailService>()!.SignInAsync();
         }
     }
 }

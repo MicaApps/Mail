@@ -1,4 +1,15 @@
-﻿using System;
+﻿using Mail.Extensions;
+using Mail.Models;
+using Mail.Services;
+using Mail.Services.Collection;
+using Mail.Services.Data;
+using Mail.Services.Data.Enums;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Uwp.Helpers;
+using Microsoft.Toolkit.Uwp.UI.Controls;
+using Nito.AsyncEx;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,19 +24,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
-using Mail.Extensions;
-using Mail.Models;
-using Mail.Services;
-using Mail.Services.Collection;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Toolkit.Uwp;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using Nito.AsyncEx;
-using Microsoft.Toolkit.Uwp.Helpers;
-using ColorHelper = Windows.UI.ColorHelper;
 
 namespace Mail.Pages
 {
@@ -88,10 +86,10 @@ namespace Mail.Pages
                 var mailFolder = await service.GetMailFolderDetailAsync(data.Id);
 
                 // Load Contacts to Cache
-               /*
-                var contacts = await service.GetContactsAsync();
-                App.Services.GetService<ICacheService>()!.AddOrReplaceCache(contacts);
-               */
+                /*
+                 var contacts = await service.GetContactsAsync();
+                 App.Services.GetService<ICacheService>()!.AddOrReplaceCache(contacts);
+                */
 
                 var isFocusedTab = IsFocusedTab && data.Type == MailFolderType.Inbox;
                 var option = new LoadMailMessageOption(data.Id, isFocusedTab);
@@ -154,9 +152,10 @@ namespace Mail.Pages
                         {
                             var rgbaStr = match.Groups[3].Value.Substring(5).TrimEnd(')');
                             var rgbaArr = rgbaStr.Split(',');
-                            originalColor = Color.FromArgb((byte)(double.Parse(rgbaArr[3])*255), Byte.Parse(rgbaArr[0]),
+                            originalColor = Color.FromArgb((byte)(double.Parse(rgbaArr[3]) * 255), Byte.Parse(rgbaArr[0]),
                                                            Byte.Parse(rgbaArr[1]), Byte.Parse(rgbaArr[2]));
-                        }else if (match.Groups[3].Value.StartsWith("rgb"))
+                        }
+                        else if (match.Groups[3].Value.StartsWith("rgb"))
                         {
                             var rgbStr = match.Groups[3].Value.Substring(4).TrimEnd(')');
                             var rgbArr = rgbStr.Split(',');
@@ -168,9 +167,9 @@ namespace Mail.Pages
                             originalColor = ColorExtensions.ParseColor(match.Groups[3].Value, null);
                         }
 
-                        
+
                         var hslColor = originalColor.ToHsl();
-                        
+
                         // 合理调整此处区间以便正常拉取色调
                         if (hslColor.L >= 0.70)
                         {
@@ -180,7 +179,7 @@ namespace Mail.Pages
                         {
                             hslColor.L = 1 - hslColor.L;
                         }
-                        
+
                         var color = Microsoft.Toolkit.Uwp.Helpers.ColorHelper.FromHsl(
                             hslColor.H, hslColor.S, hslColor.L, hslColor.A);
 
@@ -188,13 +187,13 @@ namespace Mail.Pages
                         {
 
 
-                                original = original.Replace(match.Value,
-                                                        match.Groups[1].Value + match.Groups[2].Value + "transparent" +
-                                                        match.Groups[4].Value);
-                                continue;                           
-                            
+                            original = original.Replace(match.Value,
+                                                    match.Groups[1].Value + match.Groups[2].Value + "transparent" +
+                                                    match.Groups[4].Value);
+                            continue;
+
                         }
-                        
+
                         original = original.Replace(match.Value,
                                                         match.Groups[1].Value + match.Groups[2].Value + $"#{color.R:X2}{color.G:X2}{color.B:X2}" +
                                                         match.Groups[4].Value);
@@ -213,41 +212,52 @@ namespace Mail.Pages
 
                 if (original.Contains("<html>"))
                 {
-                    original =  original.Insert(original.IndexOf("<html>", StringComparison.Ordinal) + 6, darkCss);
+                    original = original.Insert(original.IndexOf("<html>", StringComparison.Ordinal) + 6, darkCss);
                 }
             }
 
             // 处理表格
             original = Regex.Replace(original, @"border(-left|-right|-top|-bottom)*:(\S*)\s*windowtext", "border$1:$2 white");
-            
+
             return original;
         }
-        
+
         private async void ListDetailsView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if ((e.OriginalSource as FrameworkElement)?.DataContext is not MailMessageListDetailViewModel model) return;
-            if (model.IsEmpty) return;
-            if (sender is not ListDetailsView view) return;
-
-            using (await SelectionChangeLocker.LockAsync())
+            if ((e.OriginalSource as FrameworkElement)?.DataContext is MailMessageListDetailViewModel model)
             {
-                for (var retry = 0; retry < 10; retry++)
+                if (sender is ListDetailsView view && !model.IsEmpty)
                 {
-                    if (view.FindChildOfType<WebView>() is { } browser)
+                    using (await SelectionChangeLocker.LockAsync())
                     {
-                        LoadImageAndCacheAsync(model, browser);
-                        LoadAttachmentsList(view.FindChildOfName<ListBox>("AttachmentsListBox"), model);
-                        browser.Height = 100;
+                        for (var retry = 0; retry < 10; retry++)
+                        {
+                            if (view.FindChildOfType<WebView>() is WebView browser
+                                && view.FindChildOfName<ListView>("AttachmentsListView") is ListView attachmentView
+                                && view.FindChildOfName<StackPanel>("AttachmentsArea") is StackPanel attachmentPanel)
+                            {
+                                attachmentPanel.Visibility = Visibility.Collapsed;
 
-                        var replace = model.Content;
+                                try
+                                {
+                                    browser.NavigateToString(string.Empty);
+                                    await LoadImageAndCacheAsync(model, browser);
+                                    await LoadAttachmentsList(attachmentView, model);
+                                }
+                                finally
+                                {
+                                    if (attachmentView.Items.Count > 0)
+                                    {
+                                        attachmentPanel.Visibility = Visibility.Visible;
+                                    }
+                                }
 
-                        replace = ConvertContentTheme(replace, model.ContentType == MailMessageContentType.Text);
+                                break;
+                            }
 
-                        browser.NavigateToString(replace);
-                        break;
+                            await Task.Delay(300);
+                        }
                     }
-
-                    await Task.Delay(300);
                 }
             }
         }
@@ -261,14 +271,13 @@ namespace Mail.Pages
                 await Service.LoadAttachmentsAndCacheAsync(model.Id);
             }
 
-            if (browser.DataContext is not MailMessageListDetailViewModel context) return;
-            if (!context.Id.Equals(model.Id)) return;
-
-            var replace = Rgx.Replace(model.Content, ReplaceWord);
-
-            replace = ConvertContentTheme(replace, model.ContentType == MailMessageContentType.Text);
-
-            await Dispatcher.RunAsync(CoreDispatcherPriority.High, () => browser.NavigateToString(replace));
+            if (browser.DataContext is MailMessageListDetailViewModel context)
+            {
+                if (context.Id.Equals(model.Id))
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => browser.NavigateToString(ConvertContentTheme(Rgx.Replace(model.Content, ReplaceWord), model.ContentType == MailMessageContentType.Text)));
+                }
+            }
         }
 
         private string ReplaceWord(Capture match)
@@ -365,20 +374,12 @@ namespace Mail.Pages
             if (CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
             if (model.IsEmpty) return;
             CurrentMailAttachmentsListBoxMessageId = model.Id;
-            IMailService service = App.Services.GetService<OutlookService>()!;
-            var messageAttachmentsCollectionPage = service.GetMailAttachmentFileAsync(model);
-            var listBoxItems = sender.Items!;
-            listBoxItems.Clear();
-            await foreach (var attachment in messageAttachmentsCollectionPage)
+
+            sender.Items.Clear();
+
+            await foreach (MailMessageFileAttachmentData attachment in App.Services.GetService<OutlookService>().GetMailAttachmentFileAsync(model))
             {
-                // TODO Style
-                var listBoxItem = new Button
-                {
-                    Content = $"{attachment.Name}\r\nSize: {attachment.AttachmentSize} Byte",
-                    DataContext = attachment
-                };
-                listBoxItem.Click += MailFileAttachmentDownload;
-                listBoxItems.Add(listBoxItem);
+                sender.Items.Add(attachment);
             }
         }
 
@@ -425,7 +426,8 @@ namespace Mail.Pages
 
             await EditMail.CreateEditWindow(new EditMailOption
             {
-                Model = model, EditMailType = EditMailType.Forward
+                Model = model,
+                EditMailType = EditMailType.Forward
             });
         }
 
@@ -436,7 +438,8 @@ namespace Mail.Pages
             if (model?.IsEmpty != true) return;
             frame.Navigate(typeof(EditMail), new EditMailOption
             {
-                Model = model, EditMailType = EditMailType.Send
+                Model = model,
+                EditMailType = EditMailType.Send
             });
         }
 
@@ -446,7 +449,8 @@ namespace Mail.Pages
 
             await EditMail.CreateEditWindow(new EditMailOption
             {
-                Model = model, EditMailType = EditMailType.Reply
+                Model = model,
+                EditMailType = EditMailType.Reply
             });
         }
 

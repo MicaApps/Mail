@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Windows.UI.ViewManagement;
 using Windows.UI;
 using Windows.UI.Xaml.Controls;
+using CommunityToolkit.Authentication;
 
 namespace Mail
 {
@@ -28,16 +29,16 @@ namespace Mail
             }
         }
 
-        private void Provider_StateChanged(object sender, CommunityToolkit.Authentication.ProviderStateChangedEventArgs e)
+        private void Provider_StateChanged(object sender, ProviderStateChangedEventArgs e)
         {
             switch (e.NewState)
             {
-                case CommunityToolkit.Authentication.ProviderState.SignedIn:
+                case ProviderState.SignedIn:
                     {
                         MainNavigation.Navigate(typeof(HomePage));
                         break;
                     }
-                case CommunityToolkit.Authentication.ProviderState.SignedOut:
+                case ProviderState.SignedOut when MainNavigation.CurrentSourcePageType != typeof(LoginPage):
                     {
                         MainNavigation.Navigate(typeof(LoginPage));
                         break;
