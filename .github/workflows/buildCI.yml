@@ -96,11 +96,11 @@ jobs:
         uses: c-hive/gha-remove-artifacts@v1.3.0
         with:
           age: 0 seconds
-          skip-recent: 2
+          skip-recent: 1
           skip-tags: false
 
-      - name: Upload Sideload Artifacts
+      - name: Upload CI Artifacts
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: Sideload Artifacts
+          name: CI Artifacts
           path: ${{env.CIOutputPath}}
