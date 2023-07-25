@@ -1,5 +1,5 @@
-﻿using System;
-using Chloe;
+﻿using Chloe;
+using Chloe.Exceptions;
 using Mail.Services.Data.Enums;
 
 namespace Mail.Extensions;
@@ -32,7 +32,7 @@ public static class DbClientExtension
             DbOperationEvent.OnExecEvent(Entity, OperationType.Insert);
             return insertAsync;
         }
-        catch (Exception e)
+        catch (ChloeException e)
         {
             var updateAsync = Context.Update(Entity);
             if (updateAsync > 0)
