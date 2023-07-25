@@ -13,6 +13,7 @@ jobs:
       ProjectName: Mail
       CertThumbprint: C53D2D8CC27ACFF93AA2D54F8D6ADEE85C665F32
       SolutionPath: ${{github.workspace}}\Mail.sln
+      BuildSecretPath: ${{github.workspace}}\..\build\Secret.cs
       CertificationPath: ${{github.workspace}}\Mail_SignCert.pfx
       CIOutputPath: ${{github.workspace}}\Output\CI
       TargetWindowsSDKVersion: 10.0.22621.1778
@@ -91,7 +92,7 @@ jobs:
       - name: Restore the solution
         run: nuget restore $env:SolutionPath
 
-      - name: Build the sideload pacakge
+      - name: Build the CI pacakge
         run: msbuild $env:SolutionPath /nologo /nr:false /t:Clean /p:Configuration=$env:Configuration /t:${{env.ProjectName}}:Rebuild /p:Platform=$env:Platform /p:UapAppxPackageBuildMode=$env:AppxPackageBuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:CertificationPath /p:PackageCertificatePassword=${{secrets.SIGNCERTPASSWORD}} /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageDir=${{env.CIOutputPath}}\
         env:
           Platform: x64
