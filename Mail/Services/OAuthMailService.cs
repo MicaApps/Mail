@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.Storage.FileProperties;
-using CommunityToolkit.Authentication;
+﻿using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Services.Data;
 using Mail.Services.Data.Enums;
@@ -14,6 +6,14 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using SqlSugar;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
 
 namespace Mail.Services
 {
@@ -60,6 +60,11 @@ namespace Mail.Services
         public async Task SignInAsync()
         {
             await Provider.SignInAsync();
+
+            if (Provider.State != ProviderState.SignedIn)
+            {
+                throw new InvalidOperationException($"Provider status is not correct: {Enum.GetName(typeof(ProviderState), Provider.State)}");
+            }
         }
 
         public async Task<bool> SignInSilentAsync()

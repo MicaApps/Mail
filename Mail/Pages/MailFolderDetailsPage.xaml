@@ -1,369 +1,368 @@
-﻿<Page
-    x:Class="Mail.Pages.MailFolderDetailsPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:data="using:Mail.Services.Data"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Mail.Models"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:pages="using:Mail.Pages"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
-    xmlns:converters1="using:Mail.Converters"
-    Background="Transparent"
-    NavigationCacheMode="Required"
-    mc:Ignorable="d">
+﻿<Page x:Class="Mail.Pages.MailFolderDetailsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:data="using:Mail.Services.Data"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:models="using:Mail.Models"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+      xmlns:pages="using:Mail.Pages"
+      xmlns:converters="using:Mail.Converters"
+      xmlns:Triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
+      xmlns:UI="using:Microsoft.Toolkit.Uwp.UI"
+      Background="Transparent"
+      NavigationCacheMode="Required"
+      mc:Ignorable="d">
 
     <Page.Resources>
+        <converters:ContactToAvatarConverter x:Key="ContactToAvatarConverter" />
+        <converters:FileSizeToDescriptionConverter x:Key="FileSizeToDescriptionConverter" />
 
-        <ResourceDictionary>
-
-
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="ms-appx:///Resources/MicaBackdropStyle.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
-            <Style x:Key="TransTextBoxStyle" TargetType="TextBox">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="TextBox">
-                            <Grid>
-                                <Grid.Resources>
-                                    <Style x:Name="DeleteButtonStyle" TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Grid x:Name="ButtonLayoutGrid" Background="{ThemeResource TextControlButtonBackground}" BorderBrush="{ThemeResource TextControlButtonBorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                                                        <VisualStateManager.VisualStateGroups>
-                                                            <VisualStateGroup x:Name="CommonStates">
-                                                                <VisualState x:Name="Normal"/>
-                                                                <VisualState x:Name="PointerOver">
-                                                                    <Storyboard>
-                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ButtonLayoutGrid" Storyboard.TargetProperty="Background">
-                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonBackgroundPointerOver}"/>
-                                                                        </ObjectAnimationUsingKeyFrames>
-                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ButtonLayoutGrid" Storyboard.TargetProperty="BorderBrush">
-                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonBorderBrushPointerOver}"/>
-                                                                        </ObjectAnimationUsingKeyFrames>
-                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlyphElement" Storyboard.TargetProperty="Foreground">
-                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonForegroundPointerOver}"/>
-                                                                        </ObjectAnimationUsingKeyFrames>
-                                                                    </Storyboard>
-                                                                </VisualState>
-                                                                <VisualState x:Name="Pressed">
-                                                                    <Storyboard>
-                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ButtonLayoutGrid" Storyboard.TargetProperty="Background">
-                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonBackgroundPressed}"/>
-                                                                        </ObjectAnimationUsingKeyFrames>
-                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ButtonLayoutGrid" Storyboard.TargetProperty="BorderBrush">
-                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonBorderBrushPressed}"/>
-                                                                        </ObjectAnimationUsingKeyFrames>
-                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlyphElement" Storyboard.TargetProperty="Foreground">
-                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonForegroundPressed}"/>
-                                                                        </ObjectAnimationUsingKeyFrames>
-                                                                    </Storyboard>
-                                                                </VisualState>
-                                                                <VisualState x:Name="Disabled">
-                                                                    <Storyboard>
-                                                                        <DoubleAnimation Duration="0" Storyboard.TargetName="ButtonLayoutGrid" To="0" Storyboard.TargetProperty="Opacity"/>
-                                                                    </Storyboard>
-                                                                </VisualState>
-                                                            </VisualStateGroup>
-                                                        </VisualStateManager.VisualStateGroups>
-                                                        <TextBlock x:Name="GlyphElement" AutomationProperties.AccessibilityView="Raw" Foreground="{ThemeResource TextControlButtonForeground}" FontStyle="Normal" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="12" HorizontalAlignment="Center" Text="&#xE10A;" VerticalAlignment="Center"/>
-                                                    </Grid>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </Grid.Resources>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup x:Name="CommonStates">
-                                        <VisualState x:Name="Normal"/>
-                                        <VisualState x:Name="Disabled">
-                                            <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HeaderContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlHeaderForegroundDisabled}"/>
-                                                </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundDisabled}"/>
-                                                </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderBrushDisabled}"/>
-                                                </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundDisabled}"/>
-                                                </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource Mode=TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundDisabled}}"/>
-                                                </ObjectAnimationUsingKeyFrames>
-                                            </Storyboard>
-                                        </VisualState>
-
-                                        <VisualState x:Name="Focused" />
-                                    </VisualStateGroup>
-                                    <VisualStateGroup x:Name="ButtonStates">
-                                        <VisualState x:Name="ButtonVisible">
-                                            <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DeleteButton" Storyboard.TargetProperty="Visibility">
-                                                    <DiscreteObjectKeyFrame KeyTime="0">
-                                                        <DiscreteObjectKeyFrame.Value>
-                                                            <Visibility>Visible</Visibility>
-                                                        </DiscreteObjectKeyFrame.Value>
-                                                    </DiscreteObjectKeyFrame>
-                                                </ObjectAnimationUsingKeyFrames>
-                                            </Storyboard>
-                                        </VisualState>
-                                        <VisualState x:Name="ButtonCollapsed"/>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
-                                <ContentPresenter x:Name="HeaderContentPresenter" ContentTemplate="{TemplateBinding HeaderTemplate}" Grid.Column="0" Content="{TemplateBinding Header}" Grid.ColumnSpan="2" Foreground="{ThemeResource TextControlHeaderForeground}" FontWeight="Normal" Margin="{ThemeResource TextBoxTopHeaderMargin}" Grid.Row="0" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Collapsed" x:DeferLoadStrategy="Lazy"/>
-                                <Border x:Name="BorderElement" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Grid.Column="0" Grid.ColumnSpan="2" Control.IsTemplateFocusTarget="True" MinWidth="{ThemeResource TextControlThemeMinWidth}" MinHeight="{ThemeResource TextControlThemeMinHeight}" Grid.RowSpan="1" Grid.Row="1"/>
-                                <ScrollViewer x:Name="ContentElement" AutomationProperties.AccessibilityView="Raw" Grid.Column="0" HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}" HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}" IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}" IsTabStop="False" IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}" IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Grid.Row="1" VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}" VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}" ZoomMode="Disabled"/>
-                                <TextBlock x:Name="PlaceholderTextContentPresenter" Grid.Column="0" Grid.ColumnSpan="2" Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource Mode=TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForeground}}" IsHitTestVisible="False" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Grid.Row="1" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" Text="{TemplateBinding PlaceholderText}"/>
-                                <Button x:Name="DeleteButton" AutomationProperties.AccessibilityView="Raw" BorderThickness="{TemplateBinding BorderThickness}" Grid.Column="1" FontSize="{TemplateBinding FontSize}" IsTabStop="False" Margin="{ThemeResource HelperButtonThemePadding}" MinWidth="34" Grid.Row="1" Style="{StaticResource DeleteButtonStyle}" VerticalAlignment="Stretch" Visibility="Collapsed"/>
-                                <ContentPresenter x:Name="DescriptionPresenter" AutomationProperties.AccessibilityView="Raw" Grid.Column="0" Content="{TemplateBinding Description}" Grid.ColumnSpan="2" Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}" Grid.Row="2" x:Load="False"/>
-                            </Grid>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
-            <converters:BoolToVisibilityConverter x:Key="B2V"/>
-            <converters1:ContactToAvatarConverter x:Key="ContactToAvatarConverter" />
-
-            <DataTemplate x:Key="DefaultTemplate" x:DataType="models:MailMessageListDetailViewModel">
+        <DataTemplate x:Key="DefaultTemplate"
+                      x:DataType="models:MailMessageListDetailViewModel">
+            <UserControl>
                 <Grid>
-                    <ScrollViewer>
-                        <StackPanel Margin="50">
-                            <StackPanel>
-                                <TextBlock
-                                        FontSize="20"
-                                        FontWeight="Bold"
-                                        Text="{x:Bind Title}"
-                                        TextWrapping="WrapWholeWords" />
-                                <StackPanel Margin="0,30,0,0" Orientation="Horizontal">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock FontWeight="Bold" Text="From:" />
-                                        <StackPanel Margin="10,0,0,0">
-                                            <TextBlock FontWeight="SemiBold" Text="{x:Bind Sender.Name}" />
-                                            <TextBlock
-                                                    FontSize="12"
-                                                    FontWeight="SemiBold"
-                                                    Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                                    Text="{x:Bind Sender.Address}" />
-                                        </StackPanel>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup>
+                            <VisualState x:Name="NormalState" />
+                            <VisualState x:Name="CompactState">
+                                <VisualState.StateTriggers>
+                                    <Triggers:CompareStateTrigger To="200"
+                                                                  Comparison="LessThanOrEqual"
+                                                                  Value="{Binding ElementName=ToRecipientsSizeDetector,Path=(UI:FrameworkElementExtensions.ActualWidth)}" />
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Target="ToRecipientsGrid.(Grid.Column)"
+                                            Value="0" />
+                                    <Setter Target="ToRecipientsGrid.(Grid.Row)"
+                                            Value="2" />
+                                    <Setter Target="RecipientsGrid.RowDefinitions[1].Height"
+                                            Value="10" />
+                                    <Setter Target="FromRecipientsGrid.ColumnDefinitions[0].Width"
+                                            Value="50" />
+                                    <Setter Target="ToRecipientsGrid.ColumnDefinitions[0].Width"
+                                            Value="50" />
+                                    <Setter Target="ToRecipientsGrid.(Grid.ColumnSpan)"
+                                            Value="3" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                    <ScrollViewer Padding="50"
+                                  VerticalScrollMode="Auto"
+                                  HorizontalScrollMode="Disabled">
+                        <StackPanel>
+                            <TextBlock FontSize="20"
+                                       FontWeight="Bold"
+                                       Text="{x:Bind Title}"
+                                       TextWrapping="WrapWholeWords" />
+                            <Grid x:Name="RecipientsGrid"
+                                  Margin="0,30,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="50" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="0" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Border Grid.Column="2"
+                                        x:Name="ToRecipientsSizeDetector"
+                                        UI:FrameworkElementExtensions.EnableActualSizeBinding="True"
+                                        HorizontalAlignment="Stretch" />
+                                <Grid x:Name="FromRecipientsGrid">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock FontWeight="Bold"
+                                               Text="From:" />
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock FontWeight="SemiBold"
+                                                   Text="{x:Bind Sender.Name}" />
+                                        <TextBlock FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                                   Text="{x:Bind Sender.Address}" />
                                     </StackPanel>
-                                    <StackPanel Margin="55,0,0,0" Orientation="Horizontal">
-                                        <TextBlock FontWeight="Bold" Text="To:" />
-                                        <ListView
-                                                Margin="10,-2.05,0,0"
-                                                Padding="0"
-                                                ItemsSource="{x:Bind ToRecipients}">
-                                            <ListView.ItemContainerStyle>
-                                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}"
-                                                           TargetType="ListViewItem">
-                                                    <Setter Property="Padding" Value="0" />
-                                                    <Setter Property="Template">
-                                                        <Setter.Value>
-                                                            <ControlTemplate TargetType="ListViewItem">
-                                                                <Grid>
-                                                                    <Border
-                                                                            Height="{TemplateBinding Height}"
-                                                                            Background="{TemplateBinding Background}"
-                                                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                                                            CornerRadius="5">
-                                                                        <ContentPresenter
-                                                                                Height="{TemplateBinding Height}"
-                                                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                                                                    </Border>
-                                                                </Grid>
-                                                            </ControlTemplate>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </Style>
-                                            </ListView.ItemContainerStyle>
-                                            <ListView.ItemTemplate>
-                                                <DataTemplate x:DataType="data:MailMessageRecipientData">
-                                                    <StackPanel>
-                                                        <TextBlock
-                                                                FontWeight="SemiBold"
-                                                                Text="{x:Bind Name}"
-                                                                TextTrimming="CharacterEllipsis" />
-                                                        <TextBlock
-                                                                FontSize="12"
-                                                                FontWeight="SemiBold"
-                                                                Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                                                Text="{x:Bind Address}"
-                                                                TextTrimming="CharacterEllipsis" />
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </ListView.ItemTemplate>
-                                        </ListView>
-                                    </StackPanel>
-                                </StackPanel>
-                            </StackPanel>
-                            <Grid Margin="0,55,0,0">
+                                </Grid>
+                                <Grid Grid.Column="2"
+                                      HorizontalAlignment="Left"
+                                      x:Name="ToRecipientsGrid">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock FontWeight="Bold"
+                                               Text="To:" />
+                                    <ListView Grid.Column="2"
+                                              SelectionMode="None"
+                                              HorizontalAlignment="Stretch"
+                                              ScrollViewer.VerticalScrollMode="Disabled"
+                                              ScrollViewer.HorizontalScrollMode="Enabled"
+                                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                              ItemsSource="{x:Bind ToRecipients}">
+                                        <ListView.ItemContainerTransitions>
+                                            <TransitionCollection />
+                                        </ListView.ItemContainerTransitions>
+                                        <ListView.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <ItemsStackPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ListView.ItemsPanel>
+                                        <ListView.ItemContainerStyle>
+                                            <Style TargetType="ListViewItem"
+                                                   BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                                <Setter Property="Padding"
+                                                        Value="0,0,10,0" />
+                                                <Setter Property="VerticalContentAlignment"
+                                                        Value="Top" />
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="data:MailMessageRecipientData">
+                                                <StackPanel>
+                                                    <TextBlock FontWeight="SemiBold"
+                                                               Text="{x:Bind Name}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                                               Text="{x:Bind Address}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Grid>
+                            </Grid>
+                            <Border Height="2"
+                                    Margin="0,20"
+                                    HorizontalAlignment="Stretch"
+                                    Background="Gray" />
+                            <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <PersonPicture Grid.Row="0"
-                                           ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}"
-                                                   Width="32"
-                                                   Height="32"
-                                                   Margin="5,5,15,5"
-                                                   VerticalAlignment="Top"
-                                                   DisplayName="{x:Bind SenderName}" />
-                                <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock
-                                            FontWeight="SemiBold"
-                                            Text="{x:Bind Sender.Name}"
-                                            TextTrimming="CharacterEllipsis" />
-                                    <TextBlock
-                                            FontSize="12"
-                                            FontWeight="SemiBold"
-                                            Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                            Text="{x:Bind Sender.Address}"
-                                            TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                                <CommandBar Grid.Row="0"
-                                        Grid.Column="2"
-                                        Background="Transparent"
-                                        DefaultLabelPosition="Collapsed"
-                                        IsOpen="False">
+                                <CommandBar Grid.Column="2"
+                                            Padding="0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            DefaultLabelPosition="Collapsed"
+                                            IsDynamicOverflowEnabled="True">
+                                    <CommandBar.Content>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <PersonPicture Width="32"
+                                                           Height="32"
+                                                           Margin="5,5,15,5"
+                                                           VerticalAlignment="Center"
+                                                           DisplayName="{x:Bind SenderName}"
+                                                           ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}" />
+                                            <StackPanel Grid.Column="1"
+                                                        VerticalAlignment="Center">
+                                                <TextBlock FontWeight="SemiBold"
+                                                           Text="{x:Bind Sender.Name}"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                                           Text="{x:Bind Sender.Address}"
+                                                           TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </CommandBar.Content>
                                     <CommandBar.Resources>
-                                        <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}"
-                                                   TargetType="AppBarButton">
-                                            <Setter Property="Width" Value="43" />
+                                        <Style TargetType="AppBarButton"
+                                               BasedOn="{StaticResource DefaultAppBarButtonStyle}">
+                                            <Setter Property="Width"
+                                                    Value="42" />
                                         </Style>
                                     </CommandBar.Resources>
-                                    <AppBarButton>
-                                        <AppBarButton.Icon>
-                                            <FontIcon Glyph="&#xe793;" />
-                                        </AppBarButton.Icon>
+                                    <AppBarButton Icon="MailReply"
+                                                  Label="Reply">
+                                        <AppBarButton.KeyboardAccelerators>
+                                            <KeyboardAccelerator Key="R"
+                                                                 IsEnabled="False"
+                                                                 Modifiers="Shift" />
+                                        </AppBarButton.KeyboardAccelerators>
                                     </AppBarButton>
-                                    <AppBarButton Icon="MailReply" />
-                                    <AppBarButton Icon="MailReplyAll" />
-                                    <AppBarButton Icon="MailForward" />
-                                    <AppBarButton Icon="Delete" />
+                                    <AppBarButton Icon="MailReplyAll"
+                                                  Label="Reply all">
+                                        <AppBarButton.KeyboardAccelerators>
+                                            <KeyboardAccelerator Key="A"
+                                                                 IsEnabled="False"
+                                                                 Modifiers="Shift" />
+                                        </AppBarButton.KeyboardAccelerators>
+                                    </AppBarButton>
+                                    <AppBarButton Icon="MailForward"
+                                                  Label="Forward">
+                                        <AppBarButton.KeyboardAccelerators>
+                                            <KeyboardAccelerator Key="F"
+                                                                 IsEnabled="False"
+                                                                 Modifiers="Shift" />
+                                        </AppBarButton.KeyboardAccelerators>
+                                    </AppBarButton>
+                                    <AppBarButton Icon="Delete"
+                                                  Label="Delete">
+                                        <AppBarButton.KeyboardAccelerators>
+                                            <KeyboardAccelerator Key="D"
+                                                                 IsEnabled="False"
+                                                                 Modifiers="Shift" />
+                                        </AppBarButton.KeyboardAccelerators>
+                                    </AppBarButton>
                                     <CommandBar.SecondaryCommands>
-                                        <AppBarButton Icon="Setting" Label="Settings">
+                                        <AppBarButton Icon="Setting"
+                                                      Label="Settings">
                                             <AppBarButton.KeyboardAccelerators>
-                                                <KeyboardAccelerator Key="I" Modifiers="Control" />
+                                                <KeyboardAccelerator Key="I"
+                                                                     IsEnabled="False"
+                                                                     Modifiers="Shift" />
                                             </AppBarButton.KeyboardAccelerators>
                                         </AppBarButton>
                                     </CommandBar.SecondaryCommands>
                                 </CommandBar>
-
-                                <ListBox Grid.Column="1" 
-                                             Grid.Row="1" 
-                                             x:Name="AttachmentsListBox" 
-                                             DataContext="{Binding}" />
+                                <StackPanel Grid.Row="1"
+                                            x:Name="AttachmentsArea"
+                                            BorderBrush="Gray"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Padding="10"
+                                            Margin="10"
+                                            Visibility="Collapsed">
+                                    <TextBlock Margin="5,0,0,0"
+                                               Text="Attachments" />
+                                    <ListView SelectionMode="None"
+                                              Margin="0,5,0,0"
+                                              x:Name="AttachmentsListView"
+                                              HorizontalAlignment="Stretch"
+                                              ScrollViewer.VerticalScrollMode="Disabled"
+                                              ScrollViewer.HorizontalScrollMode="Enabled"
+                                              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                        <ListView.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <ItemsStackPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ListView.ItemsPanel>
+                                        <ListView.ItemContainerStyle>
+                                            <Style TargetType="ListViewItem"
+                                                   BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                                <Setter Property="Padding"
+                                                        Value="5,0" />
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="data:MailMessageFileAttachmentData">
+                                                <Button Click="MailFileAttachmentDownload">
+                                                    <StackPanel Width="180">
+                                                        <TextBlock FontWeight="SemiBold"
+                                                                   Text="{x:Bind Name}"
+                                                                   TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock FontSize="12"
+                                                                   Text="{x:Bind AttachmentSize,Converter={StaticResource FileSizeToDescriptionConverter}}"
+                                                                   TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
                             </Grid>
-                            <WebView
-                                    MinHeight="500"
-                                    Height="Auto"
-                                    HorizontalAlignment="Stretch"
-                                    NavigationCompleted="Browser_NavigationCompleted"
-                                    DefaultBackgroundColor="Transparent"
-                                    NavigationStarting="WebView_OnNavigationStarting"
-                                    VerticalAlignment="Stretch" />
+                            <WebView MinHeight="500"
+                                     Height="Auto"
+                                     HorizontalAlignment="Stretch"
+                                     NavigationCompleted="Browser_NavigationCompleted"
+                                     DefaultBackgroundColor="Transparent"
+                                     NavigationStarting="WebView_OnNavigationStarting"
+                                     VerticalAlignment="Stretch" />
                         </StackPanel>
                     </ScrollViewer>
-                    <Button
-                            x:Name="DetailsViewGoBack"
+                    <Button x:Name="DetailsViewGoBack"
                             VerticalAlignment="Top"
                             Style="{ThemeResource NavigationBackButtonNormalStyle}"
                             Visibility="Collapsed"
                             Click="DetailsViewGoBack_Click" />
                 </Grid>
-            </DataTemplate>
+            </UserControl>
+        </DataTemplate>
 
-            <DataTemplate x:Key="EditTemplate" x:DataType="models:MailMessageListDetailViewModel">
-                <Frame Loading="FrameworkElement_OnLoading" />
-            </DataTemplate>
+        <DataTemplate x:Key="EditTemplate"
+                      x:DataType="models:MailMessageListDetailViewModel">
+            <Frame Loading="FrameworkElement_OnLoading" />
+        </DataTemplate>
 
-            <pages:DetailsSelector x:Key="DetailsSelector" EditTemplate="{StaticResource EditTemplate}"
-                               DefaultTemplate="{StaticResource DefaultTemplate}"/>
-
-        </ResourceDictionary>
-
-        
-
+        <pages:DetailsSelector x:Key="DetailsSelector"
+                               EditTemplate="{StaticResource EditTemplate}"
+                               DefaultTemplate="{StaticResource DefaultTemplate}" />
     </Page.Resources>
 
     <Grid>
-        <controls:ListDetailsView
-            x:Name="DetailsView"
-            BackButtonBehavior="Manual"
-            Background="Transparent"
-            DetailsPaneBackground="Transparent"
-            IsTapEnabled="True"
-            ListPaneBackground="Transparent"
-            Loaded="ListDetailsView_Loaded"
-            NoSelectionContent="Select an item to view"
-            SelectionChanged="DetailsView_SelectionChanged"
-            Tapped="ListDetailsView_Tapped"
-            ViewStateChanged="DetailsView_ViewStateChanged"
-            DetailsContentTemplateSelector="{StaticResource DetailsSelector}">
+        <controls:ListDetailsView x:Name="DetailsView"
+                                  BackButtonBehavior="Manual"
+                                  Background="Transparent"
+                                  DetailsPaneBackground="Transparent"
+                                  IsTapEnabled="True"
+                                  ListPaneBackground="Transparent"
+                                  Loaded="ListDetailsView_Loaded"
+                                  NoSelectionContent="Select an item to view"
+                                  SelectionChanged="DetailsView_SelectionChanged"
+                                  Tapped="ListDetailsView_Tapped"
+                                  ViewStateChanged="DetailsView_ViewStateChanged"
+                                  DetailsContentTemplateSelector="{StaticResource DetailsSelector}">
             <controls:ListDetailsView.ListHeader>
                 <Grid>
-                    <muxc:NavigationView
-                        x:Name="NavigationTab"
-                        IsBackButtonVisible="Collapsed"
-                        IsSettingsVisible="False"
-                        SelectionChanged="NavigationView_SelectionChanged"
-                        Visibility="Collapsed"
-                        PaneDisplayMode="Top">
+                    <muxc:NavigationView x:Name="NavigationTab"
+                                         IsBackButtonVisible="Collapsed"
+                                         IsSettingsVisible="False"
+                                         SelectionChanged="NavigationView_SelectionChanged"
+                                         Visibility="Collapsed"
+                                         PaneDisplayMode="Top">
                         <muxc:NavigationView.MenuItems>
-                            <muxc:NavigationViewItem x:Uid="FocusedTab" x:Name="FocusedTab" />
-                            <muxc:NavigationViewItem x:Uid="OtherTab" x:Name="OtherTab" />
+                            <muxc:NavigationViewItem x:Uid="FocusedTab"
+                                                     x:Name="FocusedTab" />
+                            <muxc:NavigationViewItem x:Uid="OtherTab"
+                                                     x:Name="OtherTab" />
                         </muxc:NavigationView.MenuItems>
                     </muxc:NavigationView>
-                    <TextBlock x:Name="FolderName" FontWeight="Bold" Visibility="Collapsed" VerticalAlignment="Center" />
-                    <Button
-                        Margin="5"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Style="{ThemeResource AlternateCloseButtonStyle}"
-                        Click="CreateMail_Click">
-                        <FontIcon FontSize="16" Glyph="&#xe710;" />
+                    <TextBlock x:Name="FolderName"
+                               FontWeight="Bold"
+                               Visibility="Collapsed"
+                               VerticalAlignment="Center" />
+                    <Button Margin="5"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource AlternateCloseButtonStyle}"
+                            Click="CreateMail_Click">
+                        <FontIcon FontSize="16"
+                                  Glyph="&#xe710;" />
                     </Button>
                 </Grid>
             </controls:ListDetailsView.ListHeader>
             <controls:ListDetailsView.ItemContainerStyle>
-                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                    <Setter Property="Padding" Value="5" />
+                <Style BasedOn="{StaticResource DefaultListViewItemStyle}"
+                       TargetType="ListViewItem">
+                    <Setter Property="Padding"
+                            Value="5" />
                 </Style>
             </controls:ListDetailsView.ItemContainerStyle>
             <controls:ListDetailsView.ListPaneEmptyContent>
                 <Grid>
-                    <TextBlock
-                        x:Name="EmptyContentText"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        FontSize="16" />
+                    <TextBlock x:Name="EmptyContentText"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="16" />
                 </Grid>
             </controls:ListDetailsView.ListPaneEmptyContent>
-            
+
             <!--Current Folder All Mail PreView-->
             <controls:ListDetailsView.ItemTemplate>
                 <DataTemplate x:DataType="models:MailMessageListDetailViewModel">
@@ -374,68 +373,92 @@
                             <ColumnDefinition Width="10" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <PersonPicture
-                            ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}"
-                            Width="32"
-                            Height="32"
-                            Margin="10,5"
-                            VerticalAlignment="Top"
-                            DisplayName="{x:Bind SenderName}" />
-                        <StackPanel Grid.Column="1" DataContext="{Binding}">
-                            <TextBlock
-                                FontWeight="Bold"
-                                Text="{x:Bind SenderName}"
-                                TextTrimming="CharacterEllipsis" />
-                            <TextBlock
-                                FontSize="12"
-                                Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                MaxLines="1"
-                                Text="{x:Bind Title}"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="WrapWholeWords" />
-                            <TextBlock
-                                FontSize="12"
-                                Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                MaxLines="1"
-                                Text="{x:Bind PreviewText}"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="WrapWholeWords" />
+                        <PersonPicture ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}"
+                                       Width="32"
+                                       Height="32"
+                                       Margin="10,5"
+                                       VerticalAlignment="Top"
+                                       DisplayName="{x:Bind SenderName}" />
+                        <StackPanel Grid.Column="1"
+                                    DataContext="{Binding}">
+                            <TextBlock FontWeight="Bold"
+                                       Text="{x:Bind SenderName}"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock FontSize="12"
+                                       Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                       MaxLines="1"
+                                       Text="{x:Bind Title}"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="WrapWholeWords" />
+                            <TextBlock FontSize="12"
+                                       Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                       MaxLines="1"
+                                       Text="{x:Bind PreviewText}"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="WrapWholeWords" />
                         </StackPanel>
-                        <TextBlock
-                            Grid.Column="3"
-                            FontSize="12"
-                            FontWeight="SemiBold"
-                            Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                            Text="{x:Bind SentTime}" />
+                        <TextBlock Grid.Column="3"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
+                                   Text="{x:Bind SentTime}" />
 
-                        <Grid.ContextFlyout >
-                            <MenuFlyout >
-                                <MenuFlyoutItem Margin="2" Text="存档" DataContext="{x:Bind }" Click="MailMoveArchiveAsync">
+                        <Grid.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Margin="2"
+                                                Text="存档"
+                                                DataContext="{x:Bind }"
+                                                Click="MailMoveArchiveAsync">
                                     <MenuFlyoutItem.Icon>
-                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7B8;" />
+                                        <FontIcon FontFamily="Segoe Fluent Icons"
+                                                  Glyph="&#xE7B8;" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem  Margin="2" Text="删除" Icon="Delete" Click="MailRemoveAsync"/>
-                                <MenuFlyoutItem  Margin="2" Text="Forward" Icon="Forward" Click="MailForwardAsync"/>
-                                <MenuFlyoutItem  Margin="2" Text="Reply" Icon="Forward" Click="MailReplyAsync"/>
-                                <MenuFlyoutItem  Margin="2"  Text="移动" Click="MailMoveAsync">
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="删除"
+                                                 Icon="Delete"
+                                                 Click="MailRemoveAsync" />
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="Forward"
+                                                 Icon="Forward"
+                                                 Click="MailForwardAsync" />
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="Reply"
+                                                 Icon="Forward"
+                                                 Click="MailReplyAsync" />
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="移动"
+                                                 Click="MailMoveAsync">
                                     <MenuFlyoutItem.Icon>
-                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
+                                        <FontIcon FontFamily="Segoe Fluent Icons"
+                                                  Glyph="&#xE19C;" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem  Margin="2" Text="设置标记" Icon="Flag"/>
-                                <MenuFlyoutItem  Margin="2" Text="标记为已读" Icon="Read"/>
-                                <MenuFlyoutItem  Margin="2" Text="忽略" Icon="Delete"/>
-                                <MenuFlyoutSeparator/>
-                                <MenuFlyoutItem  Margin="2" Text="标记为垃圾邮件" Icon="Mail"/>
-                                <MenuFlyoutItem  Margin="2" Text="移动到其他收件箱" >
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="设置标记"
+                                                 Icon="Flag" />
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="标记为已读"
+                                                 Icon="Read" />
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="忽略"
+                                                 Icon="Delete" />
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="标记为垃圾邮件"
+                                                 Icon="Mail" />
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="移动到其他收件箱">
                                     <MenuFlyoutItem.Icon>
-                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
+                                        <FontIcon FontFamily="Segoe Fluent Icons"
+                                                  Glyph="&#xE19C;" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem  Margin="2" Text="总是移动到其他收件箱" >
+                                <MenuFlyoutItem  Margin="2"
+                                                 Text="总是移动到其他收件箱">
                                     <MenuFlyoutItem.Icon>
-                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE19C;" />
+                                        <FontIcon FontFamily="Segoe Fluent Icons"
+                                                  Glyph="&#xE19C;" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
                             </MenuFlyout>
@@ -445,34 +468,42 @@
             </controls:ListDetailsView.ItemTemplate>
             <controls:ListDetailsView.NoSelectionContentTemplate>
                 <DataTemplate>
-                    <Grid HorizontalAlignment="Center" VerticalAlignment="Center" >
+                    <Grid HorizontalAlignment="Center"
+                          VerticalAlignment="Center">
 
-                        <PathIcon RenderTransformOrigin=".5,.5" Foreground="{StaticResource ApplicationPageBackgroundThemeMicaWindowBrush}" Data="M99.3125 87.25C100.912 87.25 102.43 86.9424 103.865 86.3271C105.301 85.7119 106.552 84.8711 107.618 83.8047C108.726 82.6973 109.587 81.4258 110.202 79.9902C110.817 78.5547 111.125 77.0371 111.125 75.4375V23.3271L58.0303 55.1963C57.415 55.5654 56.7383 55.75 56 55.75C55.2617 55.75 54.585 55.5654 53.9697 55.1963L0.875 23.3271V75.4375C0.875 77.0371 1.18262 78.5547 1.79785 79.9902C2.41309 81.4258 3.25391 82.6973 4.32031 83.8047C5.42773 84.8711 6.69922 85.7119 8.13477 86.3271C9.57031 86.9424 11.0879 87.25 12.6875 87.25H99.3125Z M12.6875 0.625C11.0879 0.625 9.57031 0.932617 8.13477 1.54785C6.69922 2.16309 5.42773 3.02441 4.32031 4.13184C3.25391 5.19824 2.41309 6.44922 1.79785 7.88477C1.18262 9.32031 0.875 10.8379 0.875 12.4375V14.1602L56 47.1982L111.125 14.1602V12.4375C111.125 10.8379 110.817 9.32031 110.202 7.88477C109.587 6.44922 108.726 5.19824 107.618 4.13184C106.552 3.02441 105.301 2.16309 103.865 1.54785C102.43 0.932617 100.912 0.625 99.3125 0.625H12.6875Z">
+                        <PathIcon RenderTransformOrigin=".5,.5"
+                                  Foreground="{StaticResource ApplicationPageBackgroundThemeMicaWindowBrush}"
+                                  Data="M99.3125 87.25C100.912 87.25 102.43 86.9424 103.865 86.3271C105.301 85.7119 106.552 84.8711 107.618 83.8047C108.726 82.6973 109.587 81.4258 110.202 79.9902C110.817 78.5547 111.125 77.0371 111.125 75.4375V23.3271L58.0303 55.1963C57.415 55.5654 56.7383 55.75 56 55.75C55.2617 55.75 54.585 55.5654 53.9697 55.1963L0.875 23.3271V75.4375C0.875 77.0371 1.18262 78.5547 1.79785 79.9902C2.41309 81.4258 3.25391 82.6973 4.32031 83.8047C5.42773 84.8711 6.69922 85.7119 8.13477 86.3271C9.57031 86.9424 11.0879 87.25 12.6875 87.25H99.3125Z M12.6875 0.625C11.0879 0.625 9.57031 0.932617 8.13477 1.54785C6.69922 2.16309 5.42773 3.02441 4.32031 4.13184C3.25391 5.19824 2.41309 6.44922 1.79785 7.88477C1.18262 9.32031 0.875 10.8379 0.875 12.4375V14.1602L56 47.1982L111.125 14.1602V12.4375C111.125 10.8379 110.817 9.32031 110.202 7.88477C109.587 6.44922 108.726 5.19824 107.618 4.13184C106.552 3.02441 105.301 2.16309 103.865 1.54785C102.43 0.932617 100.912 0.625 99.3125 0.625H12.6875Z">
                             <PathIcon.RenderTransform>
-                                <CompositeTransform ScaleX="0.8" ScaleY="0.8" />
+                                <CompositeTransform ScaleX="0.8"
+                                                    ScaleY="0.8" />
                             </PathIcon.RenderTransform>
                         </PathIcon>
 
-                        <PathIcon RenderTransformOrigin=".5,.5" Data="M99.3125 87.25C100.912 87.25 102.43 86.9424 103.865 86.3271C105.301 85.7119 106.552 84.8711 107.618 83.8047C108.726 82.6973 109.587 81.4258 110.202 79.9902C110.817 78.5547 111.125 77.0371 111.125 75.4375V23.3271L58.0303 55.1963C57.415 55.5654 56.7383 55.75 56 55.75C55.2617 55.75 54.585 55.5654 53.9697 55.1963L0.875 23.3271V75.4375C0.875 77.0371 1.18262 78.5547 1.79785 79.9902C2.41309 81.4258 3.25391 82.6973 4.32031 83.8047C5.42773 84.8711 6.69922 85.7119 8.13477 86.3271C9.57031 86.9424 11.0879 87.25 12.6875 87.25H99.3125Z M12.6875 0.625C11.0879 0.625 9.57031 0.932617 8.13477 1.54785C6.69922 2.16309 5.42773 3.02441 4.32031 4.13184C3.25391 5.19824 2.41309 6.44922 1.79785 7.88477C1.18262 9.32031 0.875 10.8379 0.875 12.4375V14.1602L56 47.1982L111.125 14.1602V12.4375C111.125 10.8379 110.817 9.32031 110.202 7.88477C109.587 6.44922 108.726 5.19824 107.618 4.13184C106.552 3.02441 105.301 2.16309 103.865 1.54785C102.43 0.932617 100.912 0.625 99.3125 0.625H12.6875Z">
+                        <PathIcon RenderTransformOrigin=".5,.5"
+                                  Data="M99.3125 87.25C100.912 87.25 102.43 86.9424 103.865 86.3271C105.301 85.7119 106.552 84.8711 107.618 83.8047C108.726 82.6973 109.587 81.4258 110.202 79.9902C110.817 78.5547 111.125 77.0371 111.125 75.4375V23.3271L58.0303 55.1963C57.415 55.5654 56.7383 55.75 56 55.75C55.2617 55.75 54.585 55.5654 53.9697 55.1963L0.875 23.3271V75.4375C0.875 77.0371 1.18262 78.5547 1.79785 79.9902C2.41309 81.4258 3.25391 82.6973 4.32031 83.8047C5.42773 84.8711 6.69922 85.7119 8.13477 86.3271C9.57031 86.9424 11.0879 87.25 12.6875 87.25H99.3125Z M12.6875 0.625C11.0879 0.625 9.57031 0.932617 8.13477 1.54785C6.69922 2.16309 5.42773 3.02441 4.32031 4.13184C3.25391 5.19824 2.41309 6.44922 1.79785 7.88477C1.18262 9.32031 0.875 10.8379 0.875 12.4375V14.1602L56 47.1982L111.125 14.1602V12.4375C111.125 10.8379 110.817 9.32031 110.202 7.88477C109.587 6.44922 108.726 5.19824 107.618 4.13184C106.552 3.02441 105.301 2.16309 103.865 1.54785C102.43 0.932617 100.912 0.625 99.3125 0.625H12.6875Z">
 
                             <PathIcon.RenderTransform>
-                                <CompositeTransform ScaleX="0.8" ScaleY="0.8" />
+                                <CompositeTransform ScaleX="0.8"
+                                                    ScaleY="0.8" />
                             </PathIcon.RenderTransform>
 
                             <PathIcon.Resources>
                                 <ResourceDictionary>
                                     <ResourceDictionary.ThemeDictionaries>
                                         <ResourceDictionary x:Key="Light">
-                                            <SolidColorBrush x:Key="BlankPageIconForegroundMaskColor" Color="#07000000" />
+                                            <SolidColorBrush x:Key="BlankPageIconForegroundMaskColor"
+                                                             Color="#07000000" />
                                         </ResourceDictionary>
                                         <ResourceDictionary x:Key="Dark">
-                                            <SolidColorBrush x:Key="BlankPageIconForegroundMaskColor" Color="#17FFFFFF" />
+                                            <SolidColorBrush x:Key="BlankPageIconForegroundMaskColor"
+                                                             Color="#17FFFFFF" />
                                         </ResourceDictionary>
                                     </ResourceDictionary.ThemeDictionaries>
 
-
                                     <Style TargetType="PathIcon">
-                                        <Setter Property="Foreground" Value="{StaticResource BlankPageIconForegroundMaskColor}" />
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource BlankPageIconForegroundMaskColor}" />
                                     </Style>
 
                                 </ResourceDictionary>
@@ -483,18 +514,21 @@
                 </DataTemplate>
             </controls:ListDetailsView.NoSelectionContentTemplate>
             <controls:ListDetailsView.ListCommandBar>
-                <CommandBar
-                    Background="Transparent"
-                    ClosedDisplayMode="Compact"
-                    IsDynamicOverflowEnabled="False"
-                    OverflowButtonVisibility="Collapsed">
+                <CommandBar Background="Transparent"
+                            ClosedDisplayMode="Compact"
+                            IsDynamicOverflowEnabled="False"
+                            OverflowButtonVisibility="Collapsed">
                     <CommandBar.Resources>
-                        <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
-                            <Setter Property="Width" Value="43" />
+                        <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}"
+                               TargetType="AppBarButton">
+                            <Setter Property="Width"
+                                    Value="43" />
                         </Style>
                     </CommandBar.Resources>
-                    <AppBarButton Icon="Filter" Label="Filter" />
-                    <AppBarButton Icon="Refresh" Label="Refresh" />
+                    <AppBarButton Icon="Filter"
+                                  Label="Filter" />
+                    <AppBarButton Icon="Refresh"
+                                  Label="Refresh" />
                     <AppBarButton Label="MultiSelect">
                         <AppBarButton.Icon>
                             <FontIcon Glyph="&#xE762;" />
