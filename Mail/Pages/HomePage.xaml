@@ -7,13 +7,9 @@
       xmlns:models="using:Mail.Services.Data"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
-      xmlns:converters="using:Mail.Converters"
       xmlns:selectors="using:Mail.Selectors"
       mc:Ignorable="d">
     <Page.Resources>
-        <converters:FolderIconConverter x:Key="FolderIconConverter" />
-        <converters:ContactToAvatarConverter x:Key="ContactToAvatarConverter" />
-
         <selectors:MailFolderNavigationDataTemplateSelector x:Key="MailFolderNavigationDataTemplateSelector">
             <selectors:MailFolderNavigationDataTemplateSelector.Divider>
                 <DataTemplate>

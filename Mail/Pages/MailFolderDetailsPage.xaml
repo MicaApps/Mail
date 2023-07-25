@@ -16,8 +16,7 @@
       mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:ContactToAvatarConverter x:Key="ContactToAvatarConverter" />
-        <converters:FileSizeToDescriptionConverter x:Key="FileSizeToDescriptionConverter" />
+
 
         <DataTemplate x:Key="DefaultTemplate"
                       x:DataType="models:MailMessageListDetailViewModel">
