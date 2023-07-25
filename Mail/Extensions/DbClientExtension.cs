@@ -1,6 +1,5 @@
 ﻿using System;
 using Chloe;
-using Mail.Events;
 using Mail.Services.Data.Enums;
 
 namespace Mail.Extensions;

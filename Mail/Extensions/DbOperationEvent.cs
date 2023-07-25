@@ -1,6 +1,6 @@
 ﻿using Mail.Services.Data.Enums;
 
-namespace Mail.Events;
+namespace Mail.Extensions;
 
 /// <summary>
 /// comment<br/>

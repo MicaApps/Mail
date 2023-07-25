@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Chloe;
-using Mail.Events;
 using Mail.Extensions;
 using Mail.Models;
 using Mail.Services.Data;
