@@ -24,10 +24,6 @@ We're striving to create a UWP Mail client for Windows.
 
 Discover our [upcoming features](Roadmap.md).
 
-## O-Auth
-
-- [Azure Active Directory](https://github.com/DiskTools/Mail/tree/GraphAuth)
-
 ## Build
 
 1. Clone the repository.
@@ -43,6 +39,7 @@ namespace Mail
     internal class Secret
     {
         // Replace this with your unique AAD ClientId from Azure Active Directory.
+        // Azure Active Directory: https://github.com/DiskTools/Mail/tree/GraphAuth
         public static readonly string AadClientId = "Your AAD ClientId";
     }
 }
