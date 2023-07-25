@@ -240,9 +240,9 @@ namespace Mail.Pages
 
                                 try
                                 {
-                                    LoadImageAndCacheAsync(model, browser).Start();
-                                    LoadAttachmentsList(attachmentView, model).Start();
                                     browser.NavigateToString(string.Empty);
+                                    await LoadImageAndCacheAsync(model, browser);
+                                    await LoadAttachmentsList(attachmentView, model);
                                 }
                                 finally
                                 {
@@ -266,10 +266,7 @@ namespace Mail.Pages
 
         private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model, WebView browser)
         {
-            if (Service.GetCache().Get(model.Id) is null)
-            {
-                await Service.LoadAttachmentsAndCacheAsync(model.Id);
-            }
+            var attachmentFileList = await Service.GetMailAttachmentFileAsync(model).ToListAsync();
 
             if (browser.DataContext is MailMessageListDetailViewModel context)
             {
@@ -277,15 +274,18 @@ namespace Mail.Pages
                 {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                         browser.NavigateToString(ConvertContentTheme(
-                            Rgx.Replace(model.Content, ReplaceHtmlInnerImageCidToBase64),
+                            Rgx.Replace(model.Content,
+                                Match => ReplaceHtmlInnerImageCidToBase64(Match, attachmentFileList)),
                             model.ContentType == MailMessageContentType.Text)));
                 }
             }
         }
 
-        private string ReplaceHtmlInnerImageCidToBase64(Capture match)
+        private string ReplaceHtmlInnerImageCidToBase64(Capture match,
+            IEnumerable<MailMessageFileAttachmentData> MessageAttachmentFileList)
         {
-            var fileAttachment = Service.GetCache().Get<MailMessageFileAttachmentData>(match.Value.Replace("cid:", ""));
+            var fileAttachment =
+                MessageAttachmentFileList.FirstOrDefault(x => x.Id.Equals(match.Value.Replace("cid:", "")));
             return fileAttachment is null
                 ? match.Value
                 : $"data:{fileAttachment.ContentType};base64,{Convert.ToBase64String(fileAttachment.ContentBytes)}";

@@ -380,22 +380,6 @@ namespace Mail.Services
             }
         }
 
-        public override async Task LoadAttachmentsAndCacheAsync(string messageId,
-            CancellationToken cancelToken = default)
-        {
-            foreach (var Attachment in await GetMailMessageAttachmentsAsync(messageId, cancelToken))
-            {
-                cancelToken.ThrowIfCancellationRequested();
-
-                if (Attachment is not FileAttachment { ContentId: not null } Fa) continue;
-                if (MemoryCache.Get(Fa.Id) is not null) continue;
-
-                MemoryCache.Set(Fa.ContentId,
-                    new MailMessageFileAttachmentData(Fa.Name, Fa.Id, Fa.ContentType, (ulong)Fa.ContentBytes.Length,
-                        default, Fa.ContentBytes));
-            }
-        }
-
         public override async Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model)
         {
             var rb = IProviderExtension.GetClient(Provider).Me;

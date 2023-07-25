@@ -1,11 +1,4 @@
-﻿using CommunityToolkit.Authentication;
-using Mail.Models;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Identity.Client;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -13,6 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using CommunityToolkit.Authentication;
+using Mail.Models;
+using Mail.Services.Data;
+using Mail.Services.Data.Enums;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 
 namespace Mail.Services
 {
@@ -60,7 +60,8 @@ namespace Mail.Services
 
             if (Provider.State != ProviderState.SignedIn)
             {
-                throw new InvalidOperationException($"Provider status is not correct: {Enum.GetName(typeof(ProviderState), Provider.State)}");
+                throw new InvalidOperationException(
+                    $"Provider status is not correct: {Enum.GetName(typeof(ProviderState), Provider.State)}");
             }
         }
 
@@ -99,8 +100,6 @@ namespace Mail.Services
 
         public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
-
-        public abstract Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
 
         /// <summary>
         /// 如果成功, 请将Model的id设置为服务返回的id
