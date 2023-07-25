@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Chloe;
 using Mail.Events;
 using Mail.Services.Data.Enums;
@@ -24,28 +23,6 @@ public static class DbClientExtension
     public static void OnEvent(this IDbContext Context, object Entity, OperationType Type)
     {
         DbOperationEvent.OnExecEvent(Entity, Type);
-    }
-
-
-    public static async Task<TEntity?> InsertOrUpdateAsync<TEntity>(this IDbContext Context, TEntity Entity)
-    {
-        try
-        {
-            var insertAsync = await Context.InsertAsync(Entity);
-            DbOperationEvent.OnExecEvent(Entity, OperationType.Insert);
-            return insertAsync;
-        }
-        catch (Exception e)
-        {
-            var updateAsync = await Context.UpdateAsync(Entity);
-            if (updateAsync > 0)
-            {
-                DbOperationEvent.OnExecEvent(Entity, OperationType.Update);
-                return Entity;
-            }
-        }
-
-        return default;
     }
 
     public static TEntity? InsertOrUpdate<TEntity>(this IDbContext Context, TEntity Entity)

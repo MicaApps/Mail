@@ -129,7 +129,7 @@
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\DbClientExtension.cs" />
     <Compile Include="Extensions\DbOperationEvent.cs" />
-    <Compile Include="Extensions\MailMessageDataExtentions.cs" />
+    <Compile Include="Extensions\MailMessageDataExtensions.cs"/>
     <Compile Include="Interfaces\DbEntity.cs" />
     <Compile Include="Extensions\Graph\MsalProvider.cs" />
     <Compile Include="Extensions\RunCatch.cs" />

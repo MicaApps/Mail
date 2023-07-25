@@ -18,12 +18,6 @@ namespace Mail.Services
 
         public override MailType MailType => MailType.Gmail;
 
-
-        public override Task SignInAsync()
-        {
-            return Task.FromResult("");
-        }
-
         public override IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
             CancellationToken CancelToken = default)
         {

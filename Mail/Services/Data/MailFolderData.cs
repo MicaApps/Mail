@@ -58,29 +58,33 @@ public class MailFolderData
 
         client.GetDbOperationEvent().ExecEvent += (Entity, DataFilterType) =>
         {
-            if (DataFilterType is not (OperationType.Insert or OperationType.Update)) return;
             if (Entity is not MailFolderData data) return;
 
-            var first = ChildFolders.FirstOrDefault(x => x.Id.Equals(data.Id));
-            var indexOf = ChildFolders.IndexOf(first);
-            if (indexOf == -1)
+            if (DataFilterType is OperationType.Insert or OperationType.Update)
             {
-                if (!data.ParentFolderId.Equals(Id)) return;
-                ChildFolders.Add(data);
-            }
-            else
-            {
-                if (data.ParentFolderId.Equals(Id))
-                    ChildFolders[indexOf] = data;
+                var first = ChildFolders.FirstOrDefault(x => x.Id.Equals(data.Id));
+                var indexOf = ChildFolders.IndexOf(first);
+                // 如果属于这个文件夹
+                var isParentFolder = data.ParentFolderId.Equals(Id);
+                // 如果不存在
+                if (indexOf == -1 && isParentFolder)
+                {
+                    ChildFolders.Add(data);
+                }
                 else
-                    ChildFolders.Remove(first);
-            }
-        };
+                {
+                    if (isParentFolder)
+                        ChildFolders[indexOf] = data;
+                    else
+                        ChildFolders.Remove(first);
+                }
 
-        client.GetDbOperationEvent().ExecEvent += (Entity, DataFilterType) =>
-        {
+                return;
+            }
+
             if (DataFilterType != OperationType.Delete) return;
-            if (Entity is MailFolderData data && data.ParentFolderId == Id) ChildFolders.Remove(data);
+            if (data.ParentFolderId == Id)
+                ChildFolders.Remove(data);
         };
 
         ChildFolders = coll;

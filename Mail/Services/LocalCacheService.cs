@@ -32,14 +32,14 @@ public class LocalCacheService
         dbContext.InsertOrUpdate(Data);
     }
 
-    public async Task SaveFolder(MailFolderData Data)
+    public void SaveFolder(MailFolderData Data)
     {
         var db = GetContext();
-        var dbFolder = await db.Query<MailFolderData>().Where(x => x.Id == Data.Id)
-            .FirstOrDefaultAsync();
+        var dbFolder = db.Query<MailFolderData>().Where(x => x.Id == Data.Id)
+            .FirstOrDefault();
         if (dbFolder is not null && dbFolder.Type != MailFolderType.Other) Data.Type = dbFolder.Type;
 
-        await db.InsertOrUpdateAsync(Data);
+        db.InsertOrUpdate(Data);
     }
 
     public List<MailMessageData> QueryMessage(LoadMailMessageOption Option)
@@ -109,18 +109,17 @@ public class LocalCacheService
         }
     }
 
-    public async Task<List<MailFolderData>> QueryFolderByTreeAsync(string RootFolderId, MailType MailType)
+    public List<MailFolderData> QueryFolderByTree(string RootFolderId, MailType MailType)
     {
         using var db = GetContext();
-        var treeAsync = await db.Query<MailFolderData>()
+        var treeAsync = db.Query<MailFolderData>()
             .Where(x => x.ParentFolderId == RootFolderId)
             .Where(x => x.MailType == MailType)
-            .ToListAsync();
+            .ToList();
 
         foreach (var mailFolderData in treeAsync.Where(mailFolderData => mailFolderData.ChildFolderCount > 0))
         {
-            mailFolderData.ChildFolders =
-                await QueryFolderByTreeAsync(mailFolderData.Id, MailType);
+            mailFolderData.ChildFolders = QueryFolderByTree(mailFolderData.Id, MailType);
         }
 
         return treeAsync;
