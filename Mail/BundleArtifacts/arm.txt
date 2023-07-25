@@ -1,0 +1,2 @@
+MainPackage=C:\Users\ruofan.a.zhu\Documents\GitHub\Mail\Mail\bin\ARM\Release\Mail_0.1.0.0_ARM.msix
+SymbolPackage=C:\Users\ruofan.a.zhu\Documents\GitHub\Mail\Mail\obj\ARM\Release\Symbols\Mail_0.1.0.0_ARM.appxsym
