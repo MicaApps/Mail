@@ -1,43 +1,66 @@
-﻿<Page
-    x:Class="Mail.Pages.HomePage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:enum="using:Mail.Services.Data"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Mail.Services.Data"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
-    xmlns:local="using:Mail.Pages"
-    xmlns:converters="using:Mail.Converters"
-    mc:Ignorable="d">
+﻿<Page x:Class="Mail.Pages.HomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:visuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:models="using:Mail.Services.Data"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+      xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
+      xmlns:selectors="using:Mail.Selectors"
+      mc:Ignorable="d">
     <Page.Resources>
-        <local:FolderIconConverter x:Key="FolderIconConverter" />
-        <converters:ContactToAvatarConverter x:Key="ContactToAvatarConverter" />
+        <selectors:MailFolderNavigationDataTemplateSelector x:Key="MailFolderNavigationDataTemplateSelector">
+            <selectors:MailFolderNavigationDataTemplateSelector.Divider>
+                <DataTemplate>
+                    <muxc:NavigationViewItemSeparator />
+                </DataTemplate>
+            </selectors:MailFolderNavigationDataTemplateSelector.Divider>
+            <selectors:MailFolderNavigationDataTemplateSelector.Content>
+                <DataTemplate x:DataType="models:MailFolderData">
+                    <muxc:NavigationViewItem Content="{x:Bind Name}">
+                        <muxc:NavigationViewItem.Icon>
+                            <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
+                        </muxc:NavigationViewItem.Icon>
+                    </muxc:NavigationViewItem>
+                </DataTemplate>
+            </selectors:MailFolderNavigationDataTemplateSelector.Content>
+            <selectors:MailFolderNavigationDataTemplateSelector.ContentWithChild>
+                <DataTemplate x:DataType="models:MailFolderData">
+                    <muxc:NavigationViewItem Content="{x:Bind Name}"
+                                             MenuItemsSource="{x:Bind ChildFolders}">
+                        <muxc:NavigationViewItem.Icon>
+                            <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
+                        </muxc:NavigationViewItem.Icon>
+                    </muxc:NavigationViewItem>
+                </DataTemplate>
+            </selectors:MailFolderNavigationDataTemplateSelector.ContentWithChild>
+        </selectors:MailFolderNavigationDataTemplateSelector>
     </Page.Resources>
     <Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState>
                     <VisualState.StateTriggers>
-                        <triggers:IsEqualStateTrigger Value="{Binding ElementName=NavView, Path=IsPaneOpen}" To="False" />
+                        <triggers:IsEqualStateTrigger Value="{Binding ElementName=NavView, Path=IsPaneOpen}"
+                                                      To="False" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="listView.ItemTemplate">
                             <Setter.Value>
                                 <DataTemplate x:DataType="models:AccountModel">
-                                    <Grid Width="28" HorizontalAlignment="Left">
-                                        <PersonPicture
-                                            ProfilePicture="{x:Bind Address, Converter={StaticResource ContactToAvatarConverter}}"
-                                            HorizontalAlignment="Center"
-                                            Width="24"
-                                            Height="24"
-                                            DisplayName="{x:Bind Name, Mode=OneWay}" />
+                                    <Grid Width="28"
+                                          HorizontalAlignment="Left">
+                                        <PersonPicture ProfilePicture="{x:Bind Address, Converter={StaticResource ContactToAvatarConverter}}"
+                                                       HorizontalAlignment="Center"
+                                                       Width="24"
+                                                       Height="24"
+                                                       DisplayName="{x:Bind Name}" />
 
                                         <ToolTipService.ToolTip>
                                             <TextBlock>
-                                        <Run Text="{x:Bind Name}" FontWeight="Bold"/>
+                                        <Run Text="{x:Bind Name}"
+                                                FontWeight="Bold" />
                                         <LineBreak />
                                         <Run Text="{x:Bind Address}" />
                                             </TextBlock>
@@ -48,9 +71,12 @@
                         </Setter>
                         <Setter Target="listView.ItemContainerStyle">
                             <Setter.Value>
-                                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
-                                    <Setter Property="Padding" Value="10" />
-                                    <Setter Property="MinWidth" Value="20" />
+                                <Style TargetType="ListViewItem"
+                                       BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                    <Setter Property="Padding"
+                                            Value="10" />
+                                    <Setter Property="MinWidth"
+                                            Value="20" />
                                 </Style>
                             </Setter.Value>
                         </Setter>
@@ -67,39 +93,45 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <Border
-                Grid.ColumnSpan="3"
+        <Border Grid.ColumnSpan="3"
                 x:Name="AppTitleBar"
                 HorizontalAlignment="Stretch"
                 Background="Transparent" />
         <Grid Grid.ColumnSpan="3">
-            <AutoSuggestBox
-                    Grid.Column="2"
-                    Width="350"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    VerticalContentAlignment="Center"
-                x:Uid="Search"
-                    >
+            <AutoSuggestBox Grid.Column="2"
+                            Width="350"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            x:Uid="Search">
 
-            <AutoSuggestBox.Resources>
-                    <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
+                <AutoSuggestBox.Resources>
+                    <LinearGradientBrush x:Key="TextControlElevationBorderBrush"
+                                         MappingMode="Absolute"
+                                         StartPoint="0,0"
+                                         EndPoint="0,2">
                         <LinearGradientBrush.RelativeTransform>
-                            <ScaleTransform ScaleY="-1" CenterY="0.5" />
+                            <ScaleTransform ScaleY="-1"
+                                            CenterY="0.5" />
                         </LinearGradientBrush.RelativeTransform>
                         <LinearGradientBrush.GradientStops>
-                            <GradientStop Offset="0.5" Color="{StaticResource ControlStrokeColorSecondary}" />
-                            <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+                            <GradientStop Offset="0.5"
+                                          Color="{StaticResource ControlStrokeColorSecondary}" />
+                            <GradientStop Offset="1.0"
+                                          Color="{StaticResource ControlStrokeColorDefault}" />
                         </LinearGradientBrush.GradientStops>
                     </LinearGradientBrush>
-                    <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
-                    <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
+                    <StaticResource x:Key="TextControlBorderBrush"
+                                    ResourceKey="TextControlElevationBorderBrush" />
+                    <StaticResource x:Key="TextControlBorderBrushPointerOver"
+                                    ResourceKey="TextControlElevationBorderBrush" />
 
                 </AutoSuggestBox.Resources>
                 <AutoSuggestBox.QueryIcon>
-                    <muxc:AnimatedIcon Width="16" Height="16">
+                    <muxc:AnimatedIcon Width="16"
+                                       Height="16">
                         <muxc:AnimatedIcon.Source>
-                            <animatedvisuals:AnimatedFindVisualSource />
+                            <visuals:AnimatedFindVisualSource />
                         </muxc:AnimatedIcon.Source>
                         <muxc:AnimatedIcon.FallbackIconSource>
                             <muxc:SymbolIconSource Symbol="Find" />
@@ -108,10 +140,13 @@
                 </AutoSuggestBox.QueryIcon>
             </AutoSuggestBox>
         </Grid>
-        <Button x:Name="PaneToggleButton" Style="{ThemeResource PaneToggleButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Left" Click="PaneToggleButton_Click" />
+        <Button x:Name="PaneToggleButton"
+                Style="{ThemeResource PaneToggleButtonStyle}"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Left"
+                Click="PaneToggleButton_Click" />
 
-        <Border
-                Grid.Row="1"
+        <Border Grid.Row="1"
                 Grid.ColumnSpan="3"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
@@ -119,34 +154,36 @@
                 BorderBrush="{ThemeResource NavigationViewContentGridBorderBrush}"
                 BorderThickness="0,1,0,0" />
 
-        <muxc:NavigationView
-            x:Name="NavView"
-            IsBackButtonVisible="Collapsed"
-            IsPaneToggleButtonVisible="False"
-            Grid.Row="1"
-            Grid.ColumnSpan="3"
-            IsTitleBarAutoPaddingEnabled="False"
-            SelectionChanged="NavView_SelectionChanged"
-            OpenPaneLength="250"
-            OverflowLabelMode="MoreLabel"
-            MenuItemsSource="{x:Bind MailFolderSource}"
-            PaneDisplayMode="Left">
+        <muxc:NavigationView x:Name="NavView"
+                             IsBackButtonVisible="Collapsed"
+                             IsPaneToggleButtonVisible="False"
+                             Grid.Row="1"
+                             Grid.ColumnSpan="3"
+                             PaneDisplayMode="Left"
+                             IsTitleBarAutoPaddingEnabled="False"
+                             SelectionChanged="NavView_SelectionChanged"
+                             OpenPaneLength="250"
+                             OverflowLabelMode="MoreLabel"
+                             MenuItemsSource="{x:Bind MailFolderSource}"
+                             MenuItemTemplateSelector="{StaticResource MailFolderNavigationDataTemplateSelector}">
             <muxc:NavigationView.Resources>
                 <!--<Thickness x:Key="NavigationViewContentMargin">0,50,0,0</Thickness>-->
-                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
-                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentBackground"
+                                 Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush"
+                                 Color="Transparent" />
             </muxc:NavigationView.Resources>
             <muxc:NavigationView.PaneCustomContent>
-                <ListView
-                    x:Name="listView"
-                    Margin="0,0,0,0"
-                    ItemsSource="{x:Bind AccountSource}">
+                <ListView x:Name="listView"
+                          Margin="0,0,0,0"
+                          ItemsSource="{x:Bind AccountSource}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:AccountModel">
                             <Grid Padding="0,10">
                                 <ToolTipService.ToolTip>
                                     <TextBlock>
-                                        <Run Text="{x:Bind Name}" FontWeight="Bold"/>
+                                        <Run Text="{x:Bind Name}"
+                                             FontWeight="Bold" />
                                         <LineBreak />
                                         <Run Text="{x:Bind Address}" />
                                     </TextBlock>
@@ -156,56 +193,25 @@
                                     <ColumnDefinition Width="20" />
                                     <ColumnDefinition Width="1*" />
                                 </Grid.ColumnDefinitions>
-                                <PersonPicture
-                                    Width="32"
-                                    Height="32"
-                                    ProfilePicture="{x:Bind Address, Converter={StaticResource ContactToAvatarConverter}}"
-                                    DisplayName="{x:Bind Name, Mode=OneWay}" />
+                                <PersonPicture Width="32"
+                                               Height="32"
+                                               DisplayName="{x:Bind Name}"
+                                               ProfilePicture="{x:Bind Address, Converter={StaticResource ContactToAvatarConverter}}" />
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock FontWeight="SemiBold" Text="{x:Bind Name}" />
-                                    <TextBlock
-                                        FontSize="13"
-                                        Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                        Text="{x:Bind Address}" />
-
+                                    <TextBlock FontWeight="SemiBold"
+                                               Text="{x:Bind Name}" />
+                                    <TextBlock FontSize="13"
+                                               Text="{x:Bind Address}"
+                                               Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" />
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </muxc:NavigationView.PaneCustomContent>
-
-            <muxc:NavigationView.MenuItemTemplateSelector>
-                <local:MailFolderNavigationDataTemplateSelector>
-                    <local:MailFolderNavigationDataTemplateSelector.Divider>
-                        <DataTemplate>
-                            <muxc:NavigationViewItemSeparator />
-                        </DataTemplate>
-                    </local:MailFolderNavigationDataTemplateSelector.Divider>
-                    <local:MailFolderNavigationDataTemplateSelector.Content>
-                        <DataTemplate x:DataType="models:MailFolderData">
-                            <muxc:NavigationViewItem Content="{x:Bind Name}" >
-                                <muxc:NavigationViewItem.Icon>
-                                    <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
-                                </muxc:NavigationViewItem.Icon>
-                            </muxc:NavigationViewItem>
-                        </DataTemplate>
-                    </local:MailFolderNavigationDataTemplateSelector.Content>
-                    <local:MailFolderNavigationDataTemplateSelector.ContentWithChild>
-                        <DataTemplate x:DataType="models:MailFolderData">
-                            <muxc:NavigationViewItem Content="{x:Bind Name}" MenuItemsSource="{x:Bind ChildFolders}">
-                                <muxc:NavigationViewItem.Icon>
-                                    <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
-                                </muxc:NavigationViewItem.Icon>
-                            </muxc:NavigationViewItem>
-                        </DataTemplate>
-                    </local:MailFolderNavigationDataTemplateSelector.ContentWithChild>
-                </local:MailFolderNavigationDataTemplateSelector>
-            </muxc:NavigationView.MenuItemTemplateSelector>
             <muxc:NavigationView.Content>
                 <Frame x:Name="NavigationContent" />
             </muxc:NavigationView.Content>
-
         </muxc:NavigationView>
     </Grid>
 </Page>

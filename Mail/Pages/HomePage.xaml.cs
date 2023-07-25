@@ -1,4 +1,10 @@
-﻿using System;
+﻿using CommunityToolkit.Authentication;
+using Mail.Extensions;
+using Mail.Services;
+using Mail.Services.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -6,15 +12,8 @@ using System.Linq;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
-using CommunityToolkit.Authentication;
-using Mail.Extensions;
-using Mail.Services;
-using Mail.Services.Data;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Identity.Client;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 
 namespace Mail.Pages
@@ -158,57 +157,6 @@ namespace Mail.Pages
         private void PaneToggleButton_Click(object sender, RoutedEventArgs e)
         {
             NavView.IsPaneOpen = !NavView.IsPaneOpen;
-        }
-    }
-
-    class FolderIconConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            if (value is MailFolderType folderType)
-            {
-                return folderType switch
-                {
-                    MailFolderType.Inbox => "\uE10F",
-                    MailFolderType.Deleted => "\uE107",
-                    MailFolderType.Drafts => "\uEC87",
-                    MailFolderType.SentItems => "\uE122",
-                    MailFolderType.Junk => "\uE107",
-                    MailFolderType.Archive => "\uE7B8",
-                    MailFolderType.Other => "\uE8B7",
-                    _ => "\uE8B7"
-                };
-            }
-
-            return null;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    class MailFolderNavigationDataTemplateSelector : DataTemplateSelector
-    {
-        public DataTemplate Divider { get; set; }
-
-        public DataTemplate Content { get; set; }
-
-        public DataTemplate ContentWithChild { get; set; }
-
-        protected override DataTemplate SelectTemplateCore(object item)
-        {
-            if (item is MailFolderData folder)
-            {
-                if (folder.ChildFolders != null) return ContentWithChild;
-
-                return Content;
-            }
-            else
-            {
-                return Divider;
-            }
         }
     }
 }

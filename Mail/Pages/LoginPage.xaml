@@ -24,36 +24,44 @@
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="48"></RowDefinition>
-            <RowDefinition></RowDefinition>
+            <RowDefinition Height="48" />
+            <RowDefinition />
         </Grid.RowDefinitions>
         <Border x:Name="AppTitleBar"
                 HorizontalAlignment="Stretch"
                 Background="Transparent" />
         <StackPanel Orientation="Vertical"
-                Grid.RowSpan="2"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                MaxWidth="800"
-                Padding="32"
-                Spacing="8">
+                    Grid.RowSpan="2"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    MaxWidth="800"
+                    Padding="32"
+                    Spacing="8">
             <TextBlock Text="{StaticResource ResourceKey=WelcomeIcon}"
-                   Height="100"
-                   HorizontalAlignment="Center" />
+                       Height="100"
+                       HorizontalAlignment="Center" />
             <ctkl:SettingsCard Header="Outlook"
-                           IsClickEnabled="True"
-                           Click="Outlook_Click" />
+                               IsClickEnabled="True"
+                               Click="Outlook_Click" />
             <ctkl:SettingsCard Header="Google"
-                           IsClickEnabled="True"
-                           IsEnabled="False" />
+                               IsClickEnabled="True"
+                               IsEnabled="False" />
             <ctkl:SettingsCard Header="POP3"
-                           IsClickEnabled="True"
-                           IsEnabled="False" />
+                               IsClickEnabled="True"
+                               IsEnabled="False" />
             <ctkl:SettingsCard Header="IMAP"
-                           IsClickEnabled="True"
-                           IsEnabled="False" />
-            
+                               IsClickEnabled="True"
+                               IsEnabled="False" />
+
         </StackPanel>
-        <muxc:InfoBar Grid.Row="1"  x:Name="ErrorMessageBar" Title="Error" IsIconVisible="False" Severity="Error" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" MaxWidth="736"  Margin="32"/>
+        <muxc:InfoBar Grid.Row="1"
+                      
+                      x:Name="ErrorMessageBar"
+                      Title="Error"
+                      IsIconVisible="False"
+                      Severity="Error"
+                      VerticalAlignment="Bottom"
+                      MaxWidth="736"
+                      Margin="32" />
     </Grid>
 </Page>
