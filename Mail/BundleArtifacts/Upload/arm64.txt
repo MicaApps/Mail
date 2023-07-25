@@ -1,0 +1,7 @@
+MainPackage=C:\Users\ruofan.a.zhu\Documents\GitHub\Mail\Mail\bin\ARM64\Release\Upload\Mail_0.1.0.0_ARM64.msix
+SymbolPackage=C:\Users\ruofan.a.zhu\Documents\GitHub\Mail\Mail\bin\ARM64\Release\Upload\Mail_0.1.0.0\Mail_0.1.0.0_ARM64.appxsym
+ResourcePack=C:\Users\ruofan.a.zhu\Documents\GitHub\Mail\Mail\bin\ARM64\Release\Upload\Mail_0.1.0.0_language-en.msix
+ResourcePack=C:\Users\ruofan.a.zhu\Documents\GitHub\Mail\Mail\bin\ARM64\Release\Upload\Mail_0.1.0.0_scale-100.msix
+ResourcePack=C:\Users\ruofan.a.zhu\Documents\GitHub\Mail\Mail\bin\ARM64\Release\Upload\Mail_0.1.0.0_scale-125.msix
+ResourcePack=C:\Users\ruofan.a.zhu\Documents\GitHub\Mail\Mail\bin\ARM64\Release\Upload\Mail_0.1.0.0_scale-150.msix
+ResourcePack=C:\Users\ruofan.a.zhu\Documents\GitHub\Mail\Mail\bin\ARM64\Release\Upload\Mail_0.1.0.0_scale-400.msix
