@@ -1,14 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.Storage.FileProperties;
 using CommunityToolkit.Authentication;
 using Mail.Extensions.Graph;
 using Mail.Models;
@@ -26,6 +15,17 @@ using Microsoft.Graph.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
 
 namespace Mail.Services
 {
@@ -114,7 +114,6 @@ namespace Mail.Services
             }
         }
 
-
         private async Task<MailMessageData> GenAndSaveMailMessageDataAsync(string RootFolderId, Message message,
             string type = "Focused")
         {
@@ -143,7 +142,7 @@ namespace Mail.Services
 
         private GraphServiceClient GetClient() => Client ??= Provider.GetClient();
 
-        private async Task<MailFolderCollectionResponse?> DefaultFolderTaskAsync(string name,
+        private async Task DefaultFolderTaskAsync(string name,
             CancellationToken CancellationToken)
         {
             try
@@ -164,10 +163,8 @@ namespace Mail.Services
             }
             catch (Exception e)
             {
-                Trace.WriteLine(e);
+                Trace.WriteLine($"DefaultFolderTaskAsync: {e}");
             }
-
-            return null;
         }
 
         public override async IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
@@ -261,7 +258,6 @@ namespace Mail.Services
                 if (childMailFolder.ChildFolderCount > 0) await LoadMailChildFolderAsync(childMailFolder, CancelToken);
             }
         }
-
 
         public override async Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default)
@@ -478,7 +474,7 @@ namespace Mail.Services
             if (message is null) return false;
 
             await me.Messages[Model.Id].Forward.PostAsync(new ForwardPostRequestBody
-                { ToRecipients = message.ToRecipients, Comment = ForwardContent });
+            { ToRecipients = message.ToRecipients, Comment = ForwardContent });
             return true;
         }
 

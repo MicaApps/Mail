@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Data;
-using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
@@ -23,6 +23,8 @@ namespace Mail
     {
         public static IServiceProvider Services = null!;
 
+        private static string DbConnectionStr => $"DataSource={ApplicationData.Current.LocalFolder.Path}\\mail.db";
+
         public App()
         {
             InitializeComponent();
@@ -30,22 +32,28 @@ namespace Mail
             RegisterServices(services);
             Services = services.BuildServiceProvider();
 
+            Task.Run(InitDatabase);
+
             Suspending += OnSuspending;
+        }
+
+        private async Task InitDatabase()
+        {
+            using var dbContext = Services.GetService<IDbContext>();
+            var sqlFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/sql.sql"));
+            var text = await FileIO.ReadTextAsync(sqlFile);
+            await dbContext.Session.ExecuteReaderAsync(text);
         }
 
         private void RegisterServices(IServiceCollection services)
         {
-            var connectionString = $"DataSource={ApplicationData.Current.LocalFolder.Path}\\mail.db";
-#if DEBUG
-            Trace.WriteLine($"{nameof(connectionString)}Path: {connectionString}");
-#endif
             services.AddSingleton<OutlookService, OutlookService>()
                 .AddSingleton<ICacheService, CacheService>()
                 .AddSingleton<LocalCacheService>()
                 .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))
                 .AddTransient<IDbContext>(_ =>
                 {
-                    var db = new CustomDbContext(new SQLiteConnectionFactory(connectionString));
+                    var db = new CustomDbContext(new SQLiteConnectionFactory(DbConnectionStr));
                     return db;
                 })
                 .BuildServiceProvider();
@@ -108,6 +116,9 @@ public class SQLiteConnectionFactory : IDbConnectionFactory
 
     public SQLiteConnectionFactory(string connString)
     {
+#if DEBUG
+            Trace.WriteLine($"{nameof(connectionString)}Path: {connectionString}");
+#endif
         _connString = connString;
     }
 
