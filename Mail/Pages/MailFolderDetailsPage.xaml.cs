@@ -483,16 +483,4 @@ namespace Mail.Pages
             await Service.MailMoveAsync(model.Id, folder.Id);
         }
     }
-
-    public class DetailsSelector : DataTemplateSelector
-    {
-        public DataTemplate EditTemplate { get; set; } = default!;
-
-        public DataTemplate DefaultTemplate { get; set; } = default!;
-
-        protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
-        {
-            return item is MailMessageListDetailViewModel { IsEmpty: true } ? EditTemplate : DefaultTemplate;
-        }
-    }
 }
