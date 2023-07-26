@@ -1,4 +1,4 @@
-﻿using Mail.Services;
+using Mail.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Windows.ApplicationModel.Core;

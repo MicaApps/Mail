@@ -1,59 +1,47 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using SqlSugar;
+﻿using Chloe;
+using Chloe.Exceptions;
+using Mail.Services.Data.Enums;
 
 namespace Mail.Extensions;
 
 /// <summary>
-/// comment<br/>
-/// <br/>
-/// 创建者: GaN<br/>
-/// 创建时间: 2023/06/14
+///     comment<br />
+///     <br />
+///     创建者: GaN<br />
+///     创建时间: 2023/06/14
 /// </summary>
 public static class DbClientExtension
 {
     private static readonly DbOperationEvent DbOperationEvent = new();
 
-    /// <summary>
-    /// 只有扩展方法会调用, 懒得写ISqlSugarClient的AOP
-    /// </summary>
-    /// <param name="Client"></param>
-    /// <returns></returns>
-    public static DbOperationEvent GetDbOperationEvent(this ISqlSugarClient Client)
+    public static DbOperationEvent GetDbOperationEvent(this IDbContext Context)
     {
         return DbOperationEvent;
     }
 
-    public static async Task<int> SaveOrUpdate<T>(this ISqlSugarClient Client, T entity,
-        CancellationToken CancellationToken = default) where T : class, new()
+    public static void OnEvent(this IDbContext Context, object Entity, OperationType Type)
     {
-        var x = await Client.Storageable(entity).ToStorageAsync();
-        var executeCommandAsync = await x.AsInsertable.ExecuteCommandAsync(CancellationToken);
-        if (executeCommandAsync > 0)
-        {
-            return executeCommandAsync;
-        }
-
-        var commandAsync = await x.AsUpdateable.ExecuteCommandAsync(CancellationToken);
-
-        return commandAsync;
+        DbOperationEvent.OnExecEvent(Entity, Type);
     }
 
-    public static async Task<int> SaveOrUpdate<T>(this ISqlSugarClient Client, IEnumerable<T> entity,
-        CancellationToken CancellationToken = default) where T : class, new()
+    public static TEntity? InsertOrUpdate<TEntity>(this IDbContext Context, TEntity Entity)
     {
-        var dbEntities = entity.ToList();
-        var x = await Client.Storageable(dbEntities).ToStorageAsync();
-        var executeCommandAsync = await x.AsInsertable.ExecuteCommandAsync(CancellationToken);
-        if (executeCommandAsync > 0)
+        try
         {
-            return executeCommandAsync;
+            var insertAsync = Context.Insert(Entity);
+            DbOperationEvent.OnExecEvent(Entity, OperationType.Insert);
+            return insertAsync;
+        }
+        catch (ChloeException e)
+        {
+            var updateAsync = Context.Update(Entity);
+            if (updateAsync > 0)
+            {
+                DbOperationEvent.OnExecEvent(Entity, OperationType.Update);
+                return Entity;
+            }
         }
 
-        var commandAsync = await x.AsUpdateable.ExecuteCommandAsync(CancellationToken);
-
-        return commandAsync;
+        return default;
     }
 }

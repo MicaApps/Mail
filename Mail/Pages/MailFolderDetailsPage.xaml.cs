@@ -1,15 +1,4 @@
-﻿using Mail.Extensions;
-using Mail.Models;
-using Mail.Services;
-using Mail.Services.Collection;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Toolkit.Uwp.Helpers;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using Nito.AsyncEx;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -24,6 +13,17 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
+using Mail.Extensions;
+using Mail.Models;
+using Mail.Services;
+using Mail.Services.Collection;
+using Mail.Services.Data;
+using Mail.Services.Data.Enums;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Uwp.Helpers;
+using Microsoft.Toolkit.Uwp.UI.Controls;
+using Nito.AsyncEx;
 
 namespace Mail.Pages
 {
@@ -140,7 +140,8 @@ namespace Mail.Pages
             {
                 const string darkCss =
                     "<style>body{color: white;background: transparent !important; background-color: transparent !important;}</style>";
-                const string regexPattern = """(bgcolor|background|color|background-color)\s*(\:|\=\")\s*(\S*)([\;\"])""";
+                const string regexPattern =
+                    """(bgcolor|background|color|background-color)\s*(\:|\=\")\s*(\S*)([\;\"])""";
 
                 var matches = Regex.Matches(original, regexPattern);
                 foreach (Match match in matches)
@@ -152,15 +153,16 @@ namespace Mail.Pages
                         {
                             var rgbaStr = match.Groups[3].Value.Substring(5).TrimEnd(')');
                             var rgbaArr = rgbaStr.Split(',');
-                            originalColor = Color.FromArgb((byte)(double.Parse(rgbaArr[3]) * 255), Byte.Parse(rgbaArr[0]),
-                                                           Byte.Parse(rgbaArr[1]), Byte.Parse(rgbaArr[2]));
+                            originalColor = Color.FromArgb((byte)(double.Parse(rgbaArr[3]) * 255),
+                                Byte.Parse(rgbaArr[0]),
+                                Byte.Parse(rgbaArr[1]), Byte.Parse(rgbaArr[2]));
                         }
                         else if (match.Groups[3].Value.StartsWith("rgb"))
                         {
                             var rgbStr = match.Groups[3].Value.Substring(4).TrimEnd(')');
                             var rgbArr = rgbStr.Split(',');
                             originalColor = Color.FromArgb(255, Byte.Parse(rgbArr[0]),
-                                                           Byte.Parse(rgbArr[1]), Byte.Parse(rgbArr[2]));
+                                Byte.Parse(rgbArr[1]), Byte.Parse(rgbArr[2]));
                         }
                         else
                         {
@@ -185,18 +187,15 @@ namespace Mail.Pages
 
                         if (match.Groups[1].Value.StartsWith('b') && hslColor.L is > 0.90 or < 0.10)
                         {
-
-
                             original = original.Replace(match.Value,
-                                                    match.Groups[1].Value + match.Groups[2].Value + "transparent" +
-                                                    match.Groups[4].Value);
+                                match.Groups[1].Value + match.Groups[2].Value + "transparent" +
+                                match.Groups[4].Value);
                             continue;
-
                         }
 
                         original = original.Replace(match.Value,
-                                                        match.Groups[1].Value + match.Groups[2].Value + $"#{color.R:X2}{color.G:X2}{color.B:X2}" +
-                                                        match.Groups[4].Value);
+                            match.Groups[1].Value + match.Groups[2].Value + $"#{color.R:X2}{color.G:X2}{color.B:X2}" +
+                            match.Groups[4].Value);
                     }
                     catch
                     {
@@ -217,7 +216,8 @@ namespace Mail.Pages
             }
 
             // 处理表格
-            original = Regex.Replace(original, @"border(-left|-right|-top|-bottom)*:(\S*)\s*windowtext", "border$1:$2 white");
+            original = Regex.Replace(original, @"border(-left|-right|-top|-bottom)*:(\S*)\s*windowtext",
+                "border$1:$2 white");
 
             return original;
         }
@@ -266,23 +266,26 @@ namespace Mail.Pages
 
         private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model, WebView browser)
         {
-            if (Service.GetCache().Get(model.Id) is null)
-            {
-                await Service.LoadAttachmentsAndCacheAsync(model.Id);
-            }
+            var attachmentFileList = await Service.GetMailAttachmentFileAsync(model).ToListAsync();
 
             if (browser.DataContext is MailMessageListDetailViewModel context)
             {
                 if (context.Id.Equals(model.Id))
                 {
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => browser.NavigateToString(ConvertContentTheme(Rgx.Replace(model.Content, ReplaceWord), model.ContentType == MailMessageContentType.Text)));
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                        browser.NavigateToString(ConvertContentTheme(
+                            Rgx.Replace(model.Content,
+                                Match => ReplaceHtmlInnerImageCidToBase64(Match, attachmentFileList)),
+                            model.ContentType == MailMessageContentType.Text)));
                 }
             }
         }
 
-        private string ReplaceWord(Capture match)
+        private string ReplaceHtmlInnerImageCidToBase64(Capture match,
+            IEnumerable<MailMessageFileAttachmentData> MessageAttachmentFileList)
         {
-            var fileAttachment = Service.GetCache().Get<MailMessageFileAttachmentData>(match.Value.Replace("cid:", ""));
+            var fileAttachment =
+                MessageAttachmentFileList.FirstOrDefault(x => x.Id.Equals(match.Value.Replace("cid:", "")));
             return fileAttachment is null
                 ? match.Value
                 : $"data:{fileAttachment.ContentType};base64,{Convert.ToBase64String(fileAttachment.ContentBytes)}";
@@ -377,7 +380,8 @@ namespace Mail.Pages
 
             sender.Items.Clear();
 
-            await foreach (MailMessageFileAttachmentData attachment in App.Services.GetService<OutlookService>().GetMailAttachmentFileAsync(model))
+            await foreach (MailMessageFileAttachmentData attachment in App.Services.GetService<OutlookService>()
+                               .GetMailAttachmentFileAsync(model))
             {
                 sender.Items.Add(attachment);
             }
