@@ -14,10 +14,10 @@ namespace Mail.Services.Data
 
         public DateTimeOffset LastModifiedDate { get; }
 
-        public byte[] ContentBytes { get; }
+        public byte[]? ContentBytes { get; }
 
         public MailMessageFileAttachmentData(string Name, string Id, string ContentType = null,
-            ulong AttachmentSize = 0, DateTimeOffset LastModifiedDate = default, byte[] ContentBytes = null)
+            ulong AttachmentSize = 0, DateTimeOffset LastModifiedDate = default, byte[]? ContentBytes = null)
         {
             this.Name = Name;
             this.Id = Id;

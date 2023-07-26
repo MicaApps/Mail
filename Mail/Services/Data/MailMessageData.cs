@@ -1,48 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using Mail.Interfaces;
+using Chloe.Annotations;
 using Mail.Services.Data.Enums;
-using SqlSugar;
 
 namespace Mail.Services.Data;
 
-[SugarTable]
-[SugarIndex("MailMessageData_FolderId_Index", nameof(FolderId), OrderByType.Desc)]
-public sealed class MailMessageData : DbEntity
+[Table]
+public sealed class MailMessageData
 {
     [Obsolete("这是给框架用的", true)]
     public MailMessageData()
     {
     }
 
-    public string InferenceClassification { get; }
-    public string FolderId { get; set; }
-    public string Title { get; set; }
-
-    [SugarColumn(IsPrimaryKey = true)] public new string Id { get; set; }
-
-    public DateTimeOffset? SentTime { get; set; }
-
-    [SugarColumn(IsIgnore = true)] public MailMessageRecipientData Sender { get; set; }
-
-    [SugarColumn(IsIgnore = true)]
-    [Navigate(NavigateType.OneToMany, nameof(Id))]
-    public List<MailMessageRecipientData> To { get; set; }
-
-    [SugarColumn(IsIgnore = true)]
-    [Navigate(NavigateType.OneToMany, nameof(Id))]
-    public List<MailMessageRecipientData> CC { get; set; }
-
-    [SugarColumn(IsIgnore = true)]
-    [Navigate(NavigateType.OneToMany, nameof(Id))]
-    public List<MailMessageRecipientData> Bcc { get; set; }
-
-    [SugarColumn(IsIgnore = true)] public IList<IMailMessageAttachmentData> Attachments { get; private set; }
-
-    [Navigate(NavigateType.OneToOne, nameof(Id))]
-    public MailMessageContentData Content { get; private set; }
-
-    public MailMessageData(string FolderId, string Title, string Id, DateTimeOffset? SentTime,
+    public MailMessageData(string FolderId, string Title, string MessageId, DateTimeOffset? SentTime,
         MailMessageRecipientData Sender,
         IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> Cc,
         IEnumerable<MailMessageRecipientData> Bcc, MailMessageContentData Content,
@@ -51,26 +22,44 @@ public sealed class MailMessageData : DbEntity
         this.InferenceClassification = InferenceClassification;
         this.FolderId = FolderId;
         this.Title = Title;
-        this.Id = Id;
-        this.SentTime = SentTime;
+        this.MessageId = MessageId;
+        this.SentTime = SentTime?.UtcDateTime;
         this.Sender = Sender;
-        this.Sender.Id = Id;
+        this.Sender.MessageId = MessageId;
         Sender.RecipientType = RecipientType.Sender;
 
         this.To = new List<MailMessageRecipientData>(To);
-        this.CC = new List<MailMessageRecipientData>(Cc);
+        CC = new List<MailMessageRecipientData>(Cc);
         this.Bcc = new List<MailMessageRecipientData>(Bcc);
         this.Attachments = new List<IMailMessageAttachmentData>(Attachments);
         this.Content = Content;
     }
 
-    public MailMessageData(string Title, string Id, DateTimeOffset? SentTime, MailMessageRecipientData Sender)
+    public MailMessageData(string Title, string MessageId, DateTimeOffset? SentTime, MailMessageRecipientData Sender)
     {
         this.Title = Title;
-        this.Id = Id;
-        this.SentTime = SentTime;
+        this.MessageId = MessageId;
+        this.SentTime = SentTime?.UtcDateTime;
         this.Sender = Sender;
     }
+
+    [Column(IsPrimaryKey = true)] public string MessageId { get; set; }
+
+    public string InferenceClassification { get; set; }
+    public string FolderId { get; set; }
+    public string Title { get; set; }
+
+    public DateTime? SentTime { get; set; }
+
+    [Navigation(nameof(MessageId))] public MailMessageRecipientData Sender { get; set; }
+
+    [Navigation(nameof(MessageId))] public IList<MailMessageRecipientData> To { get; set; }
+
+    [Navigation(nameof(MessageId))] public IList<MailMessageRecipientData> CC { get; set; }
+
+    [Navigation(nameof(MessageId))] public IList<MailMessageRecipientData> Bcc { get; set; }
+    [NotMapped] public IList<IMailMessageAttachmentData> Attachments { get; private set; }
+    [Navigation(nameof(MessageId))] public MailMessageContentData Content { get; set; }
 
     public static MailMessageData Empty(MailMessageRecipientData Sender)
     {

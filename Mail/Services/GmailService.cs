@@ -47,11 +47,6 @@ namespace Mail.Services
             throw new System.NotImplementedException();
         }
 
-        public override Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken cancelToken)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public override Task<bool> MailDraftSaveAsync(MailMessageListDetailViewModel Model)
         {
             throw new System.NotImplementedException();

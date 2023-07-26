@@ -1,4 +1,4 @@
-﻿using SqlSugar;
+﻿using Mail.Services.Data.Enums;
 
 namespace Mail.Extensions;
 
@@ -10,11 +10,11 @@ namespace Mail.Extensions;
 /// </summary>
 public class DbOperationEvent
 {
-    public delegate void DataExecuting(object entity, DataFilterType Type);
+    public delegate void DataExecuting(object entity, OperationType Type);
 
     public event DataExecuting? ExecEvent;
 
-    public void OnExecEvent(object Entity, DataFilterType Type)
+    public void OnExecEvent(object Entity, OperationType Type)
     {
         ExecEvent?.Invoke(Entity, Type);
     }

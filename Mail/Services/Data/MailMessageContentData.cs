@@ -1,28 +1,28 @@
 ﻿using System;
-using Mail.Interfaces;
-using SqlSugar;
+using Chloe.Annotations;
 
 namespace Mail.Services.Data;
 
-[SugarTable]
-public sealed class MailMessageContentData : DbEntity
+[Table]
+public sealed class MailMessageContentData
 {
     [Obsolete("这是给框架用的", true)]
     public MailMessageContentData()
     {
     }
 
-    [SugarColumn(IsPrimaryKey = true)] public new string Id { get; set; }
+    [Column(IsPrimaryKey = true)] public string MessageId { get; set; }
 
-    [SugarColumn(ColumnDataType = StaticConfig.CodeFirst_BigString)]
     public string Content { get; set; }
 
     public string ContentPreview { get; set; }
 
     public MailMessageContentType ContentType { get; set; }
 
-    public MailMessageContentData(string Content, string ContentPreview, MailMessageContentType ContentType)
+    public MailMessageContentData(string MessageId, string Content, string ContentPreview,
+        MailMessageContentType ContentType)
     {
+        this.MessageId = MessageId;
         this.Content = Content;
         this.ContentPreview = ContentPreview;
         this.ContentType = ContentType;
@@ -30,6 +30,6 @@ public sealed class MailMessageContentData : DbEntity
 
     public static MailMessageContentData Empty()
     {
-        return new MailMessageContentData(string.Empty, string.Empty, MailMessageContentType.Text);
+        return new MailMessageContentData(string.Empty, string.Empty, string.Empty, MailMessageContentType.Text);
     }
 }

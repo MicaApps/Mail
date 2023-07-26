@@ -45,8 +45,6 @@ namespace Mail.Services
         public IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
-        Task LoadAttachmentsAndCacheAsync(string messageId, CancellationToken CancelToken = default);
-
         /// <summary>
         /// 如果成功, 请将Model的id设置为服务返回的id
         /// </summary>
