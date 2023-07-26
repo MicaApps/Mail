@@ -10,39 +10,40 @@
       xmlns:selectors="using:Mail.Selectors"
       mc:Ignorable="d">
     <Page.Resources>
-        <selectors:MailFolderNavigationDataTemplateSelector x:Key="MailFolderNavigationDataTemplateSelector">
-            <selectors:MailFolderNavigationDataTemplateSelector.Divider>
-                <DataTemplate>
-                    <muxc:NavigationViewItemSeparator />
-                </DataTemplate>
-            </selectors:MailFolderNavigationDataTemplateSelector.Divider>
-            <selectors:MailFolderNavigationDataTemplateSelector.Content>
-                <DataTemplate x:DataType="models:MailFolderData">
-                    <muxc:NavigationViewItem Content="{x:Bind Name}">
-                        <muxc:NavigationViewItem.Icon>
-                            <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
-                        </muxc:NavigationViewItem.Icon>
-                    </muxc:NavigationViewItem>
-                </DataTemplate>
-            </selectors:MailFolderNavigationDataTemplateSelector.Content>
-            <selectors:MailFolderNavigationDataTemplateSelector.ContentWithChild>
-                <DataTemplate x:DataType="models:MailFolderData">
-                    <muxc:NavigationViewItem Content="{x:Bind Name}"
-                                             MenuItemsSource="{x:Bind ChildFolders}">
-                        <muxc:NavigationViewItem.Icon>
-                            <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
-                        </muxc:NavigationViewItem.Icon>
-                    </muxc:NavigationViewItem>
-                </DataTemplate>
-            </selectors:MailFolderNavigationDataTemplateSelector.ContentWithChild>
-        </selectors:MailFolderNavigationDataTemplateSelector>
+        <DataTemplate x:Key="DividerTemplate">
+            <muxc:NavigationViewItemSeparator />
+        </DataTemplate>
+        
+        <DataTemplate x:Key="ContentTemplate"
+                      x:DataType="models:MailFolderData">
+            <muxc:NavigationViewItem Content="{x:Bind Name}">
+                <muxc:NavigationViewItem.Icon>
+                    <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
+                </muxc:NavigationViewItem.Icon>
+            </muxc:NavigationViewItem>
+        </DataTemplate>
+        
+        <DataTemplate x:Key="ContentWithChildTemplate" x:DataType="models:MailFolderData">
+            <muxc:NavigationViewItem Content="{x:Bind Name}"
+                                     MenuItemsSource="{x:Bind ChildFolders}">
+                <muxc:NavigationViewItem.Icon>
+                    <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
+                </muxc:NavigationViewItem.Icon>
+            </muxc:NavigationViewItem>
+        </DataTemplate>
+        
+        <selectors:MailFolderNavigationDataTemplateSelector x:Key="MailFolderNavigationDataTemplateSelector"
+                                                            Divider="{StaticResource DividerTemplate}"
+                                                            Content="{StaticResource ContentTemplate}"
+                                                            ContentWithChild="{StaticResource ContentWithChildTemplate}"/>
     </Page.Resources>
+    
     <Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState>
                     <VisualState.StateTriggers>
-                        <triggers:IsEqualStateTrigger Value="{Binding ElementName=NavView, Path=IsPaneOpen}"
+                        <triggers:IsEqualStateTrigger Value="{Binding ElementName=NavView,Path=IsPaneOpen}"
                                                       To="False" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
@@ -51,7 +52,7 @@
                                 <DataTemplate x:DataType="models:AccountModel">
                                     <Grid Width="28"
                                           HorizontalAlignment="Left">
-                                        <PersonPicture ProfilePicture="{x:Bind Address, Converter={StaticResource ContactToAvatarConverter}}"
+                                        <PersonPicture ProfilePicture="{x:Bind Address,Converter={StaticResource ContactToAvatarConverter}}"
                                                        HorizontalAlignment="Center"
                                                        Width="24"
                                                        Height="24"
@@ -196,7 +197,7 @@
                                 <PersonPicture Width="32"
                                                Height="32"
                                                DisplayName="{x:Bind Name}"
-                                               ProfilePicture="{x:Bind Address, Converter={StaticResource ContactToAvatarConverter}}" />
+                                               ProfilePicture="{x:Bind Address,Converter={StaticResource ContactToAvatarConverter}}" />
                                 <StackPanel Grid.Column="2">
                                     <TextBlock FontWeight="SemiBold"
                                                Text="{x:Bind Name}" />

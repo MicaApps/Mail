@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{github.workflow}}-${{github.event.pull_request.number || github.ref}}
+  group: ${{github.workflow}}-${{github.ref}}
   cancel-in-progress: true
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
       ProjectName: Mail
       CertThumbprint: C53D2D8CC27ACFF93AA2D54F8D6ADEE85C665F32
       SolutionPath: ${{github.workspace}}\Mail.sln
-      BuildSecretPath: ${{github.workspace}}\build\Secret.cs
+      BuildSecretPath: ${{github.workspace}}\Mail\Secret.cs
       CertificationPath: ${{github.workspace}}\Mail_SignCert.pfx
       CIOutputPath: ${{github.workspace}}\Output\CI
       TargetWindowsSDKVersion: 10.0.22621.1778
@@ -96,11 +96,11 @@ jobs:
         uses: c-hive/gha-remove-artifacts@v1.3.0
         with:
           age: 0 seconds
-          skip-recent: 2
+          skip-recent: 1
           skip-tags: false
 
-      - name: Upload Sideload Artifacts
+      - name: Upload CI Artifacts
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: Sideload Artifacts
+          name: CI Artifacts
           path: ${{env.CIOutputPath}}

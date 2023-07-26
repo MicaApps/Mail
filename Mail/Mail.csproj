@@ -95,7 +95,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP;CODE_ANALYSIS</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -141,6 +141,8 @@
     <Compile Include="Pages\EditMail.xaml.cs">
       <DependentUpon>EditMail.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Secret.cs" />
+    <Compile Include="Selectors\MailFolderDetailsContentDataTemplateSelector.cs" />
     <Compile Include="Selectors\MailFolderNavigationDataTemplateSelector.cs" />
     <Compile Include="Services\CacheService.cs" />
     <Compile Include="Services\Data\Enums\EditMailType.cs" />
@@ -182,7 +184,6 @@
       <DependentUpon>SplashPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Secret.cs" />
     <Compile Include="Services\GmailService.cs" />
     <Compile Include="Services\ICacheService.cs" />
     <Compile Include="Services\IMailService.cs" />
@@ -324,7 +325,7 @@
       <Version>7.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Graph">
-      <Version>5.11.0</Version>
+      <Version>5.19.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client">
       <Version>4.55.0</Version>
@@ -352,12 +353,4 @@
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
-  <Import Project="$(MSBuildProjectDirectory)\..\build\Secret.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

@@ -4,7 +4,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace Mail.Selectors
 {
-    internal class MailFolderNavigationDataTemplateSelector : DataTemplateSelector
+    internal sealed class MailFolderNavigationDataTemplateSelector : DataTemplateSelector
     {
         public DataTemplate Divider { get; set; }
 
@@ -14,16 +14,7 @@ namespace Mail.Selectors
 
         protected override DataTemplate SelectTemplateCore(object item)
         {
-            if (item is MailFolderData folder)
-            {
-                if (folder.ChildFolders != null) return ContentWithChild;
-
-                return Content;
-            }
-            else
-            {
-                return Divider;
-            }
+            return item is MailFolderData folder ? folder.ChildFolders != null ? ContentWithChild : Content : Divider;
         }
     }
 }

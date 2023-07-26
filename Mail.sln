@@ -6,9 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mail", "Mail\Mail.csproj", "{2601D787-59C4-4C96-9608-E7C7DA16DA39}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{9AF8B660-344F-4CDC-8EF1-CAEBE2AF4081}"
-	ProjectSection(SolutionItems) = preProject
-		build\Secret.targets = build\Secret.targets
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

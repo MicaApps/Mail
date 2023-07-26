@@ -20,7 +20,7 @@ jobs:
       ProjectName: Mail
       CertThumbprint: C53D2D8CC27ACFF93AA2D54F8D6ADEE85C665F32
       SolutionPath: ${{github.workspace}}\Mail.sln
-      BuildSecretPath: ${{github.workspace}}\build\Secret.cs
+      BuildSecretPath: ${{github.workspace}}\Mail\Secret.cs
       CertificationPath: ${{github.workspace}}\Mail_SignCert.pfx
       SideloadOutputPath: ${{github.workspace}}\Output\Sideload
       TargetWindowsSDKVersion: 10.0.22621.1778
@@ -99,7 +99,7 @@ jobs:
         uses: c-hive/gha-remove-artifacts@v1.3.0
         with:
           age: 0 seconds
-          skip-recent: 2
+          skip-recent: 1
           skip-tags: false
 
       - name: Upload Sideload Artifacts

@@ -1,7 +1,11 @@
-namespace Mail
+﻿namespace Mail
 {
     internal static class Secret
     {
-        public static readonly string AadClientId = "00000000-0000-0000-0000-000000000000";
+#if DEBUG
+        public const string AadClientId = "0b3dac55-dc21-442b-ace7-ccefbb5a9f80";
+#else
+        public const string AadClientId = "<Mail-AAD-Secret-Value>";
+#endif
     }
 }
