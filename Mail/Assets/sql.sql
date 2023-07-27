@@ -1,4 +1,4 @@
-﻿create table main.MailFolderData
+﻿create table if not exists main.MailFolderData
 (
     Id               NVARCHAR(255) not null
         primary key,
@@ -11,7 +11,7 @@
     ChildFolderCount INTEGER       not null
 );
 
-create table main.MailMessageContentData
+create table if not exists main.MailMessageContentData
 (
     MessageId      NVARCHAR(255) not null
         primary key,
@@ -20,7 +20,7 @@ create table main.MailMessageContentData
     ContentType    MEDIUMINT     not null
 );
 
-create table main.MailMessageData
+create table if not exists main.MailMessageData
 (
     MessageId               NVARCHAR(255) not null
         primary key,
@@ -30,7 +30,7 @@ create table main.MailMessageData
     SentTime                DATETIME
 );
 
-create table main.MailMessageRecipientData
+create table if not exists main.MailMessageRecipientData
 (
     Id            integer       not null
         constraint MailMessageRecipientData_pk
@@ -41,3 +41,5 @@ create table main.MailMessageRecipientData
     RecipientType MEDIUMINT     not null
 );
 
+create index if not exists MailMessageRecipientData_MessageId_index
+    on MailMessageRecipientData (MessageId);
