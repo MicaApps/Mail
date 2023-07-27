@@ -163,7 +163,7 @@ namespace Mail.Services
             }
             catch (Exception e)
             {
-                Trace.WriteLine($"DefaultFolderTaskAsync: {e}");
+                Trace.WriteLine($"{nameof(DefaultFolderTaskAsync)}: {e}");
             }
         }
 
@@ -474,7 +474,11 @@ namespace Mail.Services
             if (message is null) return false;
 
             await me.Messages[Model.Id].Forward.PostAsync(new ForwardPostRequestBody
-            { ToRecipients = message.ToRecipients, Comment = ForwardContent });
+            {
+                Comment = ForwardContent,
+                ToRecipients = message.ToRecipients
+            });
+
             return true;
         }
 

@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
+using Windows.UI.Core;
 
 namespace Mail.Pages
 {
@@ -261,23 +262,17 @@ namespace Mail.Pages
             }
         }
 
-        private readonly Regex Rgx = new("cid:[^\"]+");
-
         private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model, WebView browser)
         {
-            // var attachmentFileList = await Service.GetMailAttachmentFileAsync(model).ToListAsync();
-            /*
-                        if (browser.DataContext is MailMessageListDetailViewModel context)
-                        {
-                            if (context.Id.Equals(model.Id))
-                            {
-                                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                                    browser.NavigateToString(ConvertContentTheme(
-                                        Rgx.Replace(model.Content,
-                                            Match => ReplaceHtmlInnerImageCidToBase64(Match, attachmentFileList)),
-                                        model.ContentType == MailMessageContentType.Text)));
-                            }
-                        }*/
+            IReadOnlyList<MailMessageFileAttachmentData> attachmentFileList = await Service.GetMailAttachmentFileAsync(model).ToListAsync();
+
+            if (browser.DataContext is MailMessageListDetailViewModel context)
+            {
+                if (context.Id.Equals(model.Id))
+                {
+                    browser.NavigateToString(ConvertContentTheme(new Regex("cid:[^\"]+").Replace(model.Content, Match => ReplaceHtmlInnerImageCidToBase64(Match, attachmentFileList)), model.ContentType == MailMessageContentType.Text));
+                }
+            }
         }
 
         private string ReplaceHtmlInnerImageCidToBase64(Capture match,
