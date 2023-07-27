@@ -12,16 +12,16 @@ using Nito.AsyncEx;
 
 namespace Mail.Services.Collection
 {
-    internal sealed class MailIncrementalLoadingObservableCollection :
-        ObservableCollection<MailMessageListDetailViewModel>,
-        ISupportIncrementalLoading
+    internal sealed class MailIncrementalLoadingObservableCollection : ObservableCollection<MailMessageListDetailViewModel>, ISupportIncrementalLoading
     {
-        private readonly MailFolderData MailFolder;
-        private readonly Func<uint, CancellationToken, IAsyncEnumerable<MailMessageData>> FetchDataSet;
         private readonly AsyncLock IncrementalLoadingLocker = new AsyncLock();
-        public bool HasMoreItems => Count < MailFolder.TotalItemCount;
+        private readonly Func<MailIncrementalLoadingObservableCollection, uint, CancellationToken, IAsyncEnumerable<MailMessageData>> FetchDataDelegate;
+
+        public bool HasMoreItems => Count < TotalItemCount;
 
         public uint MinIncrementalLoadingStep { get; }
+
+        public uint TotalItemCount { get; }
 
         public IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count)
         {
@@ -36,10 +36,10 @@ namespace Mail.Services.Collection
             {
                 using (await IncrementalLoadingLocker.LockAsync(CancelToken))
                 {
-                    await foreach (var data in FetchDataSet(RequestedCount, CancelToken))
+                    await foreach (MailMessageData Data in FetchDataDelegate(this, RequestedCount, CancelToken))
                     {
                         CancelToken.ThrowIfCancellationRequested();
-                        Add(new MailMessageListDetailViewModel(data));
+                        Add(new MailMessageListDetailViewModel(Data));
                         LoadCounter++;
                     }
                 }
@@ -56,23 +56,11 @@ namespace Mail.Services.Collection
             return new LoadMoreItemsResult { Count = LoadCounter };
         }
 
-        public MailIncrementalLoadingObservableCollection(IMailService Service,
-            MailFolderData MailFolder, uint MinIncrementalLoadingStep = 30,
-            bool IsFocusTab = false)
+        public MailIncrementalLoadingObservableCollection(Func<MailIncrementalLoadingObservableCollection, uint, CancellationToken, IAsyncEnumerable<MailMessageData>> FetchDataDelegate, uint TotalItemCount, uint MinIncrementalLoadingStep = 30)
         {
-            this.MailFolder = MailFolder;
+            this.TotalItemCount = TotalItemCount;
             this.MinIncrementalLoadingStep = MinIncrementalLoadingStep;
-            FetchDataSet = (RequestCount, Token) =>
-            {
-                var option = new LoadMailMessageOption(MailFolder.Id, IsFocusTab)
-                {
-                    StartIndex = Count,
-                    LoadCount = (int)Math.Max(MinIncrementalLoadingStep, RequestCount)
-                };
-                return IsFocusTab && Service is IMailService.IFocusFilterSupport filterSupport
-                    ? filterSupport.GetMailMessageAsync(option, CancelToken: Token)
-                    : Service.GetMailMessageAsync(option, CancelToken: Token);
-            };
+            this.FetchDataDelegate = FetchDataDelegate;
         }
     }
 }

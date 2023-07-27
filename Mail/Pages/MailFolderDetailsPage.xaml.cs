@@ -1,17 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.Storage.Pickers;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Navigation;
 using Mail.Extensions;
 using Mail.Models;
 using Mail.Services;
@@ -23,96 +9,79 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Nito.AsyncEx;
-using Windows.UI.Core;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using Windows.System;
+using Windows.UI;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
+using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
+using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
 
 namespace Mail.Pages
 {
     public sealed partial class MailFolderDetailsPage : Page
     {
-        private readonly AsyncLock SelectionChangeLocker = new();
-        private MailIncrementalLoadingObservableCollection? PreviewSource;
+        private IMailService CurrentService;
         private MailFolderData? NavigationData;
-        private bool IsFocusedTab { get; set; } = true;
-        private IMailService Service;
+        private MailIncrementalLoadingObservableCollection? PreviewSource;
+        private CancellationTokenSource SelectionChangeCancellation;
+        private readonly AsyncLock SelectionChangeLocker = new AsyncLock();
 
         public MailFolderDetailsPage()
         {
-            Service = App.Services.GetService<OutlookService>()!;
             InitializeComponent();
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            Service = App.Services.GetService<OutlookService>()!;
+            CurrentService = App.Services.GetService<OutlookService>()!;
 
-            if (e is { Parameter: MailFolderData data, NavigationMode: NavigationMode.New })
+            if (e.Parameter is MailFolderData Data)
             {
-                NavigationData = data;
-                FolderName.Text = data.Name;
-                if (data.Type == MailFolderType.Inbox && Service is IMailService.IFocusFilterSupport)
-                {
-                    NavigationTab.Visibility = Visibility.Visible;
-                    FolderName.Visibility = Visibility.Collapsed;
-                    var isPreviousSelected = FocusedTab.IsSelected;
-                    FocusedTab.IsSelected = true;
-                    if (isPreviousSelected)
-                    {
-                        await RefreshData();
-                    }
-                }
-                else
-                {
-                    NavigationTab.Visibility = Visibility.Collapsed;
-                    FolderName.Visibility = Visibility.Visible;
-                    await RefreshData();
-                }
-            }
-            else
-            {
-                NavigationData = null;
+                NavigationData = Data;
+                FolderName.Text = Data.Name;
+                NavigationTab.SelectedItem = FocusedTab;
             }
         }
 
-        private async Task RefreshData()
+        private async Task InitializeDataFromMailFolderAsync(MailFolderData MailFolder)
         {
-            PreviewSource?.Clear();
-            DetailsView.SelectedItem = null;
             EmptyContentText.Text = "Syncing you email";
-            var data = NavigationData;
-            if (data == null) return;
+
             try
             {
-                IMailService service = App.Services.GetService<OutlookService>()!;
-                var mailFolder = await service.GetMailFolderDetailAsync(data.Id);
-
-                // Load Contacts to Cache
-                /*
-                 var contacts = await service.GetContactsAsync();
-                 App.Services.GetService<ICacheService>()!.AddOrReplaceCache(contacts);
-                */
-
-                var isFocusedTab = IsFocusedTab && data.Type == MailFolderType.Inbox;
-                var option = new LoadMailMessageOption(data.Id, isFocusedTab);
-
-                DetailsView.ItemsSource = PreviewSource =
-                    new MailIncrementalLoadingObservableCollection(service,
-                        mailFolder,
-                        IsFocusTab: isFocusedTab);
-
-                IAsyncEnumerable<MailMessageData> dataSet;
-                if (data.Type == MailFolderType.Inbox && service is IMailService.IFocusFilterSupport filterService)
+                DetailsView.ItemsSource = PreviewSource = new MailIncrementalLoadingObservableCollection((Instance, RequestCount, Token) =>
                 {
-                    dataSet = filterService.GetMailMessageAsync(option);
-                }
-                else
-                {
-                    dataSet = service.GetMailMessageAsync(option);
-                }
+                    LoadMailMessageOption Options = new LoadMailMessageOption
+                    {
+                        FolderId = MailFolder.Id,
+                        StartIndex = Instance.Count,
+                        LoadCount = (int)Math.Max(Instance.MinIncrementalLoadingStep, RequestCount),
+                        IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem as NavigationViewItem) && MailFolder.Type == MailFolderType.Inbox
+                    };
 
-                await foreach (var messageData in dataSet)
-                {
-                    PreviewSource.Add(new MailMessageListDetailViewModel(messageData));
-                }
+                    if (Options.IsFocusedTab && CurrentService is IMailService.IFocusFilterSupport filterSupport)
+                    {
+                        return filterSupport.GetMailMessageAsync(Options, CancelToken: Token);
+                    }
+                    else
+                    {
+                        return CurrentService.GetMailMessageAsync(Options, CancelToken: Token);
+                    }
+
+                }, Convert.ToUInt32(MailFolder.TotalItemCount));
+
+                await PreviewSource.LoadMoreItemsAsync(30);
 
                 if (PreviewSource.Count == 0)
                 {
@@ -130,192 +99,195 @@ namespace Mail.Pages
 
         private string ConvertContentTheme(string original, bool rawText = false)
         {
-            if (Application.Current.RequestedTheme != ApplicationTheme.Dark) return original;
-
-            if (rawText)
+            if (Application.Current.RequestedTheme == ApplicationTheme.Dark)
             {
-                return original;
-            }
-            else
-            {
-                const string darkCss =
-                    "<style>body{color: white;background: transparent !important; background-color: transparent !important;}</style>";
-                const string regexPattern =
-                    """(bgcolor|background|color|background-color)\s*(\:|\=\")\s*(\S*)([\;\"])""";
-
-                var matches = Regex.Matches(original, regexPattern);
-                foreach (Match match in matches)
+                if (rawText)
                 {
-                    try
+                    return original;
+                }
+                else
+                {
+                    const string darkCss =
+                        "<style>body{color: white;background: transparent !important; background-color: transparent !important;}</style>";
+                    const string regexPattern =
+                        """(bgcolor|background|color|background-color)\s*(\:|\=\")\s*(\S*)([\;\"])""";
+
+                    var matches = Regex.Matches(original, regexPattern);
+                    foreach (Match match in matches)
                     {
-                        Color originalColor;
-                        if (match.Groups[3].Value.StartsWith("rgba"))
+                        try
                         {
-                            var rgbaStr = match.Groups[3].Value.Substring(5).TrimEnd(')');
-                            var rgbaArr = rgbaStr.Split(',');
-                            originalColor = Color.FromArgb((byte)(double.Parse(rgbaArr[3]) * 255),
-                                Byte.Parse(rgbaArr[0]),
-                                Byte.Parse(rgbaArr[1]), Byte.Parse(rgbaArr[2]));
-                        }
-                        else if (match.Groups[3].Value.StartsWith("rgb"))
-                        {
-                            var rgbStr = match.Groups[3].Value.Substring(4).TrimEnd(')');
-                            var rgbArr = rgbStr.Split(',');
-                            originalColor = Color.FromArgb(255, Byte.Parse(rgbArr[0]),
-                                Byte.Parse(rgbArr[1]), Byte.Parse(rgbArr[2]));
-                        }
-                        else
-                        {
-                            originalColor = ColorExtensions.ParseColor(match.Groups[3].Value, null);
-                        }
+                            Color originalColor;
+                            if (match.Groups[3].Value.StartsWith("rgba"))
+                            {
+                                var rgbaStr = match.Groups[3].Value.Substring(5).TrimEnd(')');
+                                var rgbaArr = rgbaStr.Split(',');
+                                originalColor = Color.FromArgb((byte)(double.Parse(rgbaArr[3]) * 255),
+                                    Byte.Parse(rgbaArr[0]),
+                                    Byte.Parse(rgbaArr[1]), Byte.Parse(rgbaArr[2]));
+                            }
+                            else if (match.Groups[3].Value.StartsWith("rgb"))
+                            {
+                                var rgbStr = match.Groups[3].Value.Substring(4).TrimEnd(')');
+                                var rgbArr = rgbStr.Split(',');
+                                originalColor = Color.FromArgb(255, Byte.Parse(rgbArr[0]),
+                                    Byte.Parse(rgbArr[1]), Byte.Parse(rgbArr[2]));
+                            }
+                            else
+                            {
+                                originalColor = ColorExtensions.ParseColor(match.Groups[3].Value, null);
+                            }
 
 
-                        var hslColor = originalColor.ToHsl();
+                            var hslColor = originalColor.ToHsl();
 
-                        // 合理调整此处区间以便正常拉取色调
-                        if (hslColor.L >= 0.70)
-                        {
-                            hslColor.L = 1 - hslColor.L;
-                        }
-                        else if (hslColor.L <= 0.30)
-                        {
-                            hslColor.L = 1 - hslColor.L;
-                        }
+                            // 合理调整此处区间以便正常拉取色调
+                            if (hslColor.L >= 0.70)
+                            {
+                                hslColor.L = 1 - hslColor.L;
+                            }
+                            else if (hslColor.L <= 0.30)
+                            {
+                                hslColor.L = 1 - hslColor.L;
+                            }
 
-                        var color = Microsoft.Toolkit.Uwp.Helpers.ColorHelper.FromHsl(
-                            hslColor.H, hslColor.S, hslColor.L, hslColor.A);
+                            var color = Microsoft.Toolkit.Uwp.Helpers.ColorHelper.FromHsl(
+                                hslColor.H, hslColor.S, hslColor.L, hslColor.A);
 
-                        if (match.Groups[1].Value.StartsWith('b') && hslColor.L is > 0.90 or < 0.10)
-                        {
+                            if (match.Groups[1].Value.StartsWith('b') && hslColor.L is > 0.90 or < 0.10)
+                            {
+                                original = original.Replace(match.Value,
+                                    match.Groups[1].Value + match.Groups[2].Value + "transparent" +
+                                    match.Groups[4].Value);
+                                continue;
+                            }
+
                             original = original.Replace(match.Value,
-                                match.Groups[1].Value + match.Groups[2].Value + "transparent" +
+                                match.Groups[1].Value + match.Groups[2].Value + $"#{color.R:X2}{color.G:X2}{color.B:X2}" +
                                 match.Groups[4].Value);
-                            continue;
                         }
-
-                        original = original.Replace(match.Value,
-                            match.Groups[1].Value + match.Groups[2].Value + $"#{color.R:X2}{color.G:X2}{color.B:X2}" +
-                            match.Groups[4].Value);
+                        catch
+                        {
+                            //ignore
+                        }
                     }
-                    catch
+
+
+                    if (original.Contains("<body>"))
                     {
-                        //ignore
+                        original = original.Insert(original.IndexOf("<body>", StringComparison.Ordinal) + 6, darkCss);
+                    }
+
+                    if (original.Contains("<html>"))
+                    {
+                        original = original.Insert(original.IndexOf("<html>", StringComparison.Ordinal) + 6, darkCss);
                     }
                 }
 
-
-                if (original.Contains("<body>"))
-                {
-                    original = original.Insert(original.IndexOf("<body>", StringComparison.Ordinal) + 6, darkCss);
-                }
-
-                if (original.Contains("<html>"))
-                {
-                    original = original.Insert(original.IndexOf("<html>", StringComparison.Ordinal) + 6, darkCss);
-                }
+                // 处理表格
+                original = Regex.Replace(original, @"border(-left|-right|-top|-bottom)*:(\S*)\s*windowtext",
+                    "border$1:$2 white");
             }
-
-            // 处理表格
-            original = Regex.Replace(original, @"border(-left|-right|-top|-bottom)*:(\S*)\s*windowtext",
-                "border$1:$2 white");
 
             return original;
         }
 
-        private async void ListDetailsView_Tapped(object sender, TappedRoutedEventArgs e)
+        private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel Model, WebView Browser, CancellationToken CancelToken = default)
         {
-            if ((e.OriginalSource as FrameworkElement)?.DataContext is MailMessageListDetailViewModel model)
+            IReadOnlyList<MailMessageFileAttachmentData> AttachmentFileList = await CurrentService.GetMailAttachmentFileAsync(Model, CancelToken).ToArrayAsync(CancelToken);
+
+            if (AttachmentFileList.Count > 0)
             {
-                if (sender is ListDetailsView view && !model.IsEmpty)
+                string ReplaceHtmlInnerImageCidToBase64(string CidPlaceHolder, IEnumerable<MailMessageFileAttachmentData> MessageAttachmentFileList)
                 {
-                    using (await SelectionChangeLocker.LockAsync())
+                    if (MessageAttachmentFileList.FirstOrDefault((Attachment) => Attachment.Id.Equals(CidPlaceHolder.Replace("cid:", ""))) is MailMessageFileAttachmentData TargetAttachment)
                     {
-                        for (var retry = 0; retry < 10; retry++)
-                        {
-                            if (view.FindChildOfType<WebView>() is WebView browser
-                                && view.FindChildOfName<ListView>("AttachmentsListView") is ListView attachmentView
-                                && view.FindChildOfName<StackPanel>("AttachmentsArea") is StackPanel attachmentPanel)
-                            {
-                                attachmentPanel.Visibility = Visibility.Collapsed;
-
-                                try
-                                {
-                                    browser.NavigateToString(string.Empty);
-                                    await LoadImageAndCacheAsync(model, browser);
-                                    await LoadAttachmentsList(attachmentView, model);
-                                }
-                                finally
-                                {
-                                    if (attachmentView.Items.Count > 0)
-                                    {
-                                        attachmentPanel.Visibility = Visibility.Visible;
-                                    }
-                                }
-
-                                break;
-                            }
-
-                            await Task.Delay(300);
-                        }
+                        return $"data:{TargetAttachment.ContentType};base64,{Convert.ToBase64String(TargetAttachment.ContentBytes)}";
                     }
+
+                    return CidPlaceHolder;
                 }
+
+                Browser.NavigateToString(ConvertContentTheme(new Regex("cid:[^\"]+").Replace(Model.Content, (Match) => ReplaceHtmlInnerImageCidToBase64(Match.Value, AttachmentFileList)), Model.ContentType == MailMessageContentType.Text));
             }
-        }
-
-        private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel model, WebView browser)
-        {
-            IReadOnlyList<MailMessageFileAttachmentData> attachmentFileList = await Service.GetMailAttachmentFileAsync(model).ToListAsync();
-
-            if (browser.DataContext is MailMessageListDetailViewModel context)
+            else
             {
-                if (context.Id.Equals(model.Id))
-                {
-                    browser.NavigateToString(ConvertContentTheme(new Regex("cid:[^\"]+").Replace(model.Content, Match => ReplaceHtmlInnerImageCidToBase64(Match, attachmentFileList)), model.ContentType == MailMessageContentType.Text));
-                }
-            }
-        }
-
-        private string ReplaceHtmlInnerImageCidToBase64(Capture match,
-            IEnumerable<MailMessageFileAttachmentData> MessageAttachmentFileList)
-        {
-            var fileAttachment =
-                MessageAttachmentFileList.FirstOrDefault(x => x.Id.Equals(match.Value.Replace("cid:", "")));
-            return fileAttachment is null
-                ? match.Value
-                : $"data:{fileAttachment.ContentType};base64,{Convert.ToBase64String(fileAttachment.ContentBytes)}";
-        }
-
-        private async Task SetWebviewHeight(WebView webView)
-        {
-            var heightString =
-                await webView.InvokeScriptAsync("eval", new[] { "document.body.scrollHeight.toString()" });
-            if (int.TryParse(heightString, out int height))
-            {
-                webView.Height = height + 50;
+                Browser.NavigateToString(ConvertContentTheme(Model.Content, Model.ContentType == MailMessageContentType.Text));
             }
         }
 
         private async void Browser_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
-            await SetWebviewHeight(sender);
+            string HeightRaw = await sender.InvokeScriptAsync("eval", new[] { "document.body.scrollHeight.toString()" });
+
+            if (int.TryParse(HeightRaw, out int height))
+            {
+                sender.Height = height + 50;
+            }
         }
 
         private void ListDetailsView_Loaded(object sender, RoutedEventArgs e)
         {
-            if (sender is not ListDetailsView view) return;
-            if (view.FindChildOfType<ListView>() is not { } innerView) return;
-
-            innerView.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
-            innerView.IncrementalLoadingThreshold = 3;
-            innerView.DataFetchSize = 3;
+            if (sender is ListDetailsView view)
+            {
+                if (view.FindChildOfType<ListView>() is ListView innerView)
+                {
+                    innerView.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
+                    innerView.IncrementalLoadingThreshold = 3;
+                    innerView.DataFetchSize = 3;
+                }
+            }
         }
 
-        private void DetailsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void DetailsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //if (sender is ListDetailsView View)
-            //{
-            //View.DetailsPaneBackground = new SolidColorBrush(View.SelectedIndex >= 0 ? Colors.White : Colors.Transparent);
-            //}
+            if (e.AddedItems.SingleOrDefault() is MailMessageListDetailViewModel Model)
+            {
+                if (sender is ListDetailsView view && !Model.IsEmpty)
+                {
+                    SelectionChangeCancellation?.Cancel();
+                    SelectionChangeCancellation?.Dispose();
+                    SelectionChangeCancellation = new CancellationTokenSource();
+
+                    try
+                    {
+                        using (await SelectionChangeLocker.LockAsync(SelectionChangeCancellation.Token))
+                        {
+                            for (int Retry = 0; Retry < 10; Retry++)
+                            {
+                                if (view.FindChildOfType<WebView>() is WebView Browser
+                                    && view.FindChildOfName<ListView>("AttachmentsListView") is ListView AttachmentView
+                                    && view.FindChildOfName<StackPanel>("AttachmentsArea") is StackPanel AttachmentPanel)
+                                {
+                                    AttachmentPanel.Visibility = Visibility.Collapsed;
+
+                                    try
+                                    {
+                                        Browser.NavigateToString(string.Empty);
+                                        await LoadImageAndCacheAsync(Model, Browser, SelectionChangeCancellation.Token);
+                                        await LoadAttachmentsList(AttachmentView, Model, SelectionChangeCancellation.Token);
+                                    }
+                                    finally
+                                    {
+                                        if (AttachmentView.Items.Count > 0)
+                                        {
+                                            AttachmentPanel.Visibility = Visibility.Visible;
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                                await Task.Delay(300);
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // No need to handle this exception
+                    }
+                }
+            }
         }
 
         private void DetailsViewGoBack_Click(object sender, RoutedEventArgs e)
@@ -328,157 +300,158 @@ namespace Mail.Pages
 
         private void DetailsView_ViewStateChanged(object sender, ListDetailsViewState e)
         {
-            if (sender is ListDetailsView view &&
-                view.FindChildOfName<Button>("DetailsViewGoBack") is { } detailsViewGoBack)
+            if (sender is ListDetailsView View)
             {
-                detailsViewGoBack.Visibility = DetailsView.ViewState == ListDetailsViewState.Details
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
+                if (View.FindChildOfName<FrameworkElement>("DetailsViewGoBack") is FrameworkElement GoBackButton)
+                {
+                    GoBackButton.Visibility = View.ViewState == ListDetailsViewState.Details ? Visibility.Visible : Visibility.Collapsed;
+                }
             }
         }
 
-        private async void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender,
-            Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        private async void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            IsFocusedTab = args.SelectedItemContainer == FocusedTab;
-            await RefreshData();
+            await InitializeDataFromMailFolderAsync(NavigationData);
         }
 
-        private async void WebView_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
+        private async void Browser_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
         {
-            Trace.WriteLine($"WebViewNavigationStartingEventArgs: {args.Uri}");
-            // 捕获WebView中发生的点击导航事件
-            if (args.Uri?.ToString().Contains("click?") is not true) return;
+            string TargetUrlPath = args.Uri?.AbsoluteUri ?? string.Empty;
 
-            args.Cancel = true;
-            // 委托系统浏览器访问
-            await Windows.System.Launcher.LaunchUriAsync(args.Uri);
+            if (!string.IsNullOrEmpty(TargetUrlPath))
+            {
+                args.Cancel = true;
+
+                if (!await Launcher.LaunchUriAsync(new Uri(TargetUrlPath)))
+                {
+                    //Handle system browser activation failure here
+                }
+            }
         }
-
-        /// <summary>
-        /// lock
-        /// TODO refresh data be ignore
-        /// </summary>
-        private string CurrentMailAttachmentsListBoxMessageId = "";
 
         /// <summary>
         /// 加载附件列表
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="model"></param>
-        private async Task LoadAttachmentsList(ItemsControl sender, MailMessageListDetailViewModel model)
+        /// <param name="Sender"></param>
+        /// <param name="Model"></param>
+        private async Task LoadAttachmentsList(ItemsControl Sender, MailMessageListDetailViewModel Model, CancellationToken CancelToken = default)
         {
-            if (CurrentMailAttachmentsListBoxMessageId.Equals(model.Id)) return;
-            if (model.IsEmpty) return;
-            CurrentMailAttachmentsListBoxMessageId = model.Id;
+            Sender.Items.Clear();
 
-            sender.Items.Clear();
-
-            await foreach (MailMessageFileAttachmentData attachment in App.Services.GetService<OutlookService>()
-                               .GetMailAttachmentFileAsync(model))
+            await foreach (MailMessageFileAttachmentData attachment in CurrentService.GetMailAttachmentFileAsync(Model, CancelToken))
             {
-                sender.Items.Add(attachment);
+                Sender.Items.Add(attachment);
             }
         }
 
         private async void MailFileAttachmentDownload(object sender, RoutedEventArgs e)
         {
-            if ((sender as FrameworkElement)?
-                .DataContext is not MailMessageFileAttachmentData attachment) return;
-            var folderPicker = new FolderPicker
+            if ((sender as FrameworkElement)?.DataContext is MailMessageFileAttachmentData Attachment)
             {
-                SuggestedStartLocation = PickerLocationId.Downloads,
-            };
-            var storageFolder = await folderPicker.PickSingleFolderAsync();
-            if (storageFolder == null) return;
+                FolderPicker Picker = new FolderPicker
+                {
+                    SuggestedStartLocation = PickerLocationId.Downloads,
+                };
 
-            // TODO tips file be overwritten need user confirm
-            var storageFile = await storageFolder.CreateFileAsync(attachment.Name,
-                CreationCollisionOption.ReplaceExisting);
-            using var result = await storageFile.OpenStreamForWriteAsync();
+                if (await Picker.PickSingleFolderAsync() is StorageFolder Folder)
+                {
+                    // TODO tips file be overwritten need user confirm
+                    StorageFile SaveStorageFile = await Folder.CreateFileAsync(Attachment.Name, CreationCollisionOption.ReplaceExisting);
 
-            await result.WriteAsync(attachment.ContentBytes, 0, attachment.ContentBytes.Length);
-            await result.FlushAsync();
+                    using (Stream FileStream = await SaveStorageFile.OpenStreamForWriteAsync())
+                    {
+                        await FileStream.WriteAsync(Attachment.ContentBytes, 0, Attachment.ContentBytes.Length);
+                        await FileStream.FlushAsync();
+                    }
+                }
+            }
         }
 
         private void CreateMail_Click(object sender, RoutedEventArgs e)
         {
-            if (PreviewSource is null) return;
-
-            var newItem = PreviewSource.FirstOrDefault();
-            if (newItem is not { IsEmpty: true })
+            if (PreviewSource.FirstOrDefault() is not { IsEmpty: true })
             {
-                var model = MailMessageListDetailViewModel.Empty(
-                    new MailMessageRecipientData(string.Empty, string.Empty));
-                PreviewSource.Insert(0,
-                    model);
+                MailMessageListDetailViewModel NewEmptyModel = MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty));
+                PreviewSource.Insert(0, NewEmptyModel);
+                DetailsView.SelectedItem = NewEmptyModel;
+
                 //EditMail.CreateEditWindow(new EditMailOption {Model = model,EditMailType = EditMailType.Send });
             }
-
-            DetailsView.SelectedIndex = 0;
         }
 
         private async void MailForwardAsync(object Sender, RoutedEventArgs E)
         {
-            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
-
-            await EditMail.CreateEditWindow(new EditMailOption
+            if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
-                Model = model,
-                EditMailType = EditMailType.Forward
-            });
+                await EditMail.CreateEditWindow(new EditMailOption
+                {
+                    Model = Model,
+                    EditMailType = EditMailType.Forward
+                });
+            }
         }
 
         private void FrameworkElement_OnLoading(FrameworkElement Sender, object Args)
         {
-            if (Sender is not Frame frame) return;
-            var model = frame.DataContext as MailMessageListDetailViewModel;
-            if (model?.IsEmpty != true) return;
-            frame.Navigate(typeof(EditMail), new EditMailOption
+            if (Sender is Frame frame)
             {
-                Model = model,
-                EditMailType = EditMailType.Send
-            });
+                if (frame.DataContext is MailMessageListDetailViewModel Model && !Model.IsEmpty)
+                {
+                    frame.Navigate(typeof(EditMail), new EditMailOption
+                    {
+                        Model = Model,
+                        EditMailType = EditMailType.Send
+                    });
+                }
+            }
         }
 
         private async void MailReplyAsync(object Sender, RoutedEventArgs E)
         {
-            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
-
-            await EditMail.CreateEditWindow(new EditMailOption
+            if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
-                Model = model,
-                EditMailType = EditMailType.Reply
-            });
+                await EditMail.CreateEditWindow(new EditMailOption
+                {
+                    Model = Model,
+                    EditMailType = EditMailType.Reply
+                });
+            }
         }
 
         private async void MailMoveAsync(object Sender, RoutedEventArgs E)
         {
-            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
-            //TODO 目标文件夹id来源需要前台处理
-            await Service.MailMoveAsync(model.Id, "sQACTCKK1QAAAA==");
+            if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
+            {
+                //TODO 目标文件夹id来源需要前台处理
+                await CurrentService.MailMoveAsync(Model.Id, "sQACTCKK1QAAAA==");
+            }
         }
 
         private async void MailRemoveAsync(object Sender, RoutedEventArgs E)
         {
             // TODO refresh folder
-            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
-            var mailRemoveAsync = await Service.MailRemoveAsync(model);
-            Trace.WriteLine($"删除邮件: {mailRemoveAsync}");
+            if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
+            {
+                if (!await CurrentService.MailRemoveAsync(Model))
+                {
+                    Trace.WriteLine($"无法删除邮件: {Model.Id}");
+                }
+            }
         }
 
         private async void MailMoveArchiveAsync(object Sender, RoutedEventArgs E)
         {
-            if (Sender is not MenuFlyoutItem { DataContext: MailMessageListDetailViewModel model }) return;
-
-            var folder = Service.GetCache().Get<MailFolderData>("archive");
-            if (folder == null)
+            if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
-                //TODO Outlook是加入了缓存, 其他服务需要处理
-                return;
-            }
+                var folder = CurrentService.GetCache().Get<MailFolderData>("archive");
+                if (folder == null)
+                {
+                    //TODO Outlook是加入了缓存, 其他服务需要处理
+                    return;
+                }
 
-            await Service.MailMoveAsync(model.Id, folder.Id);
+                await CurrentService.MailMoveAsync(Model.Id, folder.Id);
+            }
         }
     }
 }
