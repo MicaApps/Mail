@@ -17,10 +17,10 @@ jobs:
       AppxBundle: Always
       AppxPackageBuildMode: SideloadOnly
       Configuration: Release
-      ProjectName: Mail
+      ProjectName: MicaApps.Mail.UWP
       CertThumbprint: C53D2D8CC27ACFF93AA2D54F8D6ADEE85C665F32
       SolutionPath: ${{github.workspace}}\Mail.sln
-      BuildSecretPath: ${{github.workspace}}\Mail\Secret.cs
+      BuildSecretPath: ${{github.workspace}}\src\MicaApps.Mail.UWP\Secret.cs
       CertificationPath: ${{github.workspace}}\Mail_SignCert.pfx
       SideloadOutputPath: ${{github.workspace}}\Output\Sideload
       TargetWindowsSDKVersion: 10.0.22621.1778
@@ -91,7 +91,7 @@ jobs:
         run: nuget restore $env:SolutionPath
 
       - name: Build the Sideload pacakge
-        run: msbuild $env:SolutionPath /nologo /nr:false /t:Clean /p:Configuration=$env:Configuration /t:${{env.ProjectName}}:Rebuild /p:Platform=$env:Platform /p:UapAppxPackageBuildMode=$env:AppxPackageBuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:CertificationPath /p:PackageCertificatePassword=${{secrets.SIGNCERTPASSWORD}} /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageDir=${{env.SideloadOutputPath}}\
+        run: msbuild $env:SolutionPath /nologo /nr:false /t:Clean /p:Configuration=$env:Configuration /t:Rebuild /p:Platform=$env:Platform /p:UapAppxPackageBuildMode=$env:AppxPackageBuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:CertificationPath /p:PackageCertificatePassword=${{secrets.SIGNCERTPASSWORD}} /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageDir=${{env.SideloadOutputPath}}\
         env:
           Platform: x64
 
