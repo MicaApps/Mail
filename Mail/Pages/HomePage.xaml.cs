@@ -5,6 +5,7 @@ using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -80,26 +81,17 @@ namespace Mail.Pages
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            base.OnNavigatedTo(e);
-            if (e.NavigationMode != NavigationMode.New) return;
-            // 这是分割线
-            MailFolderSource.Add(0);
-            var isFirstOther = true;
+            MailFolderSource.Add(new NavigationViewItemSeparator());
+
             try
             {
-                // the specified folder could not be found in the store
-                var orderedAsyncEnumerable = Service.GetMailSuperFoldersAsync()
-                    .OrderBy(item => item.Type);
-                await foreach (var item in orderedAsyncEnumerable)
-                {
-                    if (item.Type == MailFolderType.Other && isFirstOther)
-                    {
-                        // 这是分割线
-                        MailFolderSource.Add(1);
-                        isFirstOther = false;
-                    }
+                IReadOnlyList<MailFolderData> MailFolders = await Service.GetMailSuperFoldersAsync().OrderBy((Data) => Data.Type).ToArrayAsync();
 
-                    MailFolderSource.Add(item);
+                if (MailFolders.Count > 0)
+                {
+                    MailFolderSource.AddRange(MailFolders.TakeWhile((Data) => Data.Type != MailFolderType.Other));
+                    MailFolderSource.Add(new NavigationViewItemSeparator());
+                    MailFolderSource.AddRange(MailFolders.Skip(MailFolderSource.Count));
                 }
             }
             catch (Exception exception)
@@ -107,7 +99,7 @@ namespace Mail.Pages
                 Trace.WriteLine(exception);
             }
 
-            NavView.SelectedItem = MailFolderSource.FirstOrDefault(item => item is MailFolderData);
+            NavView.SelectedItem = MailFolderSource.OfType<MailFolderData>().FirstOrDefault();
 
             Service.MailFoldersTree.CollectionChanged += (Sender, Args) =>
             {

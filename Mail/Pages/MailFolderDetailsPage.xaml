@@ -276,7 +276,7 @@
                             <WebView HorizontalAlignment="Stretch"
                                      NavigationCompleted="Browser_NavigationCompleted"
                                      DefaultBackgroundColor="Transparent"
-                                     NavigationStarting="WebView_OnNavigationStarting"
+                                     NavigationStarting="Browser_OnNavigationStarting"
                                      VerticalAlignment="Stretch" />
                         </StackPanel>
                     </ScrollViewer>
@@ -304,21 +304,33 @@
                                   BackButtonBehavior="Manual"
                                   Background="Transparent"
                                   DetailsPaneBackground="Transparent"
-                                  IsTapEnabled="True"
                                   ListPaneBackground="Transparent"
                                   Loaded="ListDetailsView_Loaded"
                                   NoSelectionContent="Select an item to view"
                                   SelectionChanged="DetailsView_SelectionChanged"
-                                  Tapped="ListDetailsView_Tapped"
                                   ViewStateChanged="DetailsView_ViewStateChanged"
                                   DetailsContentTemplateSelector="{StaticResource MailFolderDetailsContentDataTemplateSelector}">
             <controls:ListDetailsView.ListHeader>
                 <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="FolderName"
+                               Margin="0,10,0,0"
+                               Grid.ColumnSpan="2"
+                               FontSize="15"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center" />
                     <muxc:NavigationView x:Name="NavigationTab"
+                                         Grid.Row="1"
                                          IsBackButtonVisible="Collapsed"
                                          IsSettingsVisible="False"
                                          SelectionChanged="NavigationView_SelectionChanged"
-                                         Visibility="Collapsed"
                                          PaneDisplayMode="Top">
                         <muxc:NavigationView.MenuItems>
                             <muxc:NavigationViewItem x:Uid="FocusedTab"
@@ -327,11 +339,9 @@
                                                      x:Name="OtherTab" />
                         </muxc:NavigationView.MenuItems>
                     </muxc:NavigationView>
-                    <TextBlock x:Name="FolderName"
-                               FontWeight="Bold"
-                               Visibility="Collapsed"
-                               VerticalAlignment="Center" />
                     <Button Margin="5"
+                            Grid.Row="1"
+                            Grid.Column="1"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Style="{ThemeResource AlternateCloseButtonStyle}"
