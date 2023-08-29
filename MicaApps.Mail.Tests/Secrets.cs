@@ -10,8 +10,8 @@ public static class Secrets
             Host = null,
             Port = 0,
             UseSsl = false,
-            Username = false,
-            Password = false
+            Username = "",
+            Password = ""
         };
 }
 
@@ -20,6 +20,6 @@ public class ProtocolMailSettings
     public string Host;
     public int Port;
     public bool UseSsl;
-    public bool Username;
-    public bool Password;
+    public string Username;
+    public string Password;
 }
