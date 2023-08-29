@@ -2,6 +2,7 @@
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using MicaApps.Mail.Abstraction.MailService;
 using MicaApps.Mail.Abstraction.Models;
 using MicaApps.Mail.Abstraction.Models.Messages;
@@ -11,7 +12,7 @@ using MailFolder = MicaApps.Mail.Abstraction.Models.MailFolder;
 
 namespace MicaApps.Mail.MailServices;
 
-public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable , IDisposable
+public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable, IAttachmentGettable, IDisposable
 {
     public override string Id { get; set; } = "protocol";
     public override string Name { get; set; } = "SMTP/IMAP 邮件服务";
@@ -21,15 +22,17 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable ,
 
     public ProtocolMailSettings SmtpSettings = new ProtocolMailSettings();
     public ProtocolMailSettings ImapSettings = new ProtocolMailSettings();
-    
+
 
     public override async Task ConnectAsync(CancellationToken cancellationToken = default)
     {
-        await _smtpClient.ConnectAsync(SmtpSettings.Host, SmtpSettings.Port, SmtpSettings.UseSsl, cancellationToken: cancellationToken);
+        await _smtpClient.ConnectAsync(SmtpSettings.Host, SmtpSettings.Port, SecureSocketOptions.StartTls,
+                                       cancellationToken: cancellationToken);
         await _smtpClient.AuthenticateAsync(SmtpSettings.Username, SmtpSettings.Password,
                                             cancellationToken: cancellationToken);
 
-        await _imapClient.ConnectAsync(ImapSettings.Host, ImapSettings.Port, ImapSettings.UseSsl, cancellationToken: cancellationToken);
+        await _imapClient.ConnectAsync(ImapSettings.Host, ImapSettings.Port, ImapSettings.UseSsl,
+                                       cancellationToken: cancellationToken);
         await _imapClient.AuthenticateAsync(ImapSettings.Username, ImapSettings.Password,
                                             cancellationToken: cancellationToken);
     }
@@ -58,12 +61,13 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable ,
         return await GetMailsInFolderAsync(mailFolder, 0, 50, cancellationToken);
     }
 
-    public async Task<List<MailMessage>> GetMailsInFolderAsync(MailFolder mailFolder, int start, int count, CancellationToken cancellationToken = default)
+    public async Task<List<MailMessage>> GetMailsInFolderAsync(MailFolder mailFolder, int start, int count,
+                                                               CancellationToken cancellationToken = default)
     {
         if (!_imapClient.Inbox.IsOpen)
             await _imapClient.Inbox.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
         var results = await _imapClient.Inbox.FetchAsync(
-            start, start + count - 1, MessageSummaryItems.Envelope | MessageSummaryItems.PreviewText,
+            start, -1, MessageSummaryItems.Envelope | MessageSummaryItems.PreviewText,
             cancellationToken: cancellationToken);
         var ret = new List<MailMessage>();
         foreach (var messageSummary in results)
@@ -95,12 +99,23 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable ,
                 message.Recipients.Add(new EmailAccount(bcc.Address, bcc.Name));
             }
 
+            if (messageSummary.Attachments.Any())
+            {
+                foreach (var messageSummaryAttachment in messageSummary.Attachments)
+                {
+                    message.Attachments.Add(new ImapMailAttachment(messageSummaryAttachment.ContentId,
+                                                                   messageSummaryAttachment.FileName,
+                                                                   messageSummaryAttachment.ContentType.MimeType,
+                                                                   messageSummaryAttachment.Octets, messageSummaryAttachment, messageSummary.UniqueId));
+                }
+            }
+
             ret.Add(message);
         }
 
         return ret;
     }
-    
+
     public override async Task<MailMessage?> GetMailDetailAsync(
         string id, CancellationToken cancellationToken = default)
     {
@@ -137,7 +152,8 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable ,
         {
             message.Recipients.Add(new EmailAccount(bcc.Address, bcc.Name));
         }
-
+        
+        
         return message;
     }
 
@@ -180,5 +196,60 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable ,
     {
         _smtpClient.Dispose();
         _imapClient.Dispose();
+    }
+
+    public async Task<MailAttachmentContent?> GetAttachmentContentAsync(MailAttachment attachment)
+    {
+        if (attachment is not ImapMailAttachment mailAttachment) return null;
+        var mime = (MimePart)await _imapClient.Inbox.GetBodyPartAsync(mailAttachment.MailId, mailAttachment.Body);
+        return new ImapMailAttachmentContent(mime.ContentId, mime.FileName, mime.ContentType.MimeType,
+                                             attachment.Length, mime);
+
+    }
+}
+
+
+public class ProtocolMailSettings
+{
+    public string Host { get; set; }
+    public int Port { get; set; }
+    public bool UseSsl { get; set; }
+    public string Username { get; set; }
+    public string Password { get; set; }
+}
+
+public class ImapMailMessage : MailMessage, IHasBcc, IHasCc, IHasHtmlBody, IHasAttachments
+{
+    public List<EmailAccount> Bcc { get; set; } = new();
+    public List<EmailAccount> Cc { get; set; } = new();
+    public string? HtmlBody { get; set; }
+    public List<MailAttachment> Attachments { get; set; } = new();
+}
+
+public class ImapMailAttachment : MailAttachment
+{
+    public BodyPartBasic Body { get; }
+    public UniqueId MailId { get; }
+
+    public ImapMailAttachment(string id, string? name, string? contentType, long length, BodyPartBasic body, UniqueId mailId) : base(id, name, contentType, length)
+    {
+        Body = body;
+        MailId = mailId;
+    }
+}
+
+public class ImapMailAttachmentContent : MailAttachmentContent
+{
+    
+    public MimePart MimePart { get; set; }
+    
+    public ImapMailAttachmentContent(string id, string? name, string? contentType, long length, MimePart mimePart) : base(id, name, contentType, length)
+    {
+        MimePart = mimePart;
+    }
+
+    public override async Task WriteToStreamAsync(Stream stream, CancellationToken cancellationToken = default)
+    {
+        await MimePart.WriteToAsync(stream, cancellationToken);
     }
 }
