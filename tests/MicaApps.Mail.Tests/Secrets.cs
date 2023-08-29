@@ -1,4 +1,4 @@
-﻿using MicaApps.Mail.Abstraction.Models;
+﻿using MicaApps.Mail.MailServices;
 
 namespace MicaApps.Mail.Tests;
 
@@ -12,7 +12,7 @@ public static class Secrets
         {
             Host = "",
             Port = 0,
-            UseSsl = true,
+            SecureType = SecureType.Auto,
             Username = "",
             Password = ""
         };
@@ -21,7 +21,7 @@ public static class Secrets
         {
             Host = "",
             Port = 0,
-            UseSsl = true,
+            SecureType = SecureType.Auto,
             Username = "",
             Password = ""
         };

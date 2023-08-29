@@ -26,12 +26,12 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable, 
 
     public override async Task ConnectAsync(CancellationToken cancellationToken = default)
     {
-        await _smtpClient.ConnectAsync(SmtpSettings.Host, SmtpSettings.Port, SecureSocketOptions.StartTls,
+        await _smtpClient.ConnectAsync(SmtpSettings.Host, SmtpSettings.Port, (SecureSocketOptions)SmtpSettings.SecureType,
                                        cancellationToken: cancellationToken);
         await _smtpClient.AuthenticateAsync(SmtpSettings.Username, SmtpSettings.Password,
                                             cancellationToken: cancellationToken);
 
-        await _imapClient.ConnectAsync(ImapSettings.Host, ImapSettings.Port, ImapSettings.UseSsl,
+        await _imapClient.ConnectAsync(ImapSettings.Host, ImapSettings.Port, (SecureSocketOptions)ImapSettings.SecureType,
                                        cancellationToken: cancellationToken);
         await _imapClient.AuthenticateAsync(ImapSettings.Username, ImapSettings.Password,
                                             cancellationToken: cancellationToken);
@@ -66,9 +66,9 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable, 
     {
         if (!_imapClient.Inbox.IsOpen)
             await _imapClient.Inbox.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
-        var results = await _imapClient.Inbox.FetchAsync(
-            start, -1, MessageSummaryItems.Envelope | MessageSummaryItems.PreviewText,
-            cancellationToken: cancellationToken);
+        var results = (await _imapClient.Inbox.FetchAsync(
+            _imapClient.Inbox.Count - start - count, _imapClient.Inbox.Count - start, MessageSummaryItems.Envelope | MessageSummaryItems.PreviewText,
+            cancellationToken: cancellationToken)).Reverse();
         var ret = new List<MailMessage>();
         foreach (var messageSummary in results)
         {
@@ -106,7 +106,8 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable, 
                     message.Attachments.Add(new ImapMailAttachment(messageSummaryAttachment.ContentId,
                                                                    messageSummaryAttachment.FileName,
                                                                    messageSummaryAttachment.ContentType.MimeType,
-                                                                   messageSummaryAttachment.Octets, messageSummaryAttachment, messageSummary.UniqueId));
+                                                                   messageSummaryAttachment.Octets,
+                                                                   messageSummaryAttachment, messageSummary.UniqueId));
                 }
             }
 
@@ -152,8 +153,8 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable, 
         {
             message.Recipients.Add(new EmailAccount(bcc.Address, bcc.Name));
         }
-        
-        
+
+
         return message;
     }
 
@@ -204,18 +205,49 @@ public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable, 
         var mime = (MimePart)await _imapClient.Inbox.GetBodyPartAsync(mailAttachment.MailId, mailAttachment.Body);
         return new ImapMailAttachmentContent(mime.ContentId, mime.FileName, mime.ContentType.MimeType,
                                              attachment.Length, mime);
-
     }
 }
-
 
 public class ProtocolMailSettings
 {
     public string Host { get; set; }
     public int Port { get; set; }
-    public bool UseSsl { get; set; }
+    public SecureType SecureType { get; set; }
     public string Username { get; set; }
     public string Password { get; set; }
+}
+
+public enum SecureType
+{
+    /// <summary>No SSL or TLS encryption should be used.</summary>
+    None,
+
+    /// <summary>
+    /// Allow the <see cref="T:MailKit.IMailService" /> to decide which SSL or TLS
+    /// options to use (default). If the server does not support SSL or TLS,
+    /// then the connection will continue without any encryption.
+    /// </summary>
+    Auto,
+
+    /// <summary>
+    /// The connection should use SSL or TLS encryption immediately.
+    /// </summary>
+    SslOnConnect,
+
+    /// <summary>
+    /// Elevates the connection to use TLS encryption immediately after
+    /// reading the greeting and capabilities of the server. If the server
+    /// does not support the STARTTLS extension, then the connection will
+    /// fail and a <see cref="T:System.NotSupportedException" /> will be thrown.
+    /// </summary>
+    StartTls,
+
+    /// <summary>
+    /// Elevates the connection to use TLS encryption immediately after
+    /// reading the greeting and capabilities of the server, but only if
+    /// the server supports the STARTTLS extension.
+    /// </summary>
+    StartTlsWhenAvailable,
 }
 
 public class ImapMailMessage : MailMessage, IHasBcc, IHasCc, IHasHtmlBody, IHasAttachments
@@ -231,7 +263,8 @@ public class ImapMailAttachment : MailAttachment
     public BodyPartBasic Body { get; }
     public UniqueId MailId { get; }
 
-    public ImapMailAttachment(string id, string? name, string? contentType, long length, BodyPartBasic body, UniqueId mailId) : base(id, name, contentType, length)
+    public ImapMailAttachment(string id, string? name, string? contentType, long length, BodyPartBasic body,
+                              UniqueId mailId) : base(id, name, contentType, length)
     {
         Body = body;
         MailId = mailId;
@@ -240,10 +273,10 @@ public class ImapMailAttachment : MailAttachment
 
 public class ImapMailAttachmentContent : MailAttachmentContent
 {
-    
     public MimePart MimePart { get; set; }
-    
-    public ImapMailAttachmentContent(string id, string? name, string? contentType, long length, MimePart mimePart) : base(id, name, contentType, length)
+
+    public ImapMailAttachmentContent(string id, string? name, string? contentType, long length, MimePart mimePart) :
+        base(id, name, contentType, length)
     {
         MimePart = mimePart;
     }
