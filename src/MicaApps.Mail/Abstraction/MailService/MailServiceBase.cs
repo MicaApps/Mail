@@ -5,8 +5,8 @@ namespace MicaApps.Mail.Abstraction.MailService;
 
 public abstract class MailServiceBase
 {
-    public abstract string Id { get; }
-    public abstract string Name { get; }
+    public abstract string Id { get; set; }
+    public abstract string Name { get; set; }
 
     public abstract Task ConnectAsync(CancellationToken cancellationToken = default);
     public abstract Task DisconnectAsync(CancellationToken cancellationToken = default);

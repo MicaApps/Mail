@@ -13,16 +13,17 @@ namespace MicaApps.Mail.MailServices;
 
 public class ProtocolMailService : MailServiceBase, IDisposable
 {
-    public override string Id => "protocol";
-    public override string Name => "SMTP/IMAP 邮件服务";
+    public override string Id { get; set; } = "protocol";
+    public override string Name { get; set; } = "SMTP/IMAP 邮件服务";
 
     private readonly SmtpClient _smtpClient = new SmtpClient();
     private readonly ImapClient _imapClient = new ImapClient();
 
     public NetworkCredential? Credential { get; set; }
-    public string Host { get; } = null!;
-    public int Port { get; } = 0;
-    public bool UseSsl { get; } = false;
+    public string Host { get; set; } = null!;
+    public int Port { get; set; } = 0;
+    public bool UseSsl { get; set; } = false;
+    
 
     public override async Task ConnectAsync(CancellationToken cancellationToken = default)
     {
