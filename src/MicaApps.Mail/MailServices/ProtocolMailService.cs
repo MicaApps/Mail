@@ -11,7 +11,7 @@ using MailFolder = MicaApps.Mail.Abstraction.Models.MailFolder;
 
 namespace MicaApps.Mail.MailServices;
 
-public class ProtocolMailService : MailServiceBase, IDisposable
+public class ProtocolMailService : MailServiceBase, IProgressiveEmailFetchable , IDisposable
 {
     public override string Id { get; set; } = "protocol";
     public override string Name { get; set; } = "SMTP/IMAP 邮件服务";
@@ -55,10 +55,15 @@ public class ProtocolMailService : MailServiceBase, IDisposable
     public override async Task<List<MailMessage>> GetMailsInFolderAsync(
         MailFolder mailFolder, CancellationToken cancellationToken = default)
     {
+        return await GetMailsInFolderAsync(mailFolder, 0, 50, cancellationToken);
+    }
+
+    public async Task<List<MailMessage>> GetMailsInFolderAsync(MailFolder mailFolder, int start, int count, CancellationToken cancellationToken = default)
+    {
         if (!_imapClient.Inbox.IsOpen)
             await _imapClient.Inbox.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
         var results = await _imapClient.Inbox.FetchAsync(
-            0, 50, MessageSummaryItems.Envelope | MessageSummaryItems.PreviewText,
+            start, start + count - 1, MessageSummaryItems.Envelope | MessageSummaryItems.PreviewText,
             cancellationToken: cancellationToken);
         var ret = new List<MailMessage>();
         foreach (var messageSummary in results)
@@ -95,7 +100,7 @@ public class ProtocolMailService : MailServiceBase, IDisposable
 
         return ret;
     }
-
+    
     public override async Task<MailMessage?> GetMailDetailAsync(
         string id, CancellationToken cancellationToken = default)
     {
