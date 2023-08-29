@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\src\MicaApps.Mail\MicaApps.Mail.csproj" />
       <ProjectReference Include="..\src\MicaApps.Mail\MicaApps.Mail.csproj" />
     </ItemGroup>
 

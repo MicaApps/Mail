@@ -26,7 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicaApps.Mail", "src\MicaAp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FDF4ACB0-3370-41FC-B005-221E43AC34D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicaApps.Mail.Tests", "MicaApps.Mail.Tests\MicaApps.Mail.Tests.csproj", "{C1BE9EEF-C620-455E-A331-E448EB4A4615}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicaApps.Mail.Tests", "tests\MicaApps.Mail.Tests\MicaApps.Mail.Tests.csproj", "{C1BE9EEF-C620-455E-A331-E448EB4A4615}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
