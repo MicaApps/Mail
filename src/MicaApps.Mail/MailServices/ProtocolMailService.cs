@@ -19,19 +19,19 @@ public class ProtocolMailService : MailServiceBase, IDisposable
     private readonly SmtpClient _smtpClient = new SmtpClient();
     private readonly ImapClient _imapClient = new ImapClient();
 
-    public NetworkCredential? Credential { get; set; }
-    public string Host { get; set; } = null!;
-    public int Port { get; set; } = 0;
-    public bool UseSsl { get; set; } = false;
+    public ProtocolMailSettings SmtpSettings = new ProtocolMailSettings();
+    public ProtocolMailSettings ImapSettings = new ProtocolMailSettings();
     
 
     public override async Task ConnectAsync(CancellationToken cancellationToken = default)
     {
-        await _smtpClient.ConnectAsync(Host, Port, UseSsl, cancellationToken: cancellationToken);
-        await _smtpClient.AuthenticateAsync(Credential, cancellationToken);
+        await _smtpClient.ConnectAsync(SmtpSettings.Host, SmtpSettings.Port, SmtpSettings.UseSsl, cancellationToken: cancellationToken);
+        await _smtpClient.AuthenticateAsync(SmtpSettings.Username, SmtpSettings.Password,
+                                            cancellationToken: cancellationToken);
 
-        await _imapClient.ConnectAsync(Host, Port, UseSsl, cancellationToken: cancellationToken);
-        await _imapClient.AuthenticateAsync(Credential, cancellationToken);
+        await _imapClient.ConnectAsync(ImapSettings.Host, ImapSettings.Port, ImapSettings.UseSsl, cancellationToken: cancellationToken);
+        await _imapClient.AuthenticateAsync(ImapSettings.Username, ImapSettings.Password,
+                                            cancellationToken: cancellationToken);
     }
 
     public override async Task DisconnectAsync(CancellationToken cancellationToken = default)

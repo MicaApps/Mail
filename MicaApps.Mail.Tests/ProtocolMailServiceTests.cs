@@ -13,16 +13,12 @@ public class ProtocolMailServiceTests : IAsyncLifetime
 
     
 
-    public ProtocolMailServiceTests(ProtocolMailService mailService)
+    public ProtocolMailServiceTests()
     {
         _mailService = new ProtocolMailService();
         _mailService.Name = "测试服务";
-        _mailService.Host = Secrets.ProtocolMailSettings.Host;
-        _mailService.UseSsl = Secrets.ProtocolMailSettings.UseSsl;
-        _mailService.Port = Secrets.ProtocolMailSettings.Port;
-        _mailService.Credential =
-            new NetworkCredential(Secrets.ProtocolMailSettings.Username, Secrets.ProtocolMailSettings.Password);
-        
+        _mailService.SmtpSettings = Secrets.SmtpSettings;
+        _mailService.ImapSettings = Secrets.ImapSettings;
     }
     
     [Fact]

@@ -1,25 +1,28 @@
-﻿namespace MicaApps.Mail.Tests;
+﻿using MicaApps.Mail.Abstraction.Models;
+
+namespace MicaApps.Mail.Tests;
 
 // THIS FILE SHOULD BE FILLED BY GITHUB ACTION
 // **DO NOT** COMMIT YOUR SECRETS TO ORIGIN
 public static class Secrets
 {
-    public static ProtocolMailSettings ProtocolMailSettings =
+    // TODO: Please fill this secrets file
+    public static ProtocolMailSettings SmtpSettings =
         new()
         {
-            Host = null,
+            Host = "",
             Port = 0,
-            UseSsl = false,
+            UseSsl = true,
             Username = "",
             Password = ""
         };
-}
-
-public class ProtocolMailSettings
-{
-    public string Host;
-    public int Port;
-    public bool UseSsl;
-    public string Username;
-    public string Password;
+    public static ProtocolMailSettings ImapSettings =
+        new()
+        {
+            Host = "",
+            Port = 0,
+            UseSsl = true,
+            Username = "",
+            Password = ""
+        };
 }
