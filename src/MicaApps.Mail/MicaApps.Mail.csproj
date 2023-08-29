@@ -5,7 +5,15 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit">
+      <Version>4.1.0</Version>
+    </PackageReference>
+
+  </ItemGroup>
 
 
 

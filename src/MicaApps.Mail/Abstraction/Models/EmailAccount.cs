@@ -1,7 +1,5 @@
 ﻿namespace MicaApps.Mail.Abstraction.Models;
 
-public class EmailAccount
+public record EmailAccount(string Email, string? Name)
 {
-    public string? Name { get; set; }
-    public string Email { get; set; } = null!;
 }
