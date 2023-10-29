@@ -373,18 +373,15 @@ namespace Mail.Services
             return ret;
         }
 
-        public override async Task<byte[]> GetUserAvatarAsync(
+        public override async Task<byte[]?> GetUserAvatarAsync(
             CancellationToken CancelToken = default)
         {
-            Stream AvatarStream =
-                (await IProviderExtension.GetClient(Provider).Me.Photo.Content
-                    .GetAsync(cancellationToken: CancelToken));
-
-            byte[] AvatarBytes = new byte[AvatarStream.Length];
-
-            AvatarStream.Read(AvatarBytes, 0, AvatarBytes.Length);
-            AvatarStream.Seek(0, SeekOrigin.Begin);
-
+            byte[] AvatarBytes = null;
+            using (Stream AvatarStream = (await IProviderExtension.GetClient(Provider).Me.Photo.Content.GetAsync(cancellationToken: CancelToken)))
+            {
+                AvatarBytes = new byte[AvatarStream.Length];
+                AvatarStream.Read(AvatarBytes, 0, AvatarBytes.Length);
+            }
             return AvatarBytes;
         }
 
