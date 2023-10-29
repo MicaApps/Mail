@@ -99,7 +99,7 @@ namespace Mail.Services
 
         public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 
-        public abstract Task<Stream> GetUserAvatarAsync(CancellationToken CancelToken = default);
+        public abstract Task<byte[]> GetUserAvatarAsync(CancellationToken CancelToken = default);
 
         public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model, CancellationToken CancelToken = default);

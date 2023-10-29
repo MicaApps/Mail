@@ -37,7 +37,7 @@ namespace Mail.Services
 
         public Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 
-        public Task<Stream> GetUserAvatarAsync(CancellationToken CancelToken = default);
+        public Task<byte[]> GetUserAvatarAsync(CancellationToken CancelToken = default);
 
         interface IFocusFilterSupport
         {

@@ -50,12 +50,10 @@ namespace Mail.Pages
                 var service = Service as OutlookService;
                 var Provider = service.Provider as MsalProvider;
 
-                var avatar = await service.GetUserAvatarAsync();
-                avatar.Seek(0, SeekOrigin.Begin);
-                var ret = new StreamReader(avatar).ReadToEnd();
-                byte[] bytes = System.Convert.FromBase64String(ret);
+                var avatarBytes = await service.GetUserAvatarAsync();
+               
                 var bitmap = new BitmapImage();
-                MemoryStream ms = new MemoryStream(bytes);
+                MemoryStream ms = new MemoryStream(avatarBytes);
                 bitmap.SetSourceAsync(ms.AsRandomAccessStream());
 
                 var model = new AccountModel(
