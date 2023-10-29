@@ -9,6 +9,7 @@ using Mail.Models;
 using Mail.Services.Data;
 using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
+using System.IO;
 
 namespace Mail.Services
 {
@@ -35,6 +36,8 @@ namespace Mail.Services
         public Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
         public Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
+
+        public Task<Stream> GetUserAvatarAsync(CancellationToken CancelToken = default);
 
         interface IFocusFilterSupport
         {

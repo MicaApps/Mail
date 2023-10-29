@@ -9,11 +9,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 
@@ -35,15 +37,32 @@ namespace Mail.Pages
             SetupPaneToggleButton();
 
             //TODO: Test only and should remove this later
+            Service = App.Services.GetService<OutlookService>()!;
+            GetUserProfileAsync();
+
+            Loaded += HomePage_Loaded;
+        }
+
+        private async void GetUserProfileAsync()
+        {
             try
-            {
-                var service = App.Services.GetService<OutlookService>()!;
-                Service = service;
+            { 
+                var service = Service as OutlookService;
                 var Provider = service.Provider as MsalProvider;
+
+                var avatar = await service.GetUserAvatarAsync();
+                avatar.Seek(0, SeekOrigin.Begin);
+                var ret = new StreamReader(avatar).ReadToEnd();
+                byte[] bytes = System.Convert.FromBase64String(ret);
+                var bitmap = new BitmapImage();
+                MemoryStream ms = new MemoryStream(bytes);
+                bitmap.SetSourceAsync(ms.AsRandomAccessStream());
+
                 var model = new AccountModel(
                     Provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value,
                     Provider.Account.Username,
-                    service.MailType);
+                    service.MailType,
+                    bitmap);
                 AccountSource.Add(model);
 
                 service.CurrentAccount = model;
@@ -52,8 +71,6 @@ namespace Mail.Pages
             {
                 throw;
             }
-
-            Loaded += HomePage_Loaded;
         }
 
         private void SetupTitleBar()

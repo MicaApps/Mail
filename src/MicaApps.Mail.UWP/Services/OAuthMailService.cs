@@ -13,6 +13,7 @@ using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
+using System.IO;
 
 namespace Mail.Services
 {
@@ -97,6 +98,8 @@ namespace Mail.Services
         public abstract Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
         public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
+
+        public abstract Task<Stream> GetUserAvatarAsync(CancellationToken CancelToken = default);
 
         public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model, CancellationToken CancelToken = default);

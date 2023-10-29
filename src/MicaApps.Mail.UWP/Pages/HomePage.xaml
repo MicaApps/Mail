@@ -197,7 +197,7 @@
                                 <PersonPicture Width="32"
                                                Height="32"
                                                DisplayName="{x:Bind Name}"
-                                               ProfilePicture="{x:Bind Address,Converter={StaticResource ContactToAvatarConverter}}" />
+                                               ProfilePicture="{x:Bind Avatar}" />
                                 <StackPanel Grid.Column="2">
                                     <TextBlock FontWeight="SemiBold"
                                                Text="{x:Bind Name}" />
