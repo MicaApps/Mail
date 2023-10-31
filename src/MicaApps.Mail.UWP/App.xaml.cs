@@ -30,7 +30,8 @@ namespace Mail
 
         private async Task InitalizeDatabaseAsync()
         {
-            await Services.GetService<IDbContext>().Session.ExecuteReaderAsync(await PathIO.ReadTextAsync(Path.Combine(Package.Current.InstalledPath, "Assets", "sql.sql")));
+            var path = Package.Current.InstalledLocation.Path;
+            await Services.GetService<IDbContext>().Session.ExecuteReaderAsync(await PathIO.ReadTextAsync(Path.Combine(path, "Assets", "sql.sql")));
         }
 
         private IServiceProvider RegisterServices()
