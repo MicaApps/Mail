@@ -29,7 +29,17 @@ Discover our [upcoming features](Roadmap.md).
 1. Clone the repository.
 2. Add a `Secret.cs` file in the `build` folder (see below).
 3. Open the Mail.sln file with Visual Studio.
-4. Compile the solution.
+4. Add 
+```
+https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json 
+```
+the link to Nuget source
+
+More info
+
+https://github.com/CommunityToolkit/Labs-Windows
+
+5. Compile the solution.
 
 In the `build` folder, generate a `Secret.cs` file and embed the following code:
 
