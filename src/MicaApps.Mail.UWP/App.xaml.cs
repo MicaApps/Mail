@@ -34,6 +34,11 @@ namespace Mail
             await Services.GetService<IDbContext>().Session.ExecuteReaderAsync(await PathIO.ReadTextAsync(Path.Combine(path, "Assets", "sql.sql")));
         }
 
+
+        /// <summary>
+        /// 获取要注入的依赖
+        /// </summary>
+        /// <returns>返回要注入的依赖</returns>
         private IServiceProvider RegisterServices()
         {
             return new ServiceCollection().AddSingleton<OutlookService, OutlookService>()
