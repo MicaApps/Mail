@@ -1,4 +1,5 @@
-﻿using Chloe;
+﻿#nullable enable    
+using Chloe;
 using Chloe.Exceptions;
 using Mail.Services.Data.Enums;
 

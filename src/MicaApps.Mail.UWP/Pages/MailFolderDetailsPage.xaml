@@ -300,6 +300,7 @@
     </Page.Resources>
 
     <Grid>
+        <!-- BackButtonBehavior="Manual" 当用户点击后退按钮时，ListDetailsView将触发BackButtonCommand绑定的事件 -->
         <controls:ListDetailsView x:Name="DetailsView"
                                   BackButtonBehavior="Manual"
                                   Background="Transparent"
@@ -406,7 +407,6 @@
                                    FontWeight="SemiBold"
                                    Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
                                    Text="{x:Bind SentTime}" />
-
                         <Grid.ContextFlyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem Margin="2"

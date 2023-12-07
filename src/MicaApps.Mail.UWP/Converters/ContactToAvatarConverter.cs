@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
 using System.IO;
@@ -36,7 +37,7 @@ public class ContactToAvatarConverter : IValueConverter
                 byte[] bytes = System.Convert.FromBase64String(ret);
                 var bitmap = new BitmapImage();
                 MemoryStream ms = new MemoryStream(bytes);
-                bitmap.SetSourceAsync(ms.AsRandomAccessStream());
+                _ = bitmap.SetSourceAsync(ms.AsRandomAccessStream());
 
                 return bitmap;
             }
