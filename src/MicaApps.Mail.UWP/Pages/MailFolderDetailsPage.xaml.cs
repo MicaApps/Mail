@@ -26,6 +26,8 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
+#nullable enable
+
 
 namespace Mail.Pages
 {
@@ -39,8 +41,11 @@ namespace Mail.Pages
 
         public MailFolderDetailsPage()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
+
+
+        private static int count = 0;
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -48,15 +53,15 @@ namespace Mail.Pages
 
             if (e.Parameter is MailFolderData Data)
             {
-                NavigationData = Data;
-                FolderName.Text = Data.Name;
-                NavigationTab.SelectedItem = FocusedTab;
+                this.NavigationData = Data;
+                this.FolderName.Text = Data.Name;
+                this.NavigationTab.SelectedItem = this.FocusedTab;
             }
         }
 
         private async Task InitializeDataFromMailFolderAsync(MailFolderData MailFolder)
         {
-            EmptyContentText.Text = "Syncing you email";
+            this.EmptyContentText.Text = @"Syncing you email";
 
             try
             {
@@ -85,7 +90,7 @@ namespace Mail.Pages
 
                 if (PreviewSource.Count == 0)
                 {
-                    EmptyContentText.Text = "No available email";
+                    this.EmptyContentText.Text = @"No available email";
                 }
             }
             catch (Exception e)
@@ -93,7 +98,7 @@ namespace Mail.Pages
 #if DEBUG
                 Trace.WriteLine(e);
 #endif
-                EmptyContentText.Text = "Sync failed";
+                this.EmptyContentText.Text = @"Sync failed";
             }
         }
 
@@ -311,7 +316,7 @@ namespace Mail.Pages
 
         private async void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            await InitializeDataFromMailFolderAsync(NavigationData);
+            await InitializeDataFromMailFolderAsync(this.NavigationData);
         }
 
         private async void Browser_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)

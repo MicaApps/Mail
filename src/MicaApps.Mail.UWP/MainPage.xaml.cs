@@ -13,7 +13,7 @@ namespace Mail
     {
         public MainPage(bool isLogin)
         {
-            InitializeComponent();
+            this.InitializeComponent();
             ApplicationViewTitleBar TitleBar = ApplicationView.GetForCurrentView().TitleBar;
             TitleBar.ButtonBackgroundColor = Colors.Transparent;
             TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
@@ -21,11 +21,11 @@ namespace Mail
 
             if (isLogin)
             {
-                MainNavigation.Navigate(typeof(HomePage));
+                this.MainNavigation.Navigate(typeof(HomePage));
             }
             else
             {
-                MainNavigation.Navigate(typeof(LoginPage));
+                this.MainNavigation.Navigate(typeof(LoginPage));
             }
         }
 
@@ -35,12 +35,12 @@ namespace Mail
             {
                 case ProviderState.SignedIn:
                     {
-                        MainNavigation.Navigate(typeof(HomePage));
+                        this.MainNavigation.Navigate(typeof(HomePage));
                         break;
                     }
                 case ProviderState.SignedOut when MainNavigation.CurrentSourcePageType != typeof(LoginPage):
                     {
-                        MainNavigation.Navigate(typeof(LoginPage));
+                        this.MainNavigation.Navigate(typeof(LoginPage));
                         break;
                     }
             }
