@@ -117,22 +117,39 @@ namespace Mail.Services
         private async Task<MailMessageData> GenAndSaveMailMessageDataAsync(string RootFolderId, Message message,
             string type = "Focused")
         {
-            var messageData = new MailMessageData(RootFolderId, message.Subject,
-                message.Id,
-                message.SentDateTime,
-                new MailMessageRecipientData(message.Sender.EmailAddress.Name, message.Sender.EmailAddress.Address),
-                message.ToRecipients.Select((Recipient) =>
-                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                message.CcRecipients.Select((Recipient) =>
-                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                message.BccRecipients.Select((Recipient) =>
-                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
-                new MailMessageContentData(message.Id, message.Body.Content, message.BodyPreview,
-                    (MailMessageContentType)message.Body.ContentType),
-                message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
+            string folderId = RootFolderId;
+            string title = message.Subject;
+            string messageId = message.Id;
+            DateTimeOffset? sentTime = message.SentDateTime;
+
+            string senderEmailAddressName = message.Sender?.EmailAddress.Name ?? string.Empty;
+            string senderEmailAddress = message.Sender?.EmailAddress.Address ?? string.Empty;
+
+            MailMessageRecipientData sender = new MailMessageRecipientData(senderEmailAddressName, senderEmailAddress);
+            IEnumerable<MailMessageRecipientData> messageTo = message.ToRecipients.Select((Recipient) =>
+                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address));
+            IEnumerable<MailMessageRecipientData> messageCc = message.CcRecipients.Select((Recipient) =>
+                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address));
+            IEnumerable<MailMessageRecipientData> messageBcc = message.BccRecipients.Select((Recipient) =>
+                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address));
+
+            MailMessageContentData mailMessageContentData = new MailMessageContentData(message.Id, message.Body.Content, message.BodyPreview,
+                    (MailMessageContentType)message.Body.ContentType);
+
+            IEnumerable<MailMessageAttachmentData> attachments = message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
                     Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size),
                     Attachment.LastModifiedDateTime.GetValueOrDefault())) ??
-                Enumerable.Empty<MailMessageAttachmentData>(), type);
+                Enumerable.Empty<MailMessageAttachmentData>();
+
+
+
+            var messageData = new MailMessageData(folderId, title,
+                messageId,
+                sentTime,
+                sender,
+                messageTo,messageCc,messageBcc,
+                mailMessageContentData,
+                    attachments, type);
 
             // 为了插入映射的接受者类型, 这里手动处理中间数据插入
             LocalCache.SaveMessage(messageData);

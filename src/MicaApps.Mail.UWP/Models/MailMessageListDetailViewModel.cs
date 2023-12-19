@@ -12,76 +12,79 @@ namespace Mail.Models
         [JsonProperty("subject")]
         public string Title
         {
-            get => InnerData.Title;
-            set => InnerData.Title = value;
+            get => this.InnerData.Title;
+            set => this.InnerData.Title = value;
         }
 
 
         public string Id
         {
-            get => InnerData.MessageId;
-            set => InnerData.MessageId = value;
+            get => this.InnerData.MessageId;
+            set => this.InnerData.MessageId = value;
         }
 
         [JsonProperty("bodyPreview")] // Outlook: first 255 char
         public string PreviewText
         {
-            get => InnerData.Content.ContentPreview;
-            set => InnerData.Content.ContentType = Enum.TryParse(value, out MailMessageContentType result)
+            get => this.InnerData.Content.ContentPreview;
+            set => this.InnerData.Content.ContentType = Enum.TryParse(value, out MailMessageContentType result)
                 ? result
                 : MailMessageContentType.Text;
         }
 
         public string SenderName
         {
-            get => InnerData.Sender.Name;
+            get
+            {
+                return InnerData.Sender?.Name ?? string.Empty;
+            }
             set => InnerData.Sender.Name = value;
         }
 
         public MailMessageRecipientData Sender
         {
-            get => InnerData.Sender;
-            set => InnerData.Sender = value;
+            get => this.InnerData.Sender;
+            set => this.InnerData.Sender = value;
         }
 
-        public IList<MailMessageRecipientData> ToRecipients => InnerData.To;
+        public IList<MailMessageRecipientData> ToRecipients => this.InnerData.To;
 
-        public IList<MailMessageRecipientData> BccRecipients => InnerData.Bcc;
+        public IList<MailMessageRecipientData> BccRecipients => this.InnerData.Bcc;
 
-        public IList<MailMessageRecipientData> CcRecipients => InnerData.CC;
+        public IList<MailMessageRecipientData> CcRecipients => this.InnerData.CC;
 
         public string BodyPreview
         {
-            get => InnerData.Content.ContentPreview;
-            set => InnerData.Content.ContentPreview = value;
+            get => this.InnerData.Content.ContentPreview;
+            set => this.InnerData.Content.ContentPreview = value;
         }
 
         public bool IsDraft { get; set; }
         public bool IsDeliveryReceiptRequested { get; set; }
 
-        public MailMessageContentData Body => InnerData.Content;
+        public MailMessageContentData Body => this.InnerData.Content;
 
         public string Content
         {
-            get => InnerData.Content.Content;
-            set => InnerData.Content.Content = value;
+            get => this.InnerData.Content.Content;
+            set => this.InnerData.Content.Content = value;
         }
 
         public MailMessageContentType ContentType
         {
-            get => InnerData.Content.ContentType;
-            set => InnerData.Content.ContentType = value;
+            get => this.InnerData.Content.ContentType;
+            set => this.InnerData.Content.ContentType = value;
         }
 
-        public string SentTime => InnerData.SentTime.HasValue
-            ? InnerData.SentTime.Value.ToString("yyyy/M/dd")
+        public string SentTime => this.InnerData.SentTime.HasValue
+            ? this.InnerData.SentTime.Value.ToString("yyyy/M/dd")
             : string.Empty;
 
         private readonly MailMessageData InnerData;
 
         public MailMessageListDetailViewModel(MailMessageData Data)
         {
-            InnerData = Data;
+            this.InnerData = Data;
         }
 
         public bool IsEmpty => string.IsNullOrEmpty(Id);
