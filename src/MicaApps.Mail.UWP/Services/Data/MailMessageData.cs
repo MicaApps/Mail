@@ -29,7 +29,7 @@ public sealed class MailMessageData
         Sender.RecipientType = RecipientType.Sender;
 
         this.To = new List<MailMessageRecipientData>(To);
-        CC = new List<MailMessageRecipientData>(Cc);
+        this.CC = new List<MailMessageRecipientData>(Cc);
         this.Bcc = new List<MailMessageRecipientData>(Bcc);
         this.Attachments = new List<IMailMessageAttachmentData>(Attachments);
         this.Content = Content;

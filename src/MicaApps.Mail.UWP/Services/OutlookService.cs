@@ -1,3 +1,4 @@
+#nullable enable
 using CommunityToolkit.Authentication;
 using Mail.Extensions.Graph;
 using Mail.Models;
@@ -26,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+
 
 namespace Mail.Services
 {

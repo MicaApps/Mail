@@ -8,7 +8,7 @@
 /// </summary>
 public sealed class LoadMailMessageOption
 {
-    public string FolderId { get; set; }
+    public string FolderId { get; set; } = string.Empty;
 
     public int StartIndex { get; set; }
 

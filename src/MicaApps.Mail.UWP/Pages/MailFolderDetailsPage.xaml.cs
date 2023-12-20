@@ -33,10 +33,10 @@ namespace Mail.Pages
 {
     public sealed partial class MailFolderDetailsPage : Page
     {
-        private IMailService CurrentService;
+        private IMailService? CurrentService;
         private MailFolderData? NavigationData;
         private MailIncrementalLoadingObservableCollection? PreviewSource;
-        private CancellationTokenSource SelectionChangeCancellation;
+        private CancellationTokenSource? SelectionChangeCancellation;
         private readonly AsyncLock SelectionChangeLocker = new AsyncLock();
 
         public MailFolderDetailsPage()
@@ -72,7 +72,7 @@ namespace Mail.Pages
                         FolderId = MailFolder.Id,
                         StartIndex = Instance.Count,
                         LoadCount = (int)Math.Max(Instance.MinIncrementalLoadingStep, RequestCount),
-                        IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem as NavigationViewItem) && MailFolder.Type == MailFolderType.Inbox
+                        IsFocusedTab = this.FocusedTab.Equals(NavigationTab.SelectedItem as NavigationViewItem) && MailFolder.Type == MailFolderType.Inbox
                     };
 
                     if (Options.IsFocusedTab && CurrentService is IMailService.IFocusFilterSupport filterSupport)
@@ -81,7 +81,7 @@ namespace Mail.Pages
                     }
                     else
                     {
-                        return CurrentService.GetMailMessageAsync(Options, CancelToken: Token);
+                        return this.CurrentService!.GetMailMessageAsync(Options, CancelToken: Token);
                     }
 
                 }, Convert.ToUInt32(MailFolder.TotalItemCount));
@@ -337,13 +337,11 @@ namespace Mail.Pages
         /// <summary>
         /// 加载附件列表
         /// </summary>
-        /// <param name="Sender"></param>
-        /// <param name="Model"></param>
         private async Task LoadAttachmentsList(ItemsControl Sender, MailMessageListDetailViewModel Model, CancellationToken CancelToken = default)
         {
             Sender.Items.Clear();
 
-            await foreach (MailMessageFileAttachmentData attachment in CurrentService.GetMailAttachmentFileAsync(Model, CancelToken))
+            await foreach (MailMessageFileAttachmentData attachment in CurrentService!.GetMailAttachmentFileAsync(Model, CancelToken))
             {
                 Sender.Items.Add(attachment);
             }
@@ -428,7 +426,7 @@ namespace Mail.Pages
             if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
                 //TODO 目标文件夹id来源需要前台处理
-                await CurrentService.MailMoveAsync(Model.Id, "sQACTCKK1QAAAA==");
+                await this.CurrentService!.MailMoveAsync(Model.Id, @"sQACTCKK1QAAAA==");
             }
         }
 
@@ -437,7 +435,7 @@ namespace Mail.Pages
             // TODO refresh folder
             if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
-                if (!await CurrentService.MailRemoveAsync(Model))
+                if (!await this.CurrentService!.MailRemoveAsync(Model))
                 {
                     Trace.WriteLine($"无法删除邮件: {Model.Id}");
                 }
@@ -448,7 +446,7 @@ namespace Mail.Pages
         {
             if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
-                var folder = CurrentService.GetCache().Get<MailFolderData>("archive");
+                var folder = this.CurrentService!.GetCache().Get<MailFolderData>("archive");
                 if (folder == null)
                 {
                     //TODO Outlook是加入了缓存, 其他服务需要处理
