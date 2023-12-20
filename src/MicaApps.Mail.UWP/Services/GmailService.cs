@@ -10,7 +10,7 @@ namespace Mail.Services
 {
     abstract class GmailService : OAuthMailService
     {
-        protected override string[] Scopes { get; } = new string[] { "" };
+        protected override string[] Scopes { get; } = new string[] { @"" };
 
         public GmailService() : base(WebAccountProviderType.Any)
         {
