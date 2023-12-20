@@ -17,6 +17,8 @@ namespace Mail
             ApplicationViewTitleBar TitleBar = ApplicationView.GetForCurrentView().TitleBar;
             TitleBar.ButtonBackgroundColor = Colors.Transparent;
             TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+            //每当登录状态变动时所执行的动作
             App.Services.GetService<OutlookService>().Provider.StateChanged += Provider_StateChanged;
 
             if (isLogin)

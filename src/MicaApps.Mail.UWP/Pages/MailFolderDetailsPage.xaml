@@ -406,7 +406,6 @@
                                    FontWeight="SemiBold"
                                    Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
                                    Text="{x:Bind SentTime}" />
-
                         <Grid.ContextFlyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem Margin="2"

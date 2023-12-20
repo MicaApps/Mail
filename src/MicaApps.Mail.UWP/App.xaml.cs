@@ -83,7 +83,6 @@ namespace Mail
 
         private async Task InitalizeDatabaseAsync()
         {
-
             //Package.Current.InstalledLocation 提供了有关应用程序包安装位置的信息，而 .Path 则返回该位置的路径。
             var path = Package.Current.InstalledLocation.Path;
 
