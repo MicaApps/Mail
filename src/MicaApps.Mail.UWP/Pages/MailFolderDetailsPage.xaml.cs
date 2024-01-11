@@ -41,11 +41,10 @@ namespace Mail.Pages
 
         public MailFolderDetailsPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
 
-        private static int count = 0;
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -53,9 +52,9 @@ namespace Mail.Pages
 
             if (e.Parameter is MailFolderData Data)
             {
-                this.NavigationData = Data;
-                this.FolderName.Text = Data.Name;
-                this.NavigationTab.SelectedItem = this.FocusedTab;
+                NavigationData = Data;
+                FolderName.Text = Data.Name;
+                NavigationTab.SelectedItem = FocusedTab;
             }
         }
 

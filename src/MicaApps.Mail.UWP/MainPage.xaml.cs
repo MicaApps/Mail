@@ -13,7 +13,7 @@ namespace Mail
     {
         public MainPage(bool isLogin)
         {
-            this.InitializeComponent();
+            InitializeComponent();
             ApplicationViewTitleBar TitleBar = ApplicationView.GetForCurrentView().TitleBar;
             TitleBar.ButtonBackgroundColor = Colors.Transparent;
             TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
@@ -23,11 +23,11 @@ namespace Mail
 
             if (isLogin)
             {
-                this.MainNavigation.Navigate(typeof(HomePage));
+                MainNavigation.Navigate(typeof(HomePage));
             }
             else
             {
-                this.MainNavigation.Navigate(typeof(LoginPage));
+                MainNavigation.Navigate(typeof(LoginPage));
             }
         }
 
