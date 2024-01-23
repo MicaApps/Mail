@@ -8,10 +8,10 @@
 
   <Identity
     Name="49014Shompinice.42317376306EA"
-    Publisher="CN=DiskTools Team"
-    Version="0.1.0.0" />
+    Publisher="CN=8136FD48-8D5A-4FB2-8DF9-A606C867768F"
+    Version="0.1.27.0" />
 
-  <mp:PhoneIdentity PhoneProductId="8c0ed1cb-89ff-4e9e-939c-54eac45e83f3" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="2f4d7ae9-d7e1-4642-aa3d-35dfa890437d" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>电邮</DisplayName>
