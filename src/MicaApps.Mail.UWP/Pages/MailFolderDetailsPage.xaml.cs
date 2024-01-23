@@ -51,6 +51,8 @@ namespace Mail.Pages
                 NavigationData = Data;
                 FolderName.Text = Data.Name;
                 NavigationTab.SelectedItem = FocusedTab;
+
+                NavigationView_SelectionChanged(NavigationTab, null);
             }
         }
 
