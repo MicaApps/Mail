@@ -62,8 +62,13 @@ namespace Mail.Pages
 
             try
             {
+//                var contacts = await CurrentService.GetContactsAsync();
+//App.Services.GetService<ICacheService>()!.AddOrReplaceCache<IReadOnlyList<ContactModel>>(contacts);
+
                 DetailsView.ItemsSource = PreviewSource = new MailIncrementalLoadingObservableCollection((Instance, RequestCount, Token) =>
                 {
+
+
                     LoadMailMessageOption Options = new LoadMailMessageOption
                     {
                         FolderId = MailFolder.Id,
