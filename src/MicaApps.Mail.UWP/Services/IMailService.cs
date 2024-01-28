@@ -26,8 +26,7 @@ namespace Mail.Services
 
         public IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(CancellationToken CancelToken = default);
 
-        public Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
-            CancellationToken CancelToken = default);
+        public Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,CancellationToken CancelToken = default);
 
         public IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
             CancellationToken CancelToken = default);

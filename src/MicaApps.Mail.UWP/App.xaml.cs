@@ -37,7 +37,9 @@ namespace Mail
         /// </summary>
         public App()
         {
-            this.InitializeComponent();
+            
+
+            InitializeComponent();
         }
 
         /// <summary>

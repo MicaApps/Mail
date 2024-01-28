@@ -1,4 +1,5 @@
-﻿using Mail.Services.Data;
+﻿#nullable enable
+using Mail.Services.Data;
 using System;
 using Windows.UI.Xaml.Data;
 
@@ -6,7 +7,7 @@ namespace Mail.Converters
 {
     internal class FolderIconConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, string language)
+        public object? Convert(object value, Type targetType, object parameter, string language)
         {
             if (value is MailFolderType folderType)
             {

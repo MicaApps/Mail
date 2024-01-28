@@ -1,12 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 using Windows.UI.Xaml.Media;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using Windows.UI;
