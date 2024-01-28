@@ -34,7 +34,10 @@ namespace Mail.Models
 
         public string SenderName
         {
-            get => InnerData.Sender.Name;
+            get
+            {
+                return InnerData.Sender?.Name ?? string.Empty;
+            }
             set => InnerData.Sender.Name = value;
         }
 

@@ -13,11 +13,17 @@ public sealed class MailMessageData
     {
     }
 
-    public MailMessageData(string FolderId, string Title, string MessageId, DateTimeOffset? SentTime,
+    public MailMessageData(string FolderId, 
+        string Title, 
+        string MessageId, 
+        DateTimeOffset? SentTime,
         MailMessageRecipientData Sender,
-        IEnumerable<MailMessageRecipientData> To, IEnumerable<MailMessageRecipientData> Cc,
-        IEnumerable<MailMessageRecipientData> Bcc, MailMessageContentData Content,
-        IEnumerable<MailMessageAttachmentData> Attachments, string InferenceClassification = "Focused")
+        IEnumerable<MailMessageRecipientData> To, 
+        IEnumerable<MailMessageRecipientData> Cc,
+        IEnumerable<MailMessageRecipientData> Bcc, 
+        MailMessageContentData Content,
+        IEnumerable<MailMessageAttachmentData> Attachments, 
+        string InferenceClassification = "Focused")
     {
         this.InferenceClassification = InferenceClassification;
         this.FolderId = FolderId;
