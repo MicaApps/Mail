@@ -50,7 +50,7 @@ public class LocalCacheService
             var messageList = db.Query<MailMessageData>()
                 .Include(x => x.Content)
                 .Where(x => x.FolderId == Option.FolderId)
-                //.Where(x => x.InferenceClassification == focused)
+                .Where(x => x.InferenceClassification == focused)
                 .Skip(Option.StartIndex)
                 .Take(Option.LoadCount)
                 .OrderByDesc(x => x.SentTime)
