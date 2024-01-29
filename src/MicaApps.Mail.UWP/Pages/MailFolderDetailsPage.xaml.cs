@@ -76,7 +76,7 @@ namespace Mail.Pages
                         FolderId = MailFolder.Id,
                         StartIndex = Instance.Count,
                         LoadCount = (int)Math.Max(Instance.MinIncrementalLoadingStep, RequestCount),
-                        IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem as NavigationViewItem) && MailFolder.Type == MailFolderType.Inbox
+                        IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem) && MailFolder.Type == MailFolderType.Inbox
                     };
 
                     if (Options.IsFocusedTab && CurrentService is IMailService.IFocusFilterSupport filterSupport)

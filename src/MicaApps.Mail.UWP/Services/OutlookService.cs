@@ -293,8 +293,8 @@ namespace Mail.Services
             {
                 CancelToken.ThrowIfCancellationRequested();
                 if (MemoryCache.Get(message.Id) is not null) continue;
-
-                var messageData = await GenAndSaveMailMessageDataAsync(option.FolderId, message);
+                var focused = option.IsFocusedTab ? "Focused" : "Other";
+                var messageData = await GenAndSaveMailMessageDataAsync(option.FolderId, message, focused);
 
                 yield return messageData;
             }
