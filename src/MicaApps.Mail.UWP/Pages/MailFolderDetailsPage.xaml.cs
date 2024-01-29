@@ -51,14 +51,7 @@ namespace Mail.Pages
                 NavigationData = Data;
                 FolderName.Text = Data.Name;
                 NavigationTab.SelectedItem = FocusedTab;
-                if(Data.Type == MailFolderType.Inbox && Data.MailType == MailType.Outlook)
-                {
-                    NavigationTab.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    NavigationTab.Visibility = Visibility.Collapsed;
-                }
+
                 NavigationView_SelectionChanged(NavigationTab, null);
             }
         }
