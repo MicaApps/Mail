@@ -45,7 +45,7 @@
                             </VisualState>
                         </VisualStateGroup>
                     </VisualStateManager.VisualStateGroups>
-                    <ScrollViewer Padding="50"
+                    <ScrollViewer Padding="50 50 50 0"
                                   VerticalScrollMode="Auto"
                                   HorizontalScrollMode="Disabled">
                         <StackPanel>
@@ -137,7 +137,7 @@
                                     </ListView>
                                 </Grid>
                             </Grid>
-                            <Border Height="2"
+                            <Border Height="0"
                                     Margin="0,20"
                                     HorizontalAlignment="Stretch"
                                     Background="Gray" />
