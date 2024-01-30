@@ -523,11 +523,14 @@
                                     Value="43" />
                         </Style>
                     </CommandBar.Resources>
-                    <AppBarButton Icon="Filter"
-                                  Label="Filter" />
-                    <AppBarButton Icon="Refresh"
-                                  Label="Refresh" />
-                    <AppBarButton Label="MultiSelect">
+                    <AppBarButton x:Name="AppBarButton_List_Filter"
+                        Icon="Filter"
+                        Label="Filter" />
+                    <AppBarButton x:Name="AppBarButton_List_Refresh"
+                        Icon="Refresh"
+                        Label="Refresh" Click="AppBarButton_List_Refresh_Click"/>
+                    <AppBarButton x:Name="AppBarButton_List_MultiSelect"
+                        Label="MultiSelect">
                         <AppBarButton.Icon>
                             <FontIcon Glyph="&#xE762;" />
                         </AppBarButton.Icon>
