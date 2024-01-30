@@ -455,5 +455,11 @@ namespace Mail.Pages
                 await CurrentService.MailMoveAsync(Model.Id, folder.Id);
             }
         }
+        private void AppBarButton_List_Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            //TODO: Refresh your email list here
+            NavigationView_SelectionChanged(NavigationTab, null);
+        }
+
     }
 }
