@@ -51,7 +51,14 @@ namespace Mail.Pages
                 NavigationData = Data;
                 FolderName.Text = Data.Name;
                 NavigationTab.SelectedItem = FocusedTab;
-
+                if(Data.Type == MailFolderType.Inbox && Data.MailType == MailType.Outlook)
+                {
+                    NavigationTab.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    NavigationTab.Visibility = Visibility.Collapsed;
+                }
                 NavigationView_SelectionChanged(NavigationTab, null);
             }
         }
@@ -69,7 +76,7 @@ namespace Mail.Pages
                         FolderId = MailFolder.Id,
                         StartIndex = Instance.Count,
                         LoadCount = (int)Math.Max(Instance.MinIncrementalLoadingStep, RequestCount),
-                        IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem as NavigationViewItem) && MailFolder.Type == MailFolderType.Inbox
+                        IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem) && MailFolder.Type == MailFolderType.Inbox
                     };
 
                     if (Options.IsFocusedTab && CurrentService is IMailService.IFocusFilterSupport filterSupport)
