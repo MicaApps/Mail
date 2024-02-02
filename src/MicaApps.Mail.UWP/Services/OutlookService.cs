@@ -84,10 +84,14 @@ namespace Mail.Services
         async IAsyncEnumerable<MailMessageData> IMailService.IFocusFilterSupport.GetMailMessageAsync(
             LoadMailMessageOption option, [EnumeratorCancellation] CancellationToken CancelToken)
         {
-            foreach (var message in LocalCache.QueryMessage(option))
+
+            if (!option.ForceReload)
             {
-                MemoryCache.Set(message.MessageId, message);
-                yield return message;
+                foreach (var message in LocalCache.QueryMessage(option))
+                {
+                    MemoryCache.Set(message.MessageId, message);
+                    yield return message;
+                }
             }
 
             var type = option.IsFocusedTab ? "Focused" : "Other";
@@ -107,7 +111,7 @@ namespace Mail.Services
             {
                 CancelToken.ThrowIfCancellationRequested();
 
-                if (MemoryCache.Get(message.Id) is null)
+                if (MemoryCache.Get(message.Id) is null || option.ForceReload)
                 {
                     yield return await GenAndSaveMailMessageDataAsync(rootFolderId, message, type);
                 }
@@ -369,7 +373,7 @@ namespace Mail.Services
             foreach (var Contact in Contacts)
             {
                 var req = IProviderExtension.GetClient(Provider).Me.Contacts.ToGetRequestInformation();
-                req.URI = new Uri(req.URI + "/" + Contact.Id + "/photo/$value");
+                req.URI = new Uri(req.URI + "/" + Contact.Id + "/photo/48x48/$value");
                 var id = await batch.AddBatchRequestStepAsync(req);
                 UserToIdMapping[Contact.Id] = id;
             }

@@ -63,7 +63,7 @@ namespace Mail.Pages
             }
         }
 
-        private async Task InitializeDataFromMailFolderAsync(MailFolderData MailFolder)
+        private async Task InitializeDataFromMailFolderAsync(MailFolderData MailFolder, bool forceReload = false)
         {
             EmptyContentText.Text = "Syncing you email";
 
@@ -76,7 +76,8 @@ namespace Mail.Pages
                         FolderId = MailFolder.Id,
                         StartIndex = Instance.Count,
                         LoadCount = (int)Math.Max(Instance.MinIncrementalLoadingStep, RequestCount),
-                        IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem) && MailFolder.Type == MailFolderType.Inbox
+                        IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem) && MailFolder.Type == MailFolderType.Inbox,
+                        ForceReload = forceReload
                     };
 
                     if (Options.IsFocusedTab && CurrentService is IMailService.IFocusFilterSupport filterSupport)
@@ -462,10 +463,10 @@ namespace Mail.Pages
                 await CurrentService.MailMoveAsync(Model.Id, folder.Id);
             }
         }
-        private void AppBarButton_List_Refresh_Click(object sender, RoutedEventArgs e)
+        private async void AppBarButton_List_Refresh_Click(object sender, RoutedEventArgs e)
         {
             //TODO: Refresh your email list here
-            NavigationView_SelectionChanged(NavigationTab, null);
+            await InitializeDataFromMailFolderAsync(NavigationData, true);
         }
 
     }

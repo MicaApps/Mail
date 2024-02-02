@@ -6,6 +6,10 @@ using Windows.UI.ViewManagement;
 using Windows.UI;
 using Windows.UI.Xaml.Controls;
 using CommunityToolkit.Authentication;
+using System.Threading.Tasks;
+using System;
+using Mail.Services.Data;
+using System.Collections.Generic;
 
 namespace Mail
 {
@@ -21,12 +25,30 @@ namespace Mail
 
             if (isLogin)
             {
-                MainNavigation.Navigate(typeof(HomePage));
+                HandleLogin();
             }
             else
             {
                 MainNavigation.Navigate(typeof(LoginPage));
             }
+        }
+
+        private void HandleLogin()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    // Load Contacts to Cache
+                    var contacts = await App.Services.GetService<OutlookService>().GetContactsAsync();
+                    App.Services.GetService<ICacheService>()!.AddOrReplaceCache<IReadOnlyList<ContactModel>>(contacts);
+                }
+                catch (Exception e)
+                {
+                    // ignore
+                }
+            });
+            MainNavigation.Navigate(typeof(HomePage));
         }
 
         private void Provider_StateChanged(object sender, ProviderStateChangedEventArgs e)
@@ -35,7 +57,7 @@ namespace Mail
             {
                 case ProviderState.SignedIn:
                     {
-                        MainNavigation.Navigate(typeof(HomePage));
+                        HandleLogin();
                         break;
                     }
                 case ProviderState.SignedOut when MainNavigation.CurrentSourcePageType != typeof(LoginPage):

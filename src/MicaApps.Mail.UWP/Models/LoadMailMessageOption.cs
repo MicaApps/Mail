@@ -15,4 +15,6 @@ public sealed class LoadMailMessageOption
     public int LoadCount { get; set; } = 30;
 
     public bool IsFocusedTab { get; set; } = true;
+
+    public bool ForceReload { get; set; } = false;
 }
