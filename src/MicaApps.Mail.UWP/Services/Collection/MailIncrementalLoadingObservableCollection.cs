@@ -56,7 +56,7 @@ namespace Mail.Services.Collection
             return new LoadMoreItemsResult { Count = LoadCounter };
         }
 
-        public MailIncrementalLoadingObservableCollection(Func<MailIncrementalLoadingObservableCollection, uint, CancellationToken, IAsyncEnumerable<MailMessageData>> FetchDataDelegate, uint TotalItemCount, uint MinIncrementalLoadingStep = 30)
+        public MailIncrementalLoadingObservableCollection(Func<MailIncrementalLoadingObservableCollection, uint, CancellationToken, IAsyncEnumerable<MailMessageData>> FetchDataDelegate, uint TotalItemCount, uint MinIncrementalLoadingStep = 18)
         {
             this.TotalItemCount = TotalItemCount;
             this.MinIncrementalLoadingStep = MinIncrementalLoadingStep;
