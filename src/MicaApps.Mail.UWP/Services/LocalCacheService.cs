@@ -51,9 +51,11 @@ public class LocalCacheService
                 .Include(x => x.Content)
                 .Where(x => x.FolderId == Option.FolderId)
                 .Where(x => x.InferenceClassification == focused)
+                // May have performance issue
+                // Code review required here, by sorting emails before reading.
+                .OrderByDesc(x => x.SentTime)
                 .Skip(Option.StartIndex)
                 .Take(Option.LoadCount)
-                .OrderByDesc(x => x.SentTime)
                 .ToList();
 
             Parallel.ForEach(messageList, item =>
