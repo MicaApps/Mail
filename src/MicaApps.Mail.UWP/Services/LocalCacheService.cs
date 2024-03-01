@@ -128,4 +128,17 @@ public class LocalCacheService
     {
         return GetContext().GetDbOperationEvent();
     }
+
+    /// <summary>
+    /// 清空本地sqlite数据库保证切换用户不会存在脏数据
+    /// </summary>
+    /// <returns></returns>
+    public void ClearData()
+    {
+        using var db = GetContext();
+        db.Delete<MailMessageData>(item => true);
+        db.Delete<MailMessageContentData>(item => true);
+        db.Delete<MailFolderData>(item => true);
+        db.Delete<MailMessageRecipientData>(item => true);
+    }
 }
