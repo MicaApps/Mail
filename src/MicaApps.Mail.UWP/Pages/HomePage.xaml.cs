@@ -81,37 +81,44 @@ namespace Mail.Pages
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            MailFolderSource.Add(new NavigationViewItemSeparator());
-
             try
             {
-                IReadOnlyList<MailFolderData> MailFolders = await Service.GetMailSuperFoldersAsync().OrderBy((Data) => Data.Type).ToArrayAsync();
+                MailFolderSource.Add(new NavigationViewItemSeparator());
 
-                if (MailFolders.Count > 0)
+                try
                 {
-                    MailFolderSource.AddRange(MailFolders.TakeWhile((Data) => Data.Type != MailFolderType.Other));
-                    MailFolderSource.Add(new NavigationViewItemSeparator());
-                    MailFolderSource.AddRange(MailFolders.Skip(MailFolderSource.Count));
+                    IReadOnlyList<MailFolderData> MailFolders = await Service.GetMailSuperFoldersAsync().OrderBy((Data) => Data.Type).ToArrayAsync();
+
+                    if (MailFolders.Count > 0)
+                    {
+                        MailFolderSource.AddRange(MailFolders.TakeWhile((Data) => Data.Type != MailFolderType.Other));
+                        MailFolderSource.Add(new NavigationViewItemSeparator());
+                        MailFolderSource.AddRange(MailFolders.Skip(MailFolderSource.Count));
+                    }
                 }
-            }
-            catch (Exception exception)
-            {
-                Trace.WriteLine(exception);
-            }
-
-            NavView.SelectedItem = MailFolderSource.OfType<MailFolderData>().FirstOrDefault();
-
-            Service.MailFoldersTree.CollectionChanged += (Sender, Args) =>
-            {
-                //Trace.WriteLine($"Tree Changed: {Enum.GetName(typeof(NotifyCollectionChangedAction),Args.Action)} : {JsonConvert.SerializeObject(Args.NewItems)}");
-                foreach (var item in Args.NewItems)
+                catch (Exception exception)
                 {
-                    if (Args.Action == NotifyCollectionChangedAction.Add)
-                        MailFolderSource.Add(item);
-                    else if (Args.Action == NotifyCollectionChangedAction.Remove)
-                        MailFolderSource.Remove(item);
+                    Trace.WriteLine(exception);
                 }
-            };
+
+                NavView.SelectedItem = MailFolderSource.OfType<MailFolderData>().FirstOrDefault();
+
+                Service.MailFoldersTree.CollectionChanged += (Sender, Args) =>
+                {
+                    //Trace.WriteLine($"Tree Changed: {Enum.GetName(typeof(NotifyCollectionChangedAction),Args.Action)} : {JsonConvert.SerializeObject(Args.NewItems)}");
+                    foreach (var item in Args.NewItems)
+                    {
+                        if (Args.Action == NotifyCollectionChangedAction.Add)
+                            MailFolderSource.Add(item);
+                        else if (Args.Action == NotifyCollectionChangedAction.Remove)
+                            MailFolderSource.Remove(item);
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
         }
 
         private void SystemBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
@@ -136,6 +143,7 @@ namespace Mail.Pages
         private void NavView_SelectionChanged(NavigationView sender,
             Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
+            try { 
             if (args.IsSettingsSelected)
             {
                 NavigationContent.Navigate(typeof(SettingsPage), null, new DrillInNavigationTransitionInfo());
@@ -144,6 +152,8 @@ namespace Mail.Pages
             {
                 NavigationContent.Navigate(typeof(MailFolderDetailsPage), data, new DrillInNavigationTransitionInfo());
             }
+            }
+            catch(Exception ex) { string a = ex.Message; }
         }
 
         private void PaneToggleButton_Click(object sender, RoutedEventArgs e)

@@ -32,7 +32,7 @@ namespace Mail.Pages
             Window.Current.SetTitleBar(AppTitleBar);
 
             this.Splash = Splash ?? throw new ArgumentNullException(nameof(Splash), "Parameter could not be null");
-            this.Splash.Dismissed += Splash_Dismissed;
+            //this.Splash.Dismissed += Splash_Dismissed;
 
             Loaded += SplashPage_Loaded;
             Unloaded += SplashPage_Unloaded;

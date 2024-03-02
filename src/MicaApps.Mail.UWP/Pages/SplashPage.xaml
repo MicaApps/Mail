@@ -5,9 +5,19 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+      xmlns:Core="using:Microsoft.Xaml.Interactions.Core" 
+      xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+      xmlns:pm="using:MicaApps.Mail.PageModels"
       mc:Ignorable="d"
-      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+    <Page.DataContext>
+        <pm:SplashPageModel />
+    </Page.DataContext>
+    <Interactivity:Interaction.Behaviors>
+        <Core:EventTriggerBehavior EventName="Dismissed">
+            <Core:InvokeCommandAction Command="{Binding DismissedCommand}" />
+        </Core:EventTriggerBehavior>
+    </Interactivity:Interaction.Behaviors>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
@@ -26,6 +36,7 @@
 
         <Border x:Name="AppTitleBar"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"/>
+                VerticalAlignment="Stretch"
+                />
     </Grid>
 </Page>

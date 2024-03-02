@@ -296,6 +296,10 @@ namespace Mail.Pages
                     {
                         // No need to handle this exception
                     }
+                    catch (Exception)
+                    {
+
+                    }
                 }
             }
         }

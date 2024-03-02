@@ -20,17 +20,8 @@ public class CustomDbContext : SQLiteContext
 
     }
 
-    public CustomDbContext(IDbConnectionFactory dbConnectionFactory, bool concurrencyMode) : base(dbConnectionFactory, concurrencyMode)
-    {
-
-    }
 
     public CustomDbContext(Func<IDbConnection> dbConnectionFactory) : base(dbConnectionFactory)
-    {
-
-    }
-
-    public CustomDbContext(Func<IDbConnection> dbConnectionFactory, bool concurrencyMode) : base(dbConnectionFactory, concurrencyMode)
     {
 
     }
