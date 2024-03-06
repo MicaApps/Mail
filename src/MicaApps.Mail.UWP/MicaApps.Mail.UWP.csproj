@@ -144,6 +144,7 @@
     <Compile Include="Extensions\RunCatch.cs" />
     <Compile Include="Models\EditMailOption.cs" />
     <Compile Include="Models\LoadMailMessageOption.cs" />
+    <Compile Include="PageModels\LoginPageModel.cs" />
     <Compile Include="PageModels\MainPageModel.cs" />
     <Compile Include="PageModels\SplashPageModel.cs" />
     <Compile Include="Pages\BlankPage.xaml.cs">

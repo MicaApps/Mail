@@ -9,6 +9,9 @@ namespace MicaApps.Mail.PageModel
 {
     internal class MainPageModel : ObservableObject
     {
-
+        public MainPageModel() 
+        {
+            
+        }
     }
 }

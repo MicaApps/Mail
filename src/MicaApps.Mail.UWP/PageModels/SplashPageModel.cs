@@ -16,14 +16,18 @@ using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Controls;
+using Mail.Pages;
+using Microsoft.Toolkit.Uwp.Helpers;
+using Windows.System;
+using Windows.System.Threading;
 
 namespace MicaApps.Mail.PageModels
 {
     internal class SplashPageModel : ObservableObject
     {
-        public ICommand DismissedCommand {  get; set; }
+        public ICommand DismissedCommand { get; set; }
 
-        public SplashPageModel() 
+        public SplashPageModel()
         {
             DismissedCommand = new AsyncRelayCommand(DismissedAsync);
         }
@@ -31,10 +35,17 @@ namespace MicaApps.Mail.PageModels
         private async Task DismissedAsync()
         {
             bool IsSignIn = await App.Services.GetService<OutlookService>().SignInSilentAsync();
-                Window.Current.Content = new Frame
+            DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            await ThreadPool.RunAsync((workItem) =>
+            {
+                dispatcherQueue.TryEnqueue(() =>
                 {
-                    Content = new MainPage(IsSignIn)
-                };
+                    Window.Current.Content = new Frame
+                    {
+                        Content = new MainPage(IsSignIn)
+                    };
+                });
+            });
         }
     }
 }

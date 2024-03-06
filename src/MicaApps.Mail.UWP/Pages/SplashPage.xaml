@@ -14,7 +14,7 @@
         <pm:SplashPageModel />
     </Page.DataContext>
     <Interactivity:Interaction.Behaviors>
-        <Core:EventTriggerBehavior EventName="Dismissed">
+        <Core:EventTriggerBehavior EventName="Loaded">
             <Core:InvokeCommandAction Command="{Binding DismissedCommand}" />
         </Core:EventTriggerBehavior>
     </Interactivity:Interaction.Behaviors>
