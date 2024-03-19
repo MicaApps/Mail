@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Mail.Services.Data;
+using Mail.Models.Enums;
 using Newtonsoft.Json;
 
 namespace Mail.Models
@@ -19,8 +19,8 @@ namespace Mail.Models
 
         public string Id
         {
-            get => InnerData.MessageId;
-            set => InnerData.MessageId = value;
+            get => InnerData.Id;
+            set => InnerData.Id = value;
         }
 
         [JsonProperty("bodyPreview")] // Outlook: first 255 char
@@ -41,17 +41,17 @@ namespace Mail.Models
             set => InnerData.Sender.Name = value;
         }
 
-        public MailMessageRecipientData Sender
+        public MailMessageRecipient Sender
         {
             get => InnerData.Sender;
             set => InnerData.Sender = value;
         }
 
-        public IList<MailMessageRecipientData> ToRecipients => InnerData.To;
+        public IList<MailMessageRecipient> ToRecipients => InnerData.To;
 
-        public IList<MailMessageRecipientData> BccRecipients => InnerData.Bcc;
+        public IList<MailMessageRecipient> BccRecipients => InnerData.Bcc;
 
-        public IList<MailMessageRecipientData> CcRecipients => InnerData.CC;
+        public IList<MailMessageRecipient> CcRecipients => InnerData.CC;
 
         public string BodyPreview
         {
@@ -62,7 +62,7 @@ namespace Mail.Models
         public bool IsDraft { get; set; }
         public bool IsDeliveryReceiptRequested { get; set; }
 
-        public MailMessageContentData Body => InnerData.Content;
+        public MailMessageContent Body => InnerData.Content;
 
         public string Content
         {
@@ -80,18 +80,18 @@ namespace Mail.Models
             ? InnerData.SentTime.Value.ToString("yyyy/M/dd")
             : string.Empty;
 
-        private readonly MailMessageData InnerData;
+        private readonly MailMessage InnerData;
 
-        public MailMessageListDetailViewModel(MailMessageData Data)
+        public MailMessageListDetailViewModel(MailMessage Data)
         {
             InnerData = Data;
         }
 
         public bool IsEmpty => string.IsNullOrEmpty(Id);
 
-        public static MailMessageListDetailViewModel Empty(MailMessageRecipientData Sender)
+        public static MailMessageListDetailViewModel Empty(MailMessageRecipient Sender)
         {
-            return new MailMessageListDetailViewModel(MailMessageData.Empty(Sender))
+            return new MailMessageListDetailViewModel(MailMessage.Empty(Sender))
             {
                 EditInfo = new EditInfoViewModel()
             };

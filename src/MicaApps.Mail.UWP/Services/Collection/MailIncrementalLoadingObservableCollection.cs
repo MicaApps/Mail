@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml.Data;
 using Mail.Models;
-using Mail.Services.Data;
 using Nito.AsyncEx;
 
 namespace Mail.Services.Collection
@@ -15,7 +14,7 @@ namespace Mail.Services.Collection
     internal sealed class MailIncrementalLoadingObservableCollection : ObservableCollection<MailMessageListDetailViewModel>, ISupportIncrementalLoading
     {
         private readonly AsyncLock IncrementalLoadingLocker = new AsyncLock();
-        private readonly Func<MailIncrementalLoadingObservableCollection, uint, CancellationToken, IAsyncEnumerable<MailMessageData>> FetchDataDelegate;
+        private readonly Func<MailIncrementalLoadingObservableCollection, uint, CancellationToken, IAsyncEnumerable<MailMessage>> FetchDataDelegate;
 
         public bool HasMoreItems => Count < TotalItemCount;
 
@@ -36,7 +35,7 @@ namespace Mail.Services.Collection
             {
                 using (await IncrementalLoadingLocker.LockAsync(CancelToken))
                 {
-                    await foreach (MailMessageData Data in FetchDataDelegate(this, RequestedCount, CancelToken))
+                    await foreach (MailMessage Data in FetchDataDelegate(this, RequestedCount, CancelToken))
                     {
                         CancelToken.ThrowIfCancellationRequested();
                         Add(new MailMessageListDetailViewModel(Data));
@@ -56,7 +55,7 @@ namespace Mail.Services.Collection
             return new LoadMoreItemsResult { Count = LoadCounter };
         }
 
-        public MailIncrementalLoadingObservableCollection(Func<MailIncrementalLoadingObservableCollection, uint, CancellationToken, IAsyncEnumerable<MailMessageData>> FetchDataDelegate, uint TotalItemCount, uint MinIncrementalLoadingStep = 30)
+        public MailIncrementalLoadingObservableCollection(Func<MailIncrementalLoadingObservableCollection, uint, CancellationToken, IAsyncEnumerable<MailMessage>> FetchDataDelegate, uint TotalItemCount, uint MinIncrementalLoadingStep = 30)
         {
             this.TotalItemCount = TotalItemCount;
             this.MinIncrementalLoadingStep = MinIncrementalLoadingStep;

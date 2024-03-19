@@ -1,9 +1,8 @@
 using Mail.Extensions;
 using Mail.Models;
+using Mail.Models.Enums;
 using Mail.Services;
 using Mail.Services.Collection;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;
@@ -32,7 +31,7 @@ namespace Mail.Pages
     public sealed partial class MailFolderDetailsPage : Page
     {
         private IMailService CurrentService;
-        private MailFolderData? NavigationData;
+        private MailFolder? NavigationData;
         private MailIncrementalLoadingObservableCollection? PreviewSource;
         private CancellationTokenSource SelectionChangeCancellation;
         private readonly AsyncLock SelectionChangeLocker = new AsyncLock();
@@ -46,7 +45,7 @@ namespace Mail.Pages
         {
             CurrentService = App.Services.GetService<OutlookService>()!;
 
-            if (e.Parameter is MailFolderData Data)
+            if (e.Parameter is MailFolder Data)
             {
                 NavigationData = Data;
                 FolderName.Text = Data.Name;
@@ -63,7 +62,7 @@ namespace Mail.Pages
             }
         }
 
-        private async Task InitializeDataFromMailFolderAsync(MailFolderData MailFolder, bool forceReload = false)
+        private async Task InitializeDataFromMailFolderAsync(MailFolder MailFolder, bool forceReload = false)
         {
             EmptyContentText.Text = "Syncing you email";
 
@@ -204,13 +203,13 @@ namespace Mail.Pages
 
         private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel Model, WebView Browser, CancellationToken CancelToken = default)
         {
-            IReadOnlyList<MailMessageFileAttachmentData> AttachmentFileList = await CurrentService.GetMailAttachmentFileAsync(Model, CancelToken).ToArrayAsync(CancelToken);
+            IReadOnlyList<MailMessageFileAttachment> AttachmentFileList = await CurrentService.GetMailAttachmentFileAsync(Model, CancelToken).ToArrayAsync(CancelToken);
 
             if (AttachmentFileList.Count > 0)
             {
-                string ReplaceHtmlInnerImageCidToBase64(string CidPlaceHolder, IEnumerable<MailMessageFileAttachmentData> MessageAttachmentFileList)
+                string ReplaceHtmlInnerImageCidToBase64(string CidPlaceHolder, IEnumerable<MailMessageFileAttachment> MessageAttachmentFileList)
                 {
-                    if (MessageAttachmentFileList.FirstOrDefault((Attachment) => Attachment.Id.Equals(CidPlaceHolder.Replace("cid:", ""))) is MailMessageFileAttachmentData TargetAttachment)
+                    if (MessageAttachmentFileList.FirstOrDefault((Attachment) => Attachment.Id.Equals(CidPlaceHolder.Replace("cid:", ""))) is MailMessageFileAttachment TargetAttachment)
                     {
                         return $"data:{TargetAttachment.ContentType};base64,{Convert.ToBase64String(TargetAttachment.ContentBytes)}";
                     }
@@ -352,7 +351,7 @@ namespace Mail.Pages
         {
             Sender.Items.Clear();
 
-            await foreach (MailMessageFileAttachmentData attachment in CurrentService.GetMailAttachmentFileAsync(Model, CancelToken))
+            await foreach (MailMessageFileAttachment attachment in CurrentService.GetMailAttachmentFileAsync(Model, CancelToken))
             {
                 Sender.Items.Add(attachment);
             }
@@ -360,7 +359,7 @@ namespace Mail.Pages
 
         private async void MailFileAttachmentDownload(object sender, RoutedEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is MailMessageFileAttachmentData Attachment)
+            if ((sender as FrameworkElement)?.DataContext is MailMessageFileAttachment Attachment)
             {
                 FolderPicker Picker = new FolderPicker
                 {
@@ -385,7 +384,7 @@ namespace Mail.Pages
         {
             if (PreviewSource.FirstOrDefault() is not { IsEmpty: true })
             {
-                MailMessageListDetailViewModel NewEmptyModel = MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty));
+                MailMessageListDetailViewModel NewEmptyModel = MailMessageListDetailViewModel.Empty(new MailMessageRecipient(string.Empty, string.Empty));
                 PreviewSource.Insert(0, NewEmptyModel);
                 DetailsView.SelectedItem = NewEmptyModel;
 
@@ -457,7 +456,7 @@ namespace Mail.Pages
         {
             if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
-                var folder = CurrentService.GetCache().Get<MailFolderData>("archive");
+                var folder = CurrentService.GetCache().Get<MailFolder>("archive");
                 if (folder == null)
                 {
                     //TODO Outlook是加入了缓存, 其他服务需要处理

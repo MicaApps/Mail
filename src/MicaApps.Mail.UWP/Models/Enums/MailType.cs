@@ -1,4 +1,4 @@
-﻿namespace Mail.Services.Data.Enums;
+﻿namespace Mail.Models.Enums;
 
 /// <summary>
 /// 支持的邮箱类型<br/>

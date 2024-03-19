@@ -8,8 +8,7 @@ using Windows.Storage;
 using Windows.Storage.FileProperties;
 using CommunityToolkit.Authentication;
 using Mail.Models;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
+using Mail.Models.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
@@ -24,7 +23,7 @@ namespace Mail.Services
         private IMailService MailServiceImplementation;
         public AccountModel? CurrentAccount { get; set; }
         public abstract MailType MailType { get; }
-        public abstract ObservableCollection<MailFolderData> MailFoldersTree { get; }
+        public abstract ObservableCollection<MailFolder> MailFoldersTree { get; }
         protected LocalCacheService LocalCache => App.Services.GetService<LocalCacheService>()!;
 
         public BaseProvider Provider { get; }
@@ -85,20 +84,20 @@ namespace Mail.Services
             return Task.FromResult(true);
         }
 
-        public abstract IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
+        public abstract IAsyncEnumerable<MailFolder> GetMailSuperFoldersAsync(
             CancellationToken CancelToken = default);
 
-        public abstract Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
+        public abstract Task<MailFolder> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default);
 
-        public abstract IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
+        public abstract IAsyncEnumerable<MailMessage> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
             CancellationToken CancelToken = default);
 
         public abstract Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
         public abstract Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
 
-        public abstract IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
+        public abstract IAsyncEnumerable<MailMessageFileAttachment> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
 
         /// <summary>
@@ -132,7 +131,7 @@ namespace Mail.Services
 
         public abstract Task<bool> MailMoveAsync(string mailMessageId, string folderId);
 
-        public abstract Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
+        public abstract Task<MailMessageFileAttachment?> UploadAttachmentAsync(MailMessageListDetailViewModel Model,
             StorageFile StorageFile, CancellationToken CancelToken = default);
 
         public abstract Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);

@@ -8,8 +8,8 @@ using Windows.UI.Xaml.Controls;
 using CommunityToolkit.Authentication;
 using System.Threading.Tasks;
 using System;
-using Mail.Services.Data;
 using System.Collections.Generic;
+using Mail.Models;
 
 namespace Mail
 {

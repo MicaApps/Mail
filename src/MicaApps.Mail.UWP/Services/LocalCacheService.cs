@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Chloe;
 using Mail.Extensions;
 using Mail.Models;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
+using Mail.Models.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Windows.Gaming.Input.ForceFeedback;
 
 namespace Mail.Services;
 
@@ -21,111 +20,55 @@ namespace Mail.Services;
 /// </summary>
 public class LocalCacheService
 {
-    public IDbContext GetContext() => App.Services.GetService<IDbContext>()!;
+    public LiteDatabaseService DatabaseService { get; }
 
-    public void SaveMessage(MailMessageData Data)
+    public LocalCacheService(IServiceProvider serviceProvider)
     {
-        using var dbContext = GetContext();
-        Data.SaveRecipientData(dbContext);
-        dbContext.InsertOrUpdate(Data.Content);
-        dbContext.InsertOrUpdate(Data);
+        DatabaseService = serviceProvider.GetService<LiteDatabaseService>();
     }
 
-    public void SaveFolder(MailFolderData Data)
+    public void SaveMessage(MailMessage message)
     {
-        var db = GetContext();
-        var dbFolder = db.Query<MailFolderData>().Where(x => x.Id == Data.Id)
-            .FirstOrDefault();
-        if (dbFolder is not null && dbFolder.Type != MailFolderType.Other) Data.Type = dbFolder.Type;
-
-        db.InsertOrUpdate(Data);
+        if (!DatabaseService.MailMessages.Update(message))
+            DatabaseService.MailMessages.Insert(message);
     }
 
-    public List<MailMessageData> QueryMessage(LoadMailMessageOption Option)
+    public void SaveFolder(MailFolder folder)
     {
-        var focused = Option.IsFocusedTab ? "Focused" : "Other";
-        using var db = GetContext();
-        try
-        {
-            var messageList = db.Query<MailMessageData>()
-                .Include(x => x.Content)
-                .Where(x => x.FolderId == Option.FolderId)
-                .Where(x => x.InferenceClassification == focused)
-                .Skip(Option.StartIndex)
-                .Take(Option.LoadCount)
-                .OrderByDesc(x => x.SentTime)
-                .ToList();
-
-            Parallel.ForEach(messageList, item =>
-            {
-                using var dbContext = GetContext();
-                var sender = dbContext.Query<MailMessageRecipientData>()
-                    .Where(x => x.MessageId == item.MessageId)
-                    .Where(x => x.RecipientType == RecipientType.Sender)
-                    .FirstOrDefault();
-                if (sender is not null)
-                {
-                    item.Sender = sender;
-                }
-
-                {
-                    var toList = dbContext.Query<MailMessageRecipientData>()
-                        .Where(x => x.MessageId == item.MessageId)
-                        .Where(x => x.RecipientType == RecipientType.To)
-                        .ToList();
-                    if (toList.IsNullOrEmpty())
-                    {
-                        item.To = toList;
-                    }
-                }
-                {
-                    var toList = dbContext.Query<MailMessageRecipientData>()
-                        .Where(x => x.MessageId == item.MessageId)
-                        .Where(x => x.RecipientType == RecipientType.Cc)
-                        .ToList();
-                    if (toList.IsNullOrEmpty())
-                    {
-                        item.CC = toList;
-                    }
-                }
-                {
-                    var toList = dbContext.Query<MailMessageRecipientData>()
-                        .Where(x => x.MessageId == item.MessageId)
-                        .Where(x => x.RecipientType == RecipientType.Bcc)
-                        .ToList();
-                    if (toList.IsNullOrEmpty())
-                    {
-                        item.Bcc = toList;
-                    }
-                }
-            });
-            return messageList;
-        }
-        catch (Exception e)
-        {
-            Trace.WriteLine("QueryMessage Error" + e);
-            return new List<MailMessageData>();
-        }
+        if (!DatabaseService.MailFolders.Update(folder))
+            DatabaseService.MailFolders.Insert(folder);
     }
 
-    public List<MailFolderData> QueryFolderByTree(string RootFolderId, MailType MailType)
+    public List<MailMessage> QueryMessage(LoadMailMessageOption option)
     {
-        using var db = GetContext();
-        var treeAsync = db.Query<MailFolderData>()
-            .Where(x => x.ParentFolderId == RootFolderId)
-            .Where(x => x.MailType == MailType)
+        var tab = option.IsFocusedTab ? "Focused" : "Other";
+
+        return DatabaseService.MailMessages
+            .Query()
+            .Where(msg => msg.FolderId == option.FolderId)
+            .Where(msg => msg.InferenceClassification == tab)
+            .Skip(option.StartIndex)
+            .Limit(option.LoadCount)
+            .ToEnumerable()
+            .OrderByDescending(x => x.SentTime)
+            .ToList();
+    }
+
+    public List<MailFolder> QueryFolderByTree(string rootFolderId, MailType mailType)
+    {
+        var folders = DatabaseService.MailFolders
+            .Query()
+            .Where(folder => folder.ParentFolderId == rootFolderId)
             .ToList();
 
-        foreach (var mailFolderData in treeAsync.Where(mailFolderData => mailFolderData.ChildFolderCount > 0))
-        {
-            mailFolderData.ChildFolders = QueryFolderByTree(mailFolderData.Id, MailType);
-        }
+        foreach (var folder in folders)
+            folder.RecurseLoadChildFolders(DatabaseService.MailFolders);
 
-        return treeAsync;
+        return folders;
     }
 
-    public DbOperationEvent OperationEvent()
-    {
-        return GetContext().GetDbOperationEvent();
-    }
+    //public DbOperationEvent OperationEvent()
+    //{
+    //    return GetContext().GetDbOperationEvent();
+    //}
 }

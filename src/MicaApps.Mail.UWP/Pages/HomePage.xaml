@@ -4,7 +4,7 @@
       xmlns:visuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:models="using:Mail.Services.Data"
+      xmlns:models="using:Mail.Models"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
       xmlns:selectors="using:Mail.Selectors"
@@ -15,7 +15,7 @@
         </DataTemplate>
         
         <DataTemplate x:Key="ContentTemplate"
-                      x:DataType="models:MailFolderData">
+                      x:DataType="models:MailFolder">
             <muxc:NavigationViewItem Content="{x:Bind Name}">
                 <muxc:NavigationViewItem.Icon>
                     <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
@@ -23,7 +23,7 @@
             </muxc:NavigationViewItem>
         </DataTemplate>
         
-        <DataTemplate x:Key="ContentWithChildTemplate" x:DataType="models:MailFolderData">
+        <DataTemplate x:Key="ContentWithChildTemplate" x:DataType="models:MailFolder">
             <muxc:NavigationViewItem Content="{x:Bind Name}"
                                      MenuItemsSource="{x:Bind ChildFolders}">
                 <muxc:NavigationViewItem.Icon>

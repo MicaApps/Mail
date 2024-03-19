@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Authentication;
 using Mail.Extensions;
+using Mail.Models;
+using Mail.Models.Enums;
 using Mail.Services;
-using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using System;
@@ -85,9 +86,9 @@ namespace Mail.Pages
             {
                 MailFolderSource.Add(new NavigationViewItemSeparator());
 
-                try
-                {
-                    IReadOnlyList<MailFolderData> MailFolders = await Service.GetMailSuperFoldersAsync().OrderBy((Data) => Data.Type).ToArrayAsync();
+            try
+            {
+                IReadOnlyList<Models.MailFolder> MailFolders = await Service.GetMailSuperFoldersAsync().OrderBy((Data) => Data.Type).ToArrayAsync();
 
                     if (MailFolders.Count > 0)
                     {
@@ -101,8 +102,7 @@ namespace Mail.Pages
                     Trace.WriteLine(exception);
                 }
 
-                NavView.SelectedItem = MailFolderSource.OfType<MailFolderData>().FirstOrDefault();
-
+                NavView.SelectedItem = MailFolderSource.OfType<Models.MailFolder>().FirstOrDefault();
                 Service.MailFoldersTree.CollectionChanged += (Sender, Args) =>
                 {
                     //Trace.WriteLine($"Tree Changed: {Enum.GetName(typeof(NotifyCollectionChangedAction),Args.Action)} : {JsonConvert.SerializeObject(Args.NewItems)}");
@@ -148,7 +148,7 @@ namespace Mail.Pages
             {
                 NavigationContent.Navigate(typeof(SettingsPage), null, new DrillInNavigationTransitionInfo());
             }
-            else if (args.SelectedItem is MailFolderData data)
+            else if (args.SelectedItem is Models.MailFolder data)
             {
                 NavigationContent.Navigate(typeof(MailFolderDetailsPage), data, new DrillInNavigationTransitionInfo());
             }
