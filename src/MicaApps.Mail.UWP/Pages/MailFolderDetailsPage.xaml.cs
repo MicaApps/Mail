@@ -1,8 +1,8 @@
 using Mail.Extensions;
 using Mail.Models;
+using Mail.Models.Collections;
 using Mail.Models.Enums;
 using Mail.Services;
-using Mail.Services.Collection;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;

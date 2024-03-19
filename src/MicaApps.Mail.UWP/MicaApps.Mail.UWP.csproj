@@ -140,9 +140,9 @@
     <Compile Include="Extensions\RunCatch.cs" />
     <Compile Include="Models\EditMailOption.cs" />
     <Compile Include="Models\LoadMailMessageOption.cs" />
-    <Compile Include="PageModels\LoginPageModel.cs" />
-    <Compile Include="PageModels\MainPageModel.cs" />
-    <Compile Include="PageModels\SplashPageModel.cs" />
+    <Compile Include="ViewModels\LoginPageModel.cs" />
+    <Compile Include="ViewModels\MainPageModel.cs" />
+    <Compile Include="ViewModels\SplashPageModel.cs" />
     <Compile Include="Models\MailFolder.cs" />
     <Compile Include="Models\MailMessage.cs" />
     <Compile Include="Models\MailMessageContent.cs" />
@@ -165,7 +165,7 @@
     <Compile Include="Models\IMailMessageAttachment.cs" />
     <Compile Include="Models\MailMessageFileAttachment.cs" />
     <Compile Include="Models\MailMessageAttachment.cs" />
-    <Compile Include="Services\Collection\MailIncrementalLoadingObservableCollection.cs" />
+    <Compile Include="Models\Collections\MailIncrementalLoadingObservableCollection.cs" />
     <Compile Include="Models\AccountModel.cs" />
     <Compile Include="Models\ContactModel.cs" />
     <Compile Include="Extensions\DependencyObjectExtension.cs" />
@@ -360,10 +360,7 @@
       <Version>6.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="BLL\" />
-    <Folder Include="DAL\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

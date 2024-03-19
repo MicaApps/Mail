@@ -21,7 +21,7 @@ using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.System;
 using Windows.System.Threading;
 
-namespace MicaApps.Mail.PageModels
+namespace MicaApps.Mail.ViewModels
 {
     internal class SplashPageModel : ObservableObject
     {

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MicaApps.Mail.PageModels
+namespace MicaApps.Mail.ViewModels
 {
     internal class LoginPageModel : ObservableObject
     {

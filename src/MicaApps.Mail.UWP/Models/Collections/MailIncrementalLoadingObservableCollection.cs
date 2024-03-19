@@ -9,7 +9,7 @@ using Windows.UI.Xaml.Data;
 using Mail.Models;
 using Nito.AsyncEx;
 
-namespace Mail.Services.Collection
+namespace Mail.Models.Collections
 {
     internal sealed class MailIncrementalLoadingObservableCollection : ObservableCollection<MailMessageListDetailViewModel>, ISupportIncrementalLoading
     {

@@ -14,12 +14,12 @@ namespace Mail.Services
     internal interface IMailService
     {
         public bool IsSupported { get; }
-
         public bool IsSignIn { get; }
+
         AccountModel? CurrentAccount { get; }
         MailType MailType { get; }
         public ObservableCollection<MailFolder> MailFoldersTree { get; }
-        IMemoryCache GetCache();
+        public IMemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
 
