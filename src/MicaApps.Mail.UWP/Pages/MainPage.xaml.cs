@@ -41,7 +41,9 @@ namespace Mail
                 {
                     // Load Contacts to Cache
                     var contacts = await App.Services.GetService<OutlookService>().GetContactsAsync();
-                    App.Services.GetService<ICacheService>()!.AddOrReplaceCache<IReadOnlyList<ContactModel>>(contacts);
+                    App.Services
+                        .GetRequiredService<ICacheService>()
+                        .Set<IReadOnlyList<ContactModel>>(contacts);
                 }
                 catch (Exception e)
                 {

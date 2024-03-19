@@ -7,17 +7,17 @@ public class CacheService : ICacheService
 {
     private readonly Dictionary<Type, object> Caches = new();
 
-    public void AddOrReplaceCache<T>(T cache) where T : class
+    public void Set<T>(T cache) where T : class
     {
         Caches[typeof(T)] = cache;
     }
 
-    public void RemoveCache<T>()
+    public void Remove<T>()
     {
         Caches.Remove(typeof(T));
     }
 
-    public T? GetCache<T>() where T : class
+    public T? Get<T>() where T : class
     {
         var val = Caches!.GetValueOrDefault(typeof(T), null);
         if (val is T valT)

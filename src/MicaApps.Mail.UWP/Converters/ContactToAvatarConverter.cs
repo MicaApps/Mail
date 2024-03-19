@@ -21,20 +21,20 @@ namespace Mail.Converters;
 
 public class ContactToAvatarConverter : IValueConverter
 {
-    private ICacheService? CacheService;
+    private ICacheService _cacheService;
     private Dictionary<string, BitmapImage?> _instantCache = new();
-    private readonly HttpClient httpClient =new HttpClient();
+    private readonly HttpClient _httpClient = new HttpClient();
 
     public ContactToAvatarConverter()
     {
-        CacheService = App.Services.GetService<ICacheService>();
+        _cacheService = App.Services.GetRequiredService<ICacheService>();
     }
 
-    public object Convert(object value, Type targetType, object parameter, string language)
+    public object? Convert(object value, Type targetType, object parameter, string language)
     {
         try
         {
-            var contacts = CacheService?.GetCache<IReadOnlyList<ContactModel>>();
+            var contacts = _cacheService.Get<IReadOnlyList<ContactModel>>();
             if (value is string recipient)
             {
                 byte[]? resultByte = null;
@@ -73,7 +73,7 @@ public class ContactToAvatarConverter : IValueConverter
                             try
                             {
                                 // BAD PRACTICE!
-                                resultByte = httpClient.GetByteArrayAsync($"https://{recipient}/favicon.ico").GetAwaiter().GetResult();
+                                resultByte = _httpClient.GetByteArrayAsync($"https://{recipient}/favicon.ico").GetAwaiter().GetResult();
                                 if (resultByte[0] == 0x00 && resultByte[1] == 0x00 && resultByte[2] == 0x01 && resultByte[3] == 0x00)
                                 {
                                     // noting
@@ -106,7 +106,7 @@ public class ContactToAvatarConverter : IValueConverter
                 {
                     var bitmap = new BitmapImage();
                     MemoryStream ms = new MemoryStream(resultByte);
-                    bitmap.SetSourceAsync(ms.AsRandomAccessStream());
+                    _ = bitmap.SetSourceAsync(ms.AsRandomAccessStream());
                     _instantCache[recipient] = bitmap;
                 }
                 else

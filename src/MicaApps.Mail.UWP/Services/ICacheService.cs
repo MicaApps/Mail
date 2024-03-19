@@ -2,7 +2,7 @@
 
 public interface ICacheService
 {
-    public void AddOrReplaceCache<T>(T cache) where T : class;
-    public void RemoveCache<T>();
-    public T? GetCache<T>()  where T : class;
+    public void Set<T>(T cache) where T : class;
+    public T? Get<T>()  where T : class;
+    public void Remove<T>();
 }
