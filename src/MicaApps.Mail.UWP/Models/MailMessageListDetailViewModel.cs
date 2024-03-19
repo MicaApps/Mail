@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Mail.Models.Enums;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Mail.Models
 {
     public sealed class MailMessageListDetailViewModel
     {
-        [JsonProperty("subject")]
+        [JsonPropertyName("subject")]
         public string Title
         {
             get => InnerData.Title;
@@ -23,7 +24,7 @@ namespace Mail.Models
             set => InnerData.Id = value;
         }
 
-        [JsonProperty("bodyPreview")] // Outlook: first 255 char
+        [JsonPropertyName("bodyPreview")] // Outlook: first 255 char
         public string PreviewText
         {
             get => InnerData.Content.ContentPreview;

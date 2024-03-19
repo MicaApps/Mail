@@ -13,7 +13,6 @@ using Microsoft.Graph.Me.SendMail;
 using Microsoft.Graph.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Toolkit.Uwp.Helpers;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,6 +22,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
 
@@ -455,12 +455,12 @@ namespace Mail.Services
 
         private static Message? ToMessage(MailMessageListDetailViewModel Model)
         {
-            var jsonSetting = new JsonSerializerSettings
+            var jsonOptions = new JsonSerializerOptions
             {
-                NullValueHandling = NullValueHandling.Ignore
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
             };
-            var serializeObject = JsonConvert.SerializeObject(Model);
-            var message = JsonConvert.DeserializeObject<Message>(serializeObject, jsonSetting);
+            var serializeObject = JsonSerializer.Serialize(Model);
+            var message = JsonSerializer.Deserialize<Message>(serializeObject, jsonOptions);
             return message;
         }
 
