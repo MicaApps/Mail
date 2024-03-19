@@ -19,7 +19,6 @@ namespace Mail.Services
         AccountModel? CurrentAccount { get; }
         MailType MailType { get; }
         public ObservableCollection<MailFolder> MailFoldersTree { get; }
-        public IMemoryCache GetCache();
 
         public Task<bool> InitSeriviceAsync();
 
@@ -34,12 +33,6 @@ namespace Mail.Services
         public Task<byte[]?> GetMailMessageFileAttachmentContent(string messageId, string attachmentId);
 
         public Task<IReadOnlyList<ContactModel>> GetContactsAsync(CancellationToken CancelToken = default);
-
-        interface IFocusFilterSupport
-        {
-            public IAsyncEnumerable<MailMessage> GetMailMessageAsync(LoadMailMessageOption Option,
-                CancellationToken CancelToken = default);
-        }
 
         public IAsyncEnumerable<MailMessageFileAttachment> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model, CancellationToken CancelToken = default);
@@ -67,5 +60,11 @@ namespace Mail.Services
         Task<bool> MailMoveAsync(string mailMessageId, string folderId);
 
         Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model);
+
+        interface IFocusFilterSupport
+        {
+            public IAsyncEnumerable<MailMessage> GetMailMessageAsync(LoadMailMessageOption Option,
+                CancellationToken CancelToken = default);
+        }
     }
 }

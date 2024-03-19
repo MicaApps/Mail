@@ -165,7 +165,7 @@
                              SelectionChanged="NavView_SelectionChanged"
                              OpenPaneLength="250"
                              OverflowLabelMode="MoreLabel"
-                             MenuItemsSource="{x:Bind MailFolderSource}"
+                             MenuItemsSource="{x:Bind _mailFolderSource}"
                              MenuItemTemplateSelector="{StaticResource MailFolderNavigationDataTemplateSelector}">
             <muxc:NavigationView.Resources>
                 <!--<Thickness x:Key="NavigationViewContentMargin">0,50,0,0</Thickness>-->
@@ -177,7 +177,7 @@
             <muxc:NavigationView.PaneCustomContent>
                 <ListView x:Name="listView"
                           Margin="0,0,0,0"
-                          ItemsSource="{x:Bind AccountSource}">
+                          ItemsSource="{x:Bind _accountSource}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:AccountModel">
                             <Grid Padding="0,10">

@@ -22,36 +22,30 @@ namespace Mail.Pages
 {
     public sealed partial class HomePage : Page
     {
-        private readonly ObservableCollection<AccountModel> AccountSource = new();
-
-        private readonly ObservableCollection<object> MailFolderSource = new();
-        private readonly IMailService Service;
+        private readonly ObservableCollection<AccountModel> _accountSource = new();
+        private readonly ObservableCollection<object> _mailFolderSource = new();
+        private readonly OutlookService _mailService;
 
         public HomePage()
         {
             InitializeComponent();
 
             SetupTitleBar();
-
             SetupPaneToggleButton();
 
             //TODO: Test only and should remove this later
-            try
-            {
-                var service = App.Services.GetService<OutlookService>()!;
-                Service = service;
-                var Provider = service.Provider as MsalProvider;
-                var model = new AccountModel(
-                    Provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value,
-                    Provider.Account.Username,
-                    service.MailType);
-                AccountSource.Add(model);
+            _mailService = App.Services.GetRequiredService<OutlookService>();
 
-                service.CurrentAccount = model;
-            }
-            catch
+            if (_mailService is OutlookService outlookService)
             {
-                throw;
+                var provider = outlookService.Provider as MsalProvider;
+                var model = new AccountModel(
+                    provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value,
+                    provider.Account.Username,
+                    outlookService.MailType);
+                _accountSource.Add(model);
+
+                outlookService.CurrentAccount = model;
             }
 
             Loaded += HomePage_Loaded;
@@ -84,17 +78,17 @@ namespace Mail.Pages
         {
             try
             {
-                MailFolderSource.Add(new NavigationViewItemSeparator());
+                _mailFolderSource.Add(new NavigationViewItemSeparator());
 
             try
             {
-                IReadOnlyList<Models.MailFolder> MailFolders = await Service.GetMailSuperFoldersAsync().OrderBy((Data) => Data.Type).ToArrayAsync();
+                IReadOnlyList<Models.MailFolder> MailFolders = await _mailService.GetMailSuperFoldersAsync().OrderBy((Data) => Data.Type).ToArrayAsync();
 
                     if (MailFolders.Count > 0)
                     {
-                        MailFolderSource.AddRange(MailFolders.TakeWhile((Data) => Data.Type != MailFolderType.Other));
-                        MailFolderSource.Add(new NavigationViewItemSeparator());
-                        MailFolderSource.AddRange(MailFolders.Skip(MailFolderSource.Count));
+                        _mailFolderSource.AddRange(MailFolders.TakeWhile((Data) => Data.Type != MailFolderType.Other));
+                        _mailFolderSource.Add(new NavigationViewItemSeparator());
+                        _mailFolderSource.AddRange(MailFolders.Skip(_mailFolderSource.Count));
                     }
                 }
                 catch (Exception exception)
@@ -102,16 +96,16 @@ namespace Mail.Pages
                     Trace.WriteLine(exception);
                 }
 
-                NavView.SelectedItem = MailFolderSource.OfType<Models.MailFolder>().FirstOrDefault();
-                Service.MailFoldersTree.CollectionChanged += (Sender, Args) =>
+                NavView.SelectedItem = _mailFolderSource.OfType<Models.MailFolder>().FirstOrDefault();
+                _mailService.MailFoldersTree.CollectionChanged += (Sender, Args) =>
                 {
                     //Trace.WriteLine($"Tree Changed: {Enum.GetName(typeof(NotifyCollectionChangedAction),Args.Action)} : {JsonConvert.SerializeObject(Args.NewItems)}");
                     foreach (var item in Args.NewItems)
                     {
                         if (Args.Action == NotifyCollectionChangedAction.Add)
-                            MailFolderSource.Add(item);
+                            _mailFolderSource.Add(item);
                         else if (Args.Action == NotifyCollectionChangedAction.Remove)
-                            MailFolderSource.Remove(item);
+                            _mailFolderSource.Remove(item);
                     }
                 };
             }

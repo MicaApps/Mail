@@ -19,7 +19,6 @@ namespace Mail.Services
     internal abstract class OAuthMailService : IMailService
     {
         private readonly IPublicClientApplication ClientApplication;
-        protected static IMemoryCache MemoryCache => App.Services.GetService<IMemoryCache>()!;
         private IMailService MailServiceImplementation;
         public AccountModel? CurrentAccount { get; set; }
         public abstract MailType MailType { get; }
@@ -72,11 +71,6 @@ namespace Mail.Services
         public async Task SignOutAsync(IAccount account)
         {
             await Provider.SignOutAsync();
-        }
-
-        IMemoryCache IMailService.GetCache()
-        {
-            return OAuthMailService.MemoryCache;
         }
 
         public virtual Task<bool> InitSeriviceAsync()

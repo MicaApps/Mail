@@ -32,9 +32,16 @@ namespace Mail.Services
     {
         private GraphServiceClient? Client;
 
-        public OutlookService(LiteDatabaseService liteDatabaseService) : base(WebAccountProviderType.Msa)
+        // dependent services
+        private readonly LiteDatabaseService _liteDatabaseService;
+        private readonly IMemoryCache _memoryCache;
+
+        public OutlookService(
+            LiteDatabaseService liteDatabaseService,
+            IMemoryCache memoryCache) : base(WebAccountProviderType.Msa)
         {
-            LiteDatabaseService = liteDatabaseService;
+            _liteDatabaseService = liteDatabaseService;
+            _memoryCache = memoryCache;
 
             // TODO: 这里貌似需要添加一个监听数据库变更的玩意儿
             //var dbContext = LocalCache;
@@ -82,7 +89,6 @@ namespace Mail.Services
 
         public override MailType MailType => MailType.Outlook;
         public override ObservableCollection<Models.MailFolder> MailFoldersTree { get; } = new();
-        public LiteDatabaseService LiteDatabaseService { get; }
 
         async IAsyncEnumerable<MailMessage> IMailService.IFocusFilterSupport.GetMailMessageAsync(
             LoadMailMessageOption option, [EnumeratorCancellation] CancellationToken CancelToken)
@@ -92,7 +98,7 @@ namespace Mail.Services
             {
                 foreach (var message in LocalCache.QueryMessage(option))
                 {
-                    MemoryCache.Set(message.Id, message);
+                    _memoryCache.Set(message.Id, message);
                     yield return message;
                 }
             }
@@ -114,7 +120,7 @@ namespace Mail.Services
             {
                 CancelToken.ThrowIfCancellationRequested();
 
-                if (MemoryCache.Get(message.Id) is null || option.ForceReload)
+                if (_memoryCache.Get(message.Id) is null || option.ForceReload)
                 {
                     yield return await GenAndSaveMailMessageDataAsync(rootFolderId, message, type);
                 }
@@ -177,7 +183,7 @@ namespace Mail.Services
         public override async IAsyncEnumerable<Models.MailFolder> GetMailSuperFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
-            var folderData = LiteDatabaseService.MailFolders
+            var folderData = _liteDatabaseService.MailFolders
                 .Query()
                 .Where((x) => x.Type == MailFolderType.Inbox)
                 .Where((x) => x.MailType == MailType.Outlook)
@@ -198,7 +204,7 @@ namespace Mail.Services
 
             foreach (var mailFolderData in treeAsync)
             {
-                mailFolderData.RecurseLoadChildFolders(LiteDatabaseService.MailFolders);
+                mailFolderData.RecurseLoadChildFolders(_liteDatabaseService.MailFolders);
 
                 MailFoldersTree.Add(mailFolderData);
                 yield return mailFolderData;
@@ -277,13 +283,13 @@ namespace Mail.Services
         public override async Task<Models.MailFolder> GetMailFolderDetailAsync(string rootFolderId,
             CancellationToken CancelToken = default)
         {
-            var rootFolder = LiteDatabaseService.MailFolders
+            var rootFolder = _liteDatabaseService.MailFolders
                 .Query()
                 .Where(f => f.Id == rootFolderId)
                 .FirstOrDefault();
 
             if (rootFolder != null)
-                rootFolder.RecurseLoadChildFolders(LiteDatabaseService.MailFolders);
+                rootFolder.RecurseLoadChildFolders(_liteDatabaseService.MailFolders);
 
             return rootFolder;
         }
@@ -293,7 +299,7 @@ namespace Mail.Services
         {
             foreach (var message in LocalCache.QueryMessage(option))
             {
-                MemoryCache.Set(message.Id, message);
+                _memoryCache.Set(message.Id, message);
                 yield return message;
             }
 
@@ -308,7 +314,7 @@ namespace Mail.Services
                          }, CancelToken)).Value)
             {
                 CancelToken.ThrowIfCancellationRequested();
-                if (MemoryCache.Get(message.Id) is not null) continue;
+                if (_memoryCache.Get(message.Id) is not null) continue;
                 var focused = option.IsFocusedTab ? "Focused" : "Other";
                 var messageData = await GenAndSaveMailMessageDataAsync(option.FolderId, message, focused);
 
