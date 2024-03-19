@@ -1,5 +1,4 @@
-﻿using Mail.Services.Data;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Mail.Selectors
@@ -14,7 +13,7 @@ namespace Mail.Selectors
 
         protected override DataTemplate SelectTemplateCore(object item)
         {
-            return item is MailFolderData folder ? folder.ChildFolders != null ? ContentWithChild : Content : Divider;
+            return item is Models.MailFolder folder ? folder.ChildFolders != null ? ContentWithChild : Content : Divider;
         }
     }
 }

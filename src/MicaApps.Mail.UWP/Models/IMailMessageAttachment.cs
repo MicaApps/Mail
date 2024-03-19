@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Mail.Services.Data
+namespace Mail.Models
 {
-    public interface IMailMessageAttachmentData
+    public interface IMailMessageAttachment
     {
         public string Name { get; }
 

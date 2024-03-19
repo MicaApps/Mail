@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Mail.Services.Data
+namespace Mail.Models
 {
-    public sealed class MailMessageAttachmentData : IMailMessageAttachmentData
+    public sealed class MailMessageAttachment : IMailMessageAttachment
     {
         public string Name { get; }
 
@@ -14,7 +14,7 @@ namespace Mail.Services.Data
 
         public DateTimeOffset LastModifiedDate { get; }
 
-        public MailMessageAttachmentData(string Name, string Id, string ContentType = null, ulong AttachmentSize = 0,
+        public MailMessageAttachment(string Name, string Id, string ContentType = null, ulong AttachmentSize = 0,
             DateTimeOffset LastModifiedDate = default)
         {
             this.Name = Name;

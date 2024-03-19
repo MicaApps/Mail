@@ -1,4 +1,4 @@
-﻿namespace Mail.Services.Data.Enums;
+﻿namespace Mail.Models.Enums;
 
 public enum EditMailType
 {

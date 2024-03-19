@@ -1,6 +1,6 @@
-﻿using Mail.Services.Data.Enums;
+﻿using Mail.Models.Enums;
 
-namespace Mail.Services.Data
+namespace Mail.Models
 {
     internal sealed class AccountModel
     {

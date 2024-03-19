@@ -1,8 +1,7 @@
 using CommunityToolkit.Authentication;
 using Mail.Extensions.Graph;
 using Mail.Models;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
+using Mail.Models.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph;
 using Microsoft.Graph.Me.Messages.Item.Attachments.CreateUploadSession;
@@ -33,35 +32,38 @@ namespace Mail.Services
     {
         private GraphServiceClient? Client;
 
-        public OutlookService() : base(WebAccountProviderType.Msa)
+        public OutlookService(LiteDatabaseService liteDatabaseService) : base(WebAccountProviderType.Msa)
         {
-            var dbContext = LocalCache;
-            dbContext.OperationEvent().ExecEvent += (Entity, Type) =>
-            {
-                if (Type is not (OperationType.Insert or OperationType.Update)) return;
-                if (Entity is not MailFolderData dbFolder) return;
+            LiteDatabaseService = liteDatabaseService;
 
-                var collFirst = MailFoldersTree.FirstOrDefault(x => x.Id.Equals(dbFolder.Id));
-                if (collFirst is null)
-                {
-                    if (dbFolder.ParentFolderId.IsNullOrEmpty())
-                    {
-                        MailFoldersTree.Add(dbFolder);
-                    }
+            // TODO: 这里貌似需要添加一个监听数据库变更的玩意儿
+            //var dbContext = LocalCache;
+            //dbContext.OperationEvent().ExecEvent += (Entity, Type) =>
+            //{
+            //    if (Type is not (OperationType.Insert or OperationType.Update)) return;
+            //    if (Entity is not MailFolder dbFolder) return;
 
-                    return;
-                }
+            //    var collFirst = MailFoldersTree.FirstOrDefault(x => x.Id.Equals(dbFolder.Id));
+            //    if (collFirst is null)
+            //    {
+            //        if (dbFolder.ParentFolderId.IsNullOrEmpty())
+            //        {
+            //            MailFoldersTree.Add(dbFolder);
+            //        }
 
-                var collIndex = MailFoldersTree.IndexOf(collFirst);
-                if (dbFolder.ParentFolderId.IsNullOrEmpty())
-                {
-                    MailFoldersTree[collIndex] = dbFolder;
-                }
-                else
-                {
-                    MailFoldersTree.Remove(collFirst);
-                }
-            };
+            //        return;
+            //    }
+
+            //    var collIndex = MailFoldersTree.IndexOf(collFirst);
+            //    if (dbFolder.ParentFolderId.IsNullOrEmpty())
+            //    {
+            //        MailFoldersTree[collIndex] = dbFolder;
+            //    }
+            //    else
+            //    {
+            //        MailFoldersTree.Remove(collFirst);
+            //    }
+            //};
         }
 
         protected override string[] Scopes { get; } =
@@ -79,9 +81,10 @@ namespace Mail.Services
         };
 
         public override MailType MailType => MailType.Outlook;
-        public override ObservableCollection<MailFolderData> MailFoldersTree { get; } = new();
+        public override ObservableCollection<Models.MailFolder> MailFoldersTree { get; } = new();
+        public LiteDatabaseService LiteDatabaseService { get; }
 
-        async IAsyncEnumerable<MailMessageData> IMailService.IFocusFilterSupport.GetMailMessageAsync(
+        async IAsyncEnumerable<MailMessage> IMailService.IFocusFilterSupport.GetMailMessageAsync(
             LoadMailMessageOption option, [EnumeratorCancellation] CancellationToken CancelToken)
         {
 
@@ -89,7 +92,7 @@ namespace Mail.Services
             {
                 foreach (var message in LocalCache.QueryMessage(option))
                 {
-                    MemoryCache.Set(message.MessageId, message);
+                    MemoryCache.Set(message.Id, message);
                     yield return message;
                 }
             }
@@ -118,42 +121,25 @@ namespace Mail.Services
             }
         }
 
-        private async Task<MailMessageData> GenAndSaveMailMessageDataAsync(string RootFolderId, Message message,
+        private async Task<MailMessage> GenAndSaveMailMessageDataAsync(string RootFolderId, Message message,
             string type = "Focused")
         {
-            string folderId = RootFolderId;
-            string title = message.Subject;
-            string messageId = message.Id;
-            DateTimeOffset? sentTime = message.SentDateTime;
-
-            string senderEmailAddressName = message.Sender?.EmailAddress.Name ?? string.Empty;
-            string senderEmailAddress = message.Sender?.EmailAddress.Address ?? string.Empty;
-
-            MailMessageRecipientData sender = new MailMessageRecipientData(senderEmailAddressName, senderEmailAddress);
-            IEnumerable<MailMessageRecipientData> messageTo = message.ToRecipients.Select((Recipient) =>
-                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address));
-            IEnumerable<MailMessageRecipientData> messageCc = message.CcRecipients.Select((Recipient) =>
-                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address));
-            IEnumerable<MailMessageRecipientData> messageBcc = message.BccRecipients.Select((Recipient) =>
-                    new MailMessageRecipientData(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address));
-
-            MailMessageContentData mailMessageContentData = new MailMessageContentData(message.Id, message.Body.Content, message.BodyPreview,
-                    (MailMessageContentType)message.Body.ContentType);
-
-            IEnumerable<MailMessageAttachmentData> attachments = message.Attachments?.Select((Attachment) => new MailMessageAttachmentData(Attachment.Name,
+            var messageData = new MailMessage(RootFolderId, message.Subject,
+                message.Id,
+                message.SentDateTime,
+                new MailMessageRecipient(message.Sender.EmailAddress.Name, message.Sender.EmailAddress.Address),
+                message.ToRecipients.Select((Recipient) =>
+                    new MailMessageRecipient(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
+                message.CcRecipients.Select((Recipient) =>
+                    new MailMessageRecipient(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
+                message.BccRecipients.Select((Recipient) =>
+                    new MailMessageRecipient(Recipient.EmailAddress.Name, Recipient.EmailAddress.Address)),
+                new MailMessageContent(message.Body.Content, message.BodyPreview,
+                    (MailMessageContentType)message.Body.ContentType),
+                message.Attachments?.Select((Attachment) => new MailMessageAttachment(Attachment.Name,
                     Attachment.Id, Attachment.ContentType, Convert.ToUInt64(Attachment.Size),
                     Attachment.LastModifiedDateTime.GetValueOrDefault())) ??
-                Enumerable.Empty<MailMessageAttachmentData>();
-
-
-
-            var messageData = new MailMessageData(folderId, title,
-                messageId,
-                sentTime,
-                sender,
-                messageTo,messageCc,messageBcc,
-                mailMessageContentData,
-                    attachments, type);
+                Enumerable.Empty<MailMessageAttachment>(), type);
 
             // 为了插入映射的接受者类型, 这里手动处理中间数据插入
             LocalCache.SaveMessage(messageData);
@@ -188,13 +174,15 @@ namespace Mail.Services
             }
         }
 
-        public override async IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
+        public override async IAsyncEnumerable<Models.MailFolder> GetMailSuperFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
-            using var dbContext = LocalCache.GetContext();
-            var folderData = await dbContext.Query<MailFolderData>()
-                .Where(x => x.Type == MailFolderType.Inbox)
-                .Where(x => x.MailType == MailType.Outlook).FirstOrDefaultAsync();
+            var folderData = LiteDatabaseService.MailFolders
+                .Query()
+                .Where((x) => x.Type == MailFolderType.Inbox)
+                .Where((x) => x.MailType == MailType.Outlook)
+                .FirstOrDefault();
+
             if (folderData == null)
             {
                 await Task.WhenAll(DefaultFolderTaskAsync("inbox", CancelToken),
@@ -206,11 +194,11 @@ namespace Mail.Services
                     DefaultFolderTaskAsync("drafts", CancelToken));
             }
 
-            var treeAsync = LocalCache.QueryFolderByTree(string.Empty, MailType);
+            var treeAsync = LocalCache.QueryFolderByTree(null, MailType);
 
             foreach (var mailFolderData in treeAsync)
             {
-                mailFolderData.RecursionChildFolderToObservableCollection();
+                mailFolderData.RecurseLoadChildFolders(LiteDatabaseService.MailFolders);
 
                 MailFoldersTree.Add(mailFolderData);
                 yield return mailFolderData;
@@ -223,7 +211,7 @@ namespace Mail.Services
         {
             var folders = await GetClient().Me.MailFolders.GetAsync(config =>
                 {
-                    const string n = nameof(MailFolder.DisplayName);
+                    const string n = nameof(Microsoft.Graph.Models.MailFolder.DisplayName);
                     config.QueryParameters.Filter = $"{n} ne 'outbox'";
                 },
                 cancellationToken: CancelToken);
@@ -234,71 +222,81 @@ namespace Mail.Services
             }
         }
 
-        private async Task SaveSuperMailFolderData(MailFolder mailFolder, MailFolderType MailFolderType,
+        private async Task SaveSuperMailFolderData(Microsoft.Graph.Models.MailFolder mailFolder, MailFolderType MailFolderType,
             CancellationToken CancelToken = default)
         {
-            var folderData = new MailFolderData(mailFolder.Id,
+            var folderData = new Models.MailFolder(
+                mailFolder.Id,
                 mailFolder.DisplayName,
                 MailFolderType,
-                new List<MailFolderData>(0),
-                mailFolder.TotalItemCount,
-                MailType.Outlook)
+                mailFolder.TotalItemCount ?? 0,
+                MailType.Outlook,
+                new List<Models.MailFolder>(0))
             {
-                ChildFolderCount = mailFolder.ChildFolderCount ?? 0
+                
             };
-            // folderData.RecursionChildFolderToObservableCollection();
 
             LocalCache.SaveFolder(folderData);
 
-            if (folderData.ChildFolderCount > 0)
+            if ((mailFolder.ChildFolderCount ?? 0) > 0)
             {
                 await LoadMailChildFolderAsync(folderData, CancelToken);
             }
         }
 
-        private async Task LoadMailChildFolderAsync(MailFolderData ParentMailFolder,
-            CancellationToken CancelToken = default)
+        private async Task LoadMailChildFolderAsync(Models.MailFolder parentMailFolder,
+            CancellationToken cancelToken = default)
         {
-            var folders = await GetClient().Me.MailFolders[ParentMailFolder.Id].ChildFolders
-                .GetAsync(cancellationToken: CancelToken);
+            var folders = await GetClient().Me.MailFolders[parentMailFolder.Id].ChildFolders
+                .GetAsync(cancellationToken: cancelToken);
 
             foreach (var mailFolder in folders.Value)
             {
-                var childMailFolder = new MailFolderData(mailFolder.Id,
+                var childMailFolder = new Models.MailFolder(mailFolder.Id,
                     mailFolder.DisplayName,
-                    MailFolderType.Other,
-                    new List<MailFolderData>(0), mailFolder.TotalItemCount, MailType.Outlook)
+                    MailFolderType.Other, 
+                    mailFolder.TotalItemCount ?? 0, 
+                    MailType.Outlook,
+                    new List<Models.MailFolder>(0))
                 {
-                    ParentFolderId = ParentMailFolder.Id,
-                    ChildFolderCount = mailFolder.ChildFolderCount ?? 0
+                    ParentFolderId = parentMailFolder.Id,
                 };
-                // childMailFolder.RecursionChildFolderToObservableCollection();
+
+                if (parentMailFolder.ChildFolders == null)
+                    parentMailFolder.ChildFolders = new();
+
+                parentMailFolder.ChildFolders.Add(childMailFolder);
 
                 LocalCache.SaveFolder(childMailFolder);
 
-                if (childMailFolder.ChildFolderCount > 0) await LoadMailChildFolderAsync(childMailFolder, CancelToken);
+                if ((mailFolder.ChildFolderCount ?? 0) > 0) 
+                    await LoadMailChildFolderAsync(childMailFolder, cancelToken);
             }
         }
 
-        public override async Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
+        public override async Task<Models.MailFolder> GetMailFolderDetailAsync(string rootFolderId,
             CancellationToken CancelToken = default)
         {
-            var list = LocalCache.QueryFolderByTree(RootFolderId, MailType);
+            // TODO: 这个缓存貌似没啥用吧...
+            //var list = LocalCache.QueryFolderByTree(rootFolderId, MailType);
 
-            var rootFolder = await LocalCache.GetContext().Query<MailFolderData>()
-                .Where(x => x.Id == RootFolderId)
-                .FirstAsync();
+            var rootFolder = LiteDatabaseService.MailFolders
+                .Query()
+                .Where(f => f.Id == rootFolderId)
+                .FirstOrDefault();
 
-            rootFolder.ChildFolders = list;
+            if (rootFolder != null)
+                rootFolder.RecurseLoadChildFolders(LiteDatabaseService.MailFolders);
+
             return rootFolder;
         }
 
-        public override async IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption option,
+        public override async IAsyncEnumerable<MailMessage> GetMailMessageAsync(LoadMailMessageOption option,
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
             foreach (var message in LocalCache.QueryMessage(option))
             {
-                MemoryCache.Set(message.MessageId, message);
+                MemoryCache.Set(message.Id, message);
                 yield return message;
             }
 
@@ -392,7 +390,7 @@ namespace Mail.Services
             return ret;
         }
 
-        public override async IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
+        public override async IAsyncEnumerable<MailMessageFileAttachment> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel currentMailModel,
             [EnumeratorCancellation] CancellationToken cancellationToken = default
         )
@@ -403,7 +401,7 @@ namespace Mail.Services
             foreach (FileAttachment Attachment in Attachments
                          .Where((Attachment) => !Attachment.IsInline.GetValueOrDefault()).OfType<FileAttachment>())
             {
-                yield return new MailMessageFileAttachmentData(Attachment.Name, Attachment.Id,
+                yield return new MailMessageFileAttachment(Attachment.Name, Attachment.Id,
                     Attachment.ContentType, (ulong)Attachment.Size, Attachment.LastModifiedDateTime ?? default,
                     Attachment.ContentBytes);
             }
@@ -556,7 +554,7 @@ namespace Mail.Services
             return postAsync != null;
         }
 
-        public override async Task<MailMessageFileAttachmentData?> UploadAttachmentAsync(
+        public override async Task<MailMessageFileAttachment?> UploadAttachmentAsync(
             MailMessageListDetailViewModel Model,
             StorageFile StorageFile,
             CancellationToken CancelToken = default)
@@ -570,7 +568,7 @@ namespace Mail.Services
                 ContentType = StorageFile.ContentType,
                 ContentBytes = readBytesAsync
             }, cancellationToken: CancelToken);
-            return new MailMessageFileAttachmentData(result.Name, result.Id, result.ContentType,
+            return new MailMessageFileAttachment(result.Name, result.Id, result.ContentType,
                 (ulong)(result.Size ?? 0), default, readBytesAsync);
         }
 

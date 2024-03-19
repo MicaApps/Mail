@@ -3,7 +3,6 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:data="using:Mail.Services.Data"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="using:Mail.Models"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
@@ -121,7 +120,7 @@
                                             </Style>
                                         </ListView.ItemContainerStyle>
                                         <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="data:MailMessageRecipientData">
+                                            <DataTemplate x:DataType="models:MailMessageRecipient">
                                                 <StackPanel>
                                                     <TextBlock FontWeight="SemiBold"
                                                                Text="{x:Bind Name}"
@@ -257,7 +256,7 @@
                                             </Style>
                                         </ListView.ItemContainerStyle>
                                         <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="data:MailMessageFileAttachmentData">
+                                            <DataTemplate x:DataType="models:MailMessageFileAttachment">
                                                 <Button Click="MailFileAttachmentDownload">
                                                     <StackPanel Width="180">
                                                         <TextBlock FontWeight="SemiBold"

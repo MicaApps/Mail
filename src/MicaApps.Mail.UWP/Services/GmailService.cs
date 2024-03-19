@@ -3,8 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
 using Mail.Models;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
+using Mail.Models.Enums;
 
 namespace Mail.Services
 {
@@ -18,19 +17,19 @@ namespace Mail.Services
 
         public override MailType MailType => MailType.Gmail;
 
-        public override IAsyncEnumerable<MailFolderData> GetMailSuperFoldersAsync(
+        public override IAsyncEnumerable<MailFolder> GetMailSuperFoldersAsync(
             CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public override Task<MailFolderData> GetMailFolderDetailAsync(string RootFolderId,
+        public override Task<MailFolder> GetMailFolderDetailAsync(string RootFolderId,
             CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public override IAsyncEnumerable<MailMessageData> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
+        public override IAsyncEnumerable<MailMessage> GetMailMessageAsync(LoadMailMessageOption RootFolderId,
             CancellationToken CancelToken = default)
         {
             throw new System.NotImplementedException();
@@ -41,7 +40,7 @@ namespace Mail.Services
             throw new System.NotImplementedException();
         }
 
-        public override IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
+        public override IAsyncEnumerable<MailMessageFileAttachment> GetMailAttachmentFileAsync(
             MailMessageListDetailViewModel model, CancellationToken cancelToken)
         {
             throw new System.NotImplementedException();

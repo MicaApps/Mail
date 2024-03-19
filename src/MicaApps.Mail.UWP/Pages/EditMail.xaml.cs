@@ -14,12 +14,11 @@ using Windows.UI.Xaml.Navigation;
 using Mail.Extensions;
 using Mail.Models;
 using Mail.Services;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Nito.AsyncEx;
 using Windows.UI.Xaml.Media.Animation;
+using Mail.Models.Enums;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -36,12 +35,12 @@ namespace Mail.Pages
         /// <summary>
         /// TODO edit address UI not changed
         /// </summary>
-        private MailMessageRecipientData MailSender { get; set; }
+        private MailMessageRecipient MailSender { get; set; }
 
         /// <summary>
         /// TODO multiple recipient
         /// </summary>
-        private MailMessageRecipientData To { get; set; } = new(string.Empty, string.Empty);
+        private MailMessageRecipient To { get; set; } = new(string.Empty, string.Empty);
 
         private EditMailOption EditMailOption { get; set; }
         private string ReplyOrForwardContent { get; set; } = string.Empty;
@@ -50,9 +49,9 @@ namespace Mail.Pages
         {
             Service = App.Services.GetService<OutlookService>()!;
 
-            MailSender = new MailMessageRecipientData(string.Empty,
+            MailSender = new MailMessageRecipient(string.Empty,
                 Service?.CurrentAccount?.Address ?? string.Empty);
-            Model = new MailMessageListDetailViewModel(MailMessageData.Empty(MailSender));
+            Model = new MailMessageListDetailViewModel(MailMessage.Empty(MailSender));
 
             Model.ToRecipients.Add(To);
             EditMailOption = new EditMailOption { Model = Model, EditMailType = EditMailType.Send };
@@ -267,7 +266,7 @@ namespace Mail.Pages
             await Service!.UploadAttachmentSessionAsync(Model, BasicProperties, StorageFile, UploadedSliceCallback);
         }
 
-        private async Task<MailMessageFileAttachmentData?> AttachmentUploadAsync(StorageFile StorageFile)
+        private async Task<MailMessageFileAttachment?> AttachmentUploadAsync(StorageFile StorageFile)
         {
             return await Service!.UploadAttachmentAsync(Model, StorageFile);
         }
