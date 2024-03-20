@@ -96,7 +96,7 @@ namespace Mail.Pages
 
                 }, Convert.ToUInt32(MailFolder.TotalItemCount));
 
-                await _previewSource.LoadMoreItemsAsync(30);
+                await _previewSource.LoadMoreItemsAsync(18);
 
                 if (_previewSource.Count == 0)
                 {
@@ -394,7 +394,14 @@ namespace Mail.Pages
                 _previewSource.Insert(0, NewEmptyModel);
                 DetailsView.SelectedItem = NewEmptyModel;
 
-                //EditMail.CreateEditWindow(new EditMailOption {Model = model,EditMailType = EditMailType.Send });
+                // 这段代码是用来创建一个“编辑邮件”的窗口的
+                // 但是编辑邮件的逻辑仍需重写 故在此先注释掉
+                
+                // EditMail.CreateEditWindow(new EditMailOption
+                // {
+                //     Model = NewEmptyModel,
+                //     EditMailType = EditMailType.Send
+                // });
             }
         }
 
