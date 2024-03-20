@@ -223,11 +223,11 @@ namespace Mail.Pages
                     return CidPlaceHolder;
                 }
 
-                Browser.NavigateToString(ConvertContentTheme(new Regex("cid:[^\"]+").Replace(Model.Content, (Match) => ReplaceHtmlInnerImageCidToBase64(Match.Value, AttachmentFileList)), Model.ContentType == MailMessageContentType.Text));
+                Browser.NavigateToString(ConvertContentTheme(new Regex("cid:[^\"]+").Replace(Model.MailMessage.Content.Content, (Match) => ReplaceHtmlInnerImageCidToBase64(Match.Value, AttachmentFileList)), Model.MailMessage.Content.ContentType == MailMessageContentType.Text));
             }
             else
             {
-                Browser.NavigateToString(ConvertContentTheme(Model.Content, Model.ContentType == MailMessageContentType.Text));
+                Browser.NavigateToString(ConvertContentTheme(Model.MailMessage.Content.Content, Model.MailMessage.Content.ContentType == MailMessageContentType.Text));
             }
         }
 
@@ -258,7 +258,7 @@ namespace Mail.Pages
         {
             if (e.AddedItems.SingleOrDefault() is MailMessageListDetailViewModel Model)
             {
-                if (sender is ListDetailsView view && !Model.IsEmpty)
+                if (sender is ListDetailsView view && !Model.HasEmptyMailMessageId)
                 {
                     _selectionChangeCancellation?.Cancel();
                     _selectionChangeCancellation?.Dispose();
@@ -388,7 +388,7 @@ namespace Mail.Pages
 
         private void CreateMail_Click(object sender, RoutedEventArgs e)
         {
-            if (_previewSource.FirstOrDefault() is not { IsEmpty: true })
+            if (_previewSource.FirstOrDefault() is not { HasEmptyMailMessageId: true })
             {
                 MailMessageListDetailViewModel NewEmptyModel = MailMessageListDetailViewModel.Empty(new MailMessageRecipient(string.Empty, string.Empty));
                 _previewSource.Insert(0, NewEmptyModel);
@@ -414,7 +414,7 @@ namespace Mail.Pages
         {
             if (Sender is Frame frame)
             {
-                if (frame.DataContext is MailMessageListDetailViewModel Model && !Model.IsEmpty)
+                if (frame.DataContext is MailMessageListDetailViewModel Model && !Model.HasEmptyMailMessageId)
                 {
                     frame.Navigate(typeof(EditMail), new EditMailOption
                     {
@@ -442,7 +442,7 @@ namespace Mail.Pages
             if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
                 //TODO 目标文件夹id来源需要前台处理
-                await _currentMailService.MailMoveAsync(Model.Id, "sQACTCKK1QAAAA==");
+                await _currentMailService.MailMoveAsync(Model.MailMessage.Id, "sQACTCKK1QAAAA==");
             }
         }
 
@@ -453,7 +453,7 @@ namespace Mail.Pages
             {
                 if (!await _currentMailService.MailRemoveAsync(Model))
                 {
-                    Trace.WriteLine($"无法删除邮件: {Model.Id}");
+                    Trace.WriteLine($"无法删除邮件: {Model.MailMessage.Id}");
                 }
             }
         }
@@ -469,7 +469,7 @@ namespace Mail.Pages
                     return;
                 }
 
-                await _currentMailService.MailMoveAsync(Model.Id, folder.Id);
+                await _currentMailService.MailMoveAsync(Model.MailMessage.Id, folder.Id);
             }
         }
         private async void AppBarButton_List_Refresh_Click(object sender, RoutedEventArgs e)

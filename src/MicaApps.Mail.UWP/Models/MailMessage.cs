@@ -6,8 +6,12 @@ namespace Mail.Models;
 
 public class MailMessage
 {
+    private MailMessageContent _content = new();
+    private MailMessageRecipient _sender;
+
     public MailMessage()
     {
+        SentTime = DateTime.UtcNow;
     }
 
     public MailMessage(
@@ -41,14 +45,22 @@ public class MailMessage
     public string FolderId { get; set; }
     public string Title { get; set; }
     public DateTime? SentTime { get; set; }
+    public string SentTimeText => SentTime?.ToString("yyyy/MM/dd") ?? string.Empty;
 
-    public MailMessageRecipient Sender { get; set; }
-    public List<MailMessageRecipient> To { get; set; }
-    public List<MailMessageRecipient> CC { get; set; }
-    public List<MailMessageRecipient> Bcc { get; set; }
+    public MailMessageRecipient Sender 
+    { 
+        get => _sender; 
+        set => _sender = value ?? throw new ArgumentNullException();  
+    }
+    public List<MailMessageRecipient> To { get; private set; } = new();
+    public List<MailMessageRecipient> CC { get; private set; } = new();
+    public List<MailMessageRecipient> Bcc { get; private set; } = new();
 
-    public MailMessageContent Content { get; set; }
-
+    public MailMessageContent Content
+    { 
+        get => _content; 
+        set => _content = value ?? throw new ArgumentNullException(); 
+    }
     [LiteDB.BsonIgnore]
     public List<IMailMessageAttachment> Attachments { get; set; }
 

@@ -400,7 +400,7 @@ namespace Mail.Services
         )
         {
             IReadOnlyList<Attachment> Attachments =
-                await GetMailMessageAttachmentsAsync(currentMailModel.Id, cancellationToken);
+                await GetMailMessageAttachmentsAsync(currentMailModel.MailMessage.Id, cancellationToken);
 
             foreach (FileAttachment Attachment in Attachments
                          .Where((Attachment) => !Attachment.IsInline.GetValueOrDefault()).OfType<FileAttachment>())
@@ -418,7 +418,7 @@ namespace Mail.Services
 
             if (message is null) return false;
             Message result;
-            if (Model.Id.IsNullOrEmpty())
+            if (Model.MailMessage.Id.IsNullOrEmpty())
             {
                 result = await rb.Messages.PostAsync(message);
                 var response = await rb.Messages.GetAsync(config =>
@@ -427,11 +427,11 @@ namespace Mail.Services
                     config.QueryParameters.Top = 1;
                 });
 
-                Model.Id = response.Value.FirstOrDefault()?.Id ?? "";
+                Model.MailMessage.Id = response.Value.FirstOrDefault()?.Id ?? "";
             }
             else
             {
-                result = await rb.Messages[Model.Id].PatchAsync(message);
+                result = await rb.Messages[Model.MailMessage.Id].PatchAsync(message);
             }
 
             // TODO deserializeObject exception
@@ -477,12 +477,12 @@ namespace Mail.Services
 
             if (IsAll)
             {
-                await me.Messages[Model.Id].ReplyAll.PostAsync(
+                await me.Messages[Model.MailMessage.Id].ReplyAll.PostAsync(
                     new ReplyAllPostRequestBody { Comment = ReplyContent });
             }
             else
             {
-                await me.Messages[Model.Id].Reply.PostAsync(
+                await me.Messages[Model.MailMessage.Id].Reply.PostAsync(
                     new ReplyPostRequestBody { Message = message, Comment = ReplyContent });
             }
 
@@ -496,7 +496,7 @@ namespace Mail.Services
             var message = ToMessage(Model);
             if (message is null) return false;
 
-            await me.Messages[Model.Id].Forward.PostAsync(new ForwardPostRequestBody
+            await me.Messages[Model.MailMessage.Id].Forward.PostAsync(new ForwardPostRequestBody
             {
                 Comment = ForwardContent,
                 ToRecipients = message.ToRecipients
@@ -510,12 +510,12 @@ namespace Mail.Services
             Action<long> UploadedSliceCallback,
             CancellationToken CancelToken = default)
         {
-            if (Model.Id.IsNullOrEmpty())
+            if (Model.MailMessage.Id.IsNullOrEmpty())
             {
                 return;
             }
 
-            var builder = IProviderExtension.GetClient(Provider).Me.Messages[Model.Id].Attachments.CreateUploadSession;
+            var builder = IProviderExtension.GetClient(Provider).Me.Messages[Model.MailMessage.Id].Attachments.CreateUploadSession;
             var uploadSession = await builder.PostAsync(new CreateUploadSessionPostRequestBody
             {
                 AttachmentItem = new AttachmentItem
@@ -563,7 +563,7 @@ namespace Mail.Services
             StorageFile StorageFile,
             CancellationToken CancelToken = default)
         {
-            var arb = IProviderExtension.GetClient(Provider).Me.Messages[Model.Id].Attachments;
+            var arb = IProviderExtension.GetClient(Provider).Me.Messages[Model.MailMessage.Id].Attachments;
 
             var readBytesAsync = await StorageFile.ReadBytesAsync();
             var result = await arb.PostAsync(new FileAttachment
@@ -578,9 +578,9 @@ namespace Mail.Services
 
         public override async Task<bool> MailRemoveAsync(MailMessageListDetailViewModel Model)
         {
-            if (Model.Id.IsNullOrEmpty()) return false;
+            if (Model.MailMessage.Id.IsNullOrEmpty()) return false;
 
-            await IProviderExtension.GetClient(Provider).Me.Messages[Model.Id].DeleteAsync();
+            await IProviderExtension.GetClient(Provider).Me.Messages[Model.MailMessage.Id].DeleteAsync();
             return true;
         }
     }

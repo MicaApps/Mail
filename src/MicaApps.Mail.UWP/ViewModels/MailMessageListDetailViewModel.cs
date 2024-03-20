@@ -11,85 +11,19 @@ namespace Mail.ViewModels
 {
     public sealed class MailMessageListDetailViewModel
     {
-        [JsonPropertyName("subject")]
-        public string Title
-        {
-            get => InnerData.Title;
-            set => InnerData.Title = value;
-        }
-
-
-        public string Id
-        {
-            get => InnerData.Id;
-            set => InnerData.Id = value;
-        }
-
-        [JsonPropertyName("bodyPreview")] // Outlook: first 255 char
-        public string PreviewText
-        {
-            get => InnerData.Content.ContentPreview;
-            set => InnerData.Content.ContentType = Enum.TryParse(value, out MailMessageContentType result)
-                ? result
-                : MailMessageContentType.Text;
-        }
-
-        public string SenderName
-        {
-            get
-            {
-                return InnerData.Sender?.Name ?? string.Empty;
-            }
-            set => InnerData.Sender.Name = value;
-        }
-
-        public MailMessageRecipient Sender
-        {
-            get => InnerData.Sender;
-            set => InnerData.Sender = value;
-        }
-
-        public IList<MailMessageRecipient> ToRecipients => InnerData.To;
-
-        public IList<MailMessageRecipient> BccRecipients => InnerData.Bcc;
-
-        public IList<MailMessageRecipient> CcRecipients => InnerData.CC;
-
-        public string BodyPreview
-        {
-            get => InnerData.Content.ContentPreview;
-            set => InnerData.Content.ContentPreview = value;
-        }
+        public MailMessage MailMessage { get; }
 
         public bool IsDraft { get; set; }
         public bool IsDeliveryReceiptRequested { get; set; }
 
-        public MailMessageContent Body => InnerData.Content;
+        public EditInfoViewModel EditInfo { get; private set; }
 
-        public string Content
+        public bool HasEmptyMailMessageId => string.IsNullOrEmpty(MailMessage.Id);
+
+        public MailMessageListDetailViewModel(MailMessage mailMessage)
         {
-            get => InnerData.Content.Content;
-            set => InnerData.Content.Content = value;
+            MailMessage = mailMessage;
         }
-
-        public MailMessageContentType ContentType
-        {
-            get => InnerData.Content.ContentType;
-            set => InnerData.Content.ContentType = value;
-        }
-
-        public string SentTime => InnerData.SentTime.HasValue
-            ? InnerData.SentTime.Value.ToString("yyyy/M/dd")
-            : string.Empty;
-
-        private readonly MailMessage InnerData;
-
-        public MailMessageListDetailViewModel(MailMessage Data)
-        {
-            InnerData = Data;
-        }
-
-        public bool IsEmpty => string.IsNullOrEmpty(Id);
 
         public static MailMessageListDetailViewModel Empty(MailMessageRecipient Sender)
         {
@@ -98,8 +32,6 @@ namespace Mail.ViewModels
                 EditInfo = new EditInfoViewModel()
             };
         }
-
-        public EditInfoViewModel EditInfo { get; private set; }
     }
 
     public class EditInfoViewModel : INotifyPropertyChanged
