@@ -8,6 +8,7 @@ using Windows.Storage.FileProperties;
 using Mail.Models;
 using Mail.Models.Enums;
 using Microsoft.Extensions.Caching.Memory;
+using Mail.ViewModels;
 
 namespace Mail.Services
 {

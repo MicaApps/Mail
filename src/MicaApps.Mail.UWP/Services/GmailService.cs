@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Authentication;
 using Mail.Models;
 using Mail.Models.Enums;
+using Mail.ViewModels;
 
 namespace Mail.Services
 {

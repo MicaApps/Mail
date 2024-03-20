@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MicaApps.Mail.ViewModels
+namespace Mail.ViewModels
 {
     internal class LoginPageModel : ObservableObject
     {
@@ -19,9 +19,9 @@ namespace MicaApps.Mail.ViewModels
 
         public ICommand OutlookLoginCommand { get; set; }
         public string ErrorMessage { get => errorMessage; set => SetProperty(ref errorMessage, value); }
-        public bool ErrorMessageIsOpen { get => errorMessageIsOpen; set => SetProperty(ref errorMessageIsOpen,value); }
+        public bool ErrorMessageIsOpen { get => errorMessageIsOpen; set => SetProperty(ref errorMessageIsOpen, value); }
 
-        public LoginPageModel() 
+        public LoginPageModel()
         {
             OutlookLoginCommand = new AsyncRelayCommand(OutlookLogin);
         }

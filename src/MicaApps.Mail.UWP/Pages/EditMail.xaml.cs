@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using Nito.AsyncEx;
 using Windows.UI.Xaml.Media.Animation;
 using Mail.Models.Enums;
+using Mail.ViewModels;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 

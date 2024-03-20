@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml.Data;
-using Mail.Models;
 using Nito.AsyncEx;
+using Mail.ViewModels;
 
 namespace Mail.Models.Collections
 {

@@ -1,4 +1,5 @@
 ﻿using Mail.Models.Enums;
+using Mail.ViewModels;
 
 namespace Mail.Models;
 

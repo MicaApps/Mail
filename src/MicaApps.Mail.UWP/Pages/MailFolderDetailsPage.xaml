@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="using:Mail.Models"
+      xmlns:viewmodels="using:Mail.ViewModels"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
       xmlns:ui="using:Microsoft.Toolkit.Uwp.UI"
@@ -17,7 +18,7 @@
 
     <Page.Resources>
         <DataTemplate x:Key="DefaultTemplate"
-                      x:DataType="models:MailMessageListDetailViewModel">
+                      x:DataType="viewmodels:MailMessageListDetailViewModel">
             <UserControl>
                 <Grid>
                     <VisualStateManager.VisualStateGroups>
@@ -87,9 +88,9 @@
                                                    Text="{x:Bind Sender.Address}" />
                                     </StackPanel>
                                 </Grid>
-                                <Grid Grid.Column="2"
-                                      HorizontalAlignment="Left"
-                                      x:Name="ToRecipientsGrid">
+                                <Grid x:Name="ToRecipientsGrid"
+                                      Grid.Column="2"
+                                      HorizontalAlignment="Left">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="10" />
@@ -295,7 +296,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="EditTemplate"
-                      x:DataType="models:MailMessageListDetailViewModel">
+                      x:DataType="viewmodels:MailMessageListDetailViewModel">
             <Frame Loading="FrameworkElement_OnLoading" />
         </DataTemplate>
 
@@ -374,7 +375,7 @@
 
             <!--Current Folder All Mail PreView-->
             <controls:ListDetailsView.ItemTemplate>
-                <DataTemplate x:DataType="models:MailMessageListDetailViewModel">
+                <DataTemplate x:DataType="viewmodels:MailMessageListDetailViewModel">
                     <Grid Padding="2.5,10,12.5,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />

@@ -168,7 +168,7 @@
     <Compile Include="Models\AccountModel.cs" />
     <Compile Include="Models\ContactModel.cs" />
     <Compile Include="Extensions\DependencyObjectExtension.cs" />
-    <Compile Include="Models\MailMessageListDetailViewModel.cs" />
+    <Compile Include="ViewModels\MailMessageListDetailViewModel.cs" />
     <Compile Include="Models\Enums\MailFolderType.cs" />
     <Compile Include="Models\Enums\MailMessageContentType.cs" />
     <Compile Include="Extensions\ICollectionExtension.cs" />

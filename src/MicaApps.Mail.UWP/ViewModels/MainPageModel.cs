@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace MicaApps.Mail.PageModel
+namespace Mail.ViewModels
 {
     internal class MainPageModel : ObservableObject
     {
-        public MainPageModel() 
+        public MainPageModel()
         {
-            
+
         }
     }
 }

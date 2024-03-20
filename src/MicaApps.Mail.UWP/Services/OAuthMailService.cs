@@ -12,6 +12,7 @@ using Mail.Models.Enums;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
+using Mail.ViewModels;
 
 namespace Mail.Services
 {

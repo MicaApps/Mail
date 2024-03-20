@@ -5,8 +5,9 @@ using System.Runtime.CompilerServices;
 using Mail.Models.Enums;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Mail.Models;
 
-namespace Mail.Models
+namespace Mail.ViewModels
 {
     public sealed class MailMessageListDetailViewModel
     {
@@ -98,35 +99,35 @@ namespace Mail.Models
             };
         }
 
-        public EditInfoViewModel? EditInfo { get; private set; }
+        public EditInfoViewModel EditInfo { get; private set; }
     }
 
     public class EditInfoViewModel : INotifyPropertyChanged
     {
-        private string? title;
-        private string? sender;
-        private string? receiver;
-        private string? content;
+        private string title;
+        private string sender;
+        private string receiver;
+        private string content;
 
-        public string? Title
+        public string Title
         {
             get => title;
             set => SetValue(ref title, value);
         }
 
-        public string? Sender
+        public string Sender
         {
             get => sender;
             set => SetValue(ref sender, value);
         }
 
-        public string? Receiver
+        public string Receiver
         {
             get => receiver;
             set => SetValue(ref receiver, value);
         }
 
-        public string? Content
+        public string Content
         {
             get => content;
             set => SetValue(ref content, value);
@@ -134,14 +135,15 @@ namespace Mail.Models
 
         protected bool SetValue<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
         {
-            if (EqualityComparer<T>.Default.Equals(field, newValue)) return false;
+            if (EqualityComparer<T>.Default.Equals(field, newValue))
+                return false;
 
             field = newValue;
             OnPropertyChanged(propertyName);
             return true;
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

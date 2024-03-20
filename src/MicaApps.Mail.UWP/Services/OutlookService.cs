@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using Mail.ViewModels;
 
 namespace Mail.Services
 {
