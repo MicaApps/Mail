@@ -13,7 +13,7 @@ namespace Mail.Pages
 {
     public sealed partial class SplashPage : Page
     {
-        private readonly SplashScreen Splash; // Variable to hold the splash screen object.
+        private readonly SplashScreen _splash; // Variable to hold the splash screen object.
 
         public SplashPage(SplashScreen Splash, bool loadState) : this(Splash)
         {
@@ -23,15 +23,15 @@ namespace Mail.Pages
             }
         }
 
-        private SplashPage(SplashScreen Splash)
+        private SplashPage(SplashScreen splash)
         {
             InitializeComponent();
-            ApplicationViewTitleBar TitleBar = ApplicationView.GetForCurrentView().TitleBar;
-            TitleBar.ButtonBackgroundColor = Colors.Transparent;
-            TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            ApplicationViewTitleBar titleBar = ApplicationView.GetForCurrentView().TitleBar;
+            titleBar.ButtonBackgroundColor = Colors.Transparent;
+            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
             Window.Current.SetTitleBar(AppTitleBar);
 
-            this.Splash = Splash ?? throw new ArgumentNullException(nameof(Splash), "Parameter could not be null");
+            this._splash = splash ?? throw new ArgumentNullException(nameof(splash), "Parameter could not be null");
             //this.Splash.Dismissed += Splash_Dismissed;
 
             Loaded += SplashPage_Loaded;
@@ -45,15 +45,15 @@ namespace Mail.Pages
 
         private void SplashPage_Loaded(object sender, RoutedEventArgs e)
         {
-            SetUIPosition(Splash.ImageLocation);
+            SetUIPosition(_splash.ImageLocation);
             Window.Current.SizeChanged += Current_SizeChanged;
         }
 
         private void Current_SizeChanged(object sender, WindowSizeChangedEventArgs e)
         {
-            if (Splash != null)
+            if (_splash != null)
             {
-                SetUIPosition(Splash.ImageLocation);
+                SetUIPosition(_splash.ImageLocation);
             }
         }
 

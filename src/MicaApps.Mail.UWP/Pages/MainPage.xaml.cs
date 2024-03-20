@@ -15,7 +15,7 @@ namespace Mail
 {
     public sealed partial class MainPage : Page
     {
-        public MainPage(bool isLogin)
+        public MainPage(bool isSignedIn)
         {
             InitializeComponent();
             ApplicationViewTitleBar TitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -23,34 +23,10 @@ namespace Mail
             TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
             App.Services.GetService<OutlookService>().Provider.StateChanged += Provider_StateChanged;
 
-            if (isLogin)
-            {
-                HandleLogin();
-            }
+            if (isSignedIn)
+                MainNavigation.Navigate(typeof(HomePage));
             else
-            {
                 MainNavigation.Navigate(typeof(LoginPage));
-            }
-        }
-
-        private void HandleLogin()
-        {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    // Load Contacts to Cache
-                    var contacts = await App.Services.GetService<OutlookService>().GetContactsAsync();
-                    App.Services
-                        .GetRequiredService<ICacheService>()
-                        .Set<IReadOnlyList<ContactModel>>(contacts);
-                }
-                catch (Exception e)
-                {
-                    // ignore
-                }
-            });
-            MainNavigation.Navigate(typeof(HomePage));
         }
 
         private void Provider_StateChanged(object sender, ProviderStateChangedEventArgs e)
@@ -58,15 +34,15 @@ namespace Mail
             switch (e.NewState)
             {
                 case ProviderState.SignedIn:
-                    {
-                        HandleLogin();
-                        break;
-                    }
+                {
+                    MainNavigation.Navigate(typeof(HomePage));
+                    break;
+                }
                 case ProviderState.SignedOut when MainNavigation.CurrentSourcePageType != typeof(LoginPage):
-                    {
-                        MainNavigation.Navigate(typeof(LoginPage));
-                        break;
-                    }
+                {
+                    MainNavigation.Navigate(typeof(LoginPage));
+                    break;
+                }
             }
         }
     }

@@ -14,7 +14,7 @@ namespace Mail.Services
     internal interface IMailService
     {
         public bool IsSupported { get; }
-        public bool IsSignIn { get; }
+        public bool IsSignedIn { get; }
 
         AccountModel? CurrentAccount { get; }
         MailType MailType { get; }

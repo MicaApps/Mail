@@ -43,7 +43,6 @@ namespace Mail
                 .AddSingleton<OutlookService, OutlookService>()
                 .AddSingleton<LocalCacheService>()
                 .AddSingleton<LiteDatabaseService>(_ => new LiteDatabaseService(liteDatabase))
-                .AddSingleton<ICacheService, CacheService>()
                 .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))
                 .BuildServiceProvider();
         }

@@ -1,10 +1,12 @@
 ﻿#nullable enable
-namespace Mail.Converters;
+using Mail;
+
+namespace Mail.Models.Enums;
 
 /// <summary>
 /// Email avatar fallback kind, used for <see cref="EmailToAvatarConverter"/>
 /// </summary>
-public enum EmailAvatarFallback
+public enum GravatarFallback
 {
     /// <summary>
     /// do not load any image

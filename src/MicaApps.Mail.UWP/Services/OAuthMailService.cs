@@ -31,7 +31,7 @@ namespace Mail.Services
 
         public virtual bool IsSupported => true;
 
-        public virtual bool IsSignIn => Provider.State == ProviderState.SignedIn;
+        public virtual bool IsSignedIn => Provider.State == ProviderState.SignedIn;
 
         protected OAuthMailService(WebAccountProviderType Type)
         {

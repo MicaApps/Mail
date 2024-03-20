@@ -131,8 +131,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\EmailAvatarFallback.cs" />
-    <Compile Include="Converters\EmailToAvatarConverter.cs" />
+    <Compile Include="Behaviors\EmailAvatarBehavior.cs" />
+    <Compile Include="Models\Enums\GravatarFallback.cs" />
     <Compile Include="Converters\FileSizeToDescriptionConverter.cs" />
     <Compile Include="Converters\FolderIconConverter.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
@@ -156,7 +156,6 @@
     <Compile Include="Secret.cs" />
     <Compile Include="Selectors\MailFolderDetailsContentDataTemplateSelector.cs" />
     <Compile Include="Selectors\MailFolderNavigationDataTemplateSelector.cs" />
-    <Compile Include="Services\CacheService.cs" />
     <Compile Include="Models\Enums\EditMailType.cs" />
     <Compile Include="Models\Enums\OperationType.cs" />
     <Compile Include="Models\Enums\MailType.cs" />
@@ -194,7 +193,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\GmailService.cs" />
-    <Compile Include="Services\ICacheService.cs" />
     <Compile Include="Services\IMailService.cs" />
     <Compile Include="Services\LocalCacheService.cs" />
     <Compile Include="Services\OAuthMailService.cs" />

@@ -9,6 +9,8 @@
       xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
       xmlns:ui="using:Microsoft.Toolkit.Uwp.UI"
       xmlns:selectors="using:Mail.Selectors"
+      xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+      xmlns:myBehaviors="using:MicaApps.Mail.Behaviors"
       Background="Transparent"
       NavigationCacheMode="Required"
       mc:Ignorable="d">
@@ -162,7 +164,11 @@
                                                            Margin="5,5,15,5"
                                                            VerticalAlignment="Center"
                                                            DisplayName="{x:Bind SenderName}"
-                                                           ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource EmailToAvatarConverter}}" />
+                                                           ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource EmailToAvatarConverter}}">
+                                                <interactivity:Interaction.Behaviors>
+                                                    <myBehaviors:EmailAvatarBehavior EmailAddress="{x:Bind Sender.Address}"/>
+                                                </interactivity:Interaction.Behaviors>
+                                            </PersonPicture>
                                             <StackPanel Grid.Column="1"
                                                         VerticalAlignment="Center">
                                                 <TextBlock FontWeight="SemiBold"
@@ -376,12 +382,15 @@
                             <ColumnDefinition Width="10" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <PersonPicture ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource EmailToAvatarConverter}}"
-                                       Width="32"
+                        <PersonPicture Width="32"
                                        Height="32"
                                        Margin="10,5"
                                        VerticalAlignment="Top"
-                                       DisplayName="{x:Bind SenderName}" />
+                                       DisplayName="{x:Bind SenderName}" >
+                            <interactivity:Interaction.Behaviors>
+                                <myBehaviors:EmailAvatarBehavior EmailAddress="{x:Bind Sender.Address}"/>
+                            </interactivity:Interaction.Behaviors>
+                        </PersonPicture>
                         <StackPanel Grid.Column="1"
                                     DataContext="{Binding}">
                             <TextBlock FontWeight="Bold"
