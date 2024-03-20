@@ -82,7 +82,7 @@ namespace Mail.Pages
                         StartIndex = Instance.Count,
                         LoadCount = (int)Math.Max(Instance.MinIncrementalLoadingStep, RequestCount),
                         IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem) && MailFolder.Type == MailFolderType.Inbox,
-                        ForceReload = forceReload
+                        ForceReload = forceReload,
                     };
 
                     if (Options.IsFocusedTab && _currentMailService is IMailService.IFocusFilterSupport filterSupport)
