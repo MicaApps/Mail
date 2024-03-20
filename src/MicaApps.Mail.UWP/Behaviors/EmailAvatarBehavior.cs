@@ -119,6 +119,10 @@ namespace MicaApps.Mail.Behaviors
                 if (cancellationToken.IsCancellationRequested)
                     return;
 
+                // it might be null here,,,
+                if (AssociatedObject == null)
+                    return;
+
                 _originImage = AssociatedObject.ProfilePicture;
                 _changedImage = true;
 

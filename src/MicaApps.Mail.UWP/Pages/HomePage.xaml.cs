@@ -80,9 +80,11 @@ namespace Mail.Pages
             {
                 _mailFolderSource.Add(new NavigationViewItemSeparator());
 
-            try
-            {
-                IReadOnlyList<Models.MailFolder> MailFolders = await _mailService.GetMailSuperFoldersAsync().OrderBy((Data) => Data.Type).ToArrayAsync();
+                try
+                {
+                    IReadOnlyList<Models.MailFolder> MailFolders = await _mailService.GetMailSuperFoldersAsync()
+                        .OrderBy(folder => folder.Type)
+                        .ToArrayAsync();
 
                     if (MailFolders.Count > 0)
                     {
@@ -137,17 +139,18 @@ namespace Mail.Pages
         private void NavView_SelectionChanged(NavigationView sender,
             Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
-            try { 
-            if (args.IsSettingsSelected)
+            try
             {
-                NavigationContent.Navigate(typeof(SettingsPage), null, new DrillInNavigationTransitionInfo());
+                if (args.IsSettingsSelected)
+                {
+                    NavigationContent.Navigate(typeof(SettingsPage), null, new DrillInNavigationTransitionInfo());
+                }
+                else if (args.SelectedItem is Models.MailFolder data)
+                {
+                    NavigationContent.Navigate(typeof(MailFolderDetailsPage), data, new DrillInNavigationTransitionInfo());
+                }
             }
-            else if (args.SelectedItem is Models.MailFolder data)
-            {
-                NavigationContent.Navigate(typeof(MailFolderDetailsPage), data, new DrillInNavigationTransitionInfo());
-            }
-            }
-            catch(Exception ex) { string a = ex.Message; }
+            catch (Exception ex) { string a = ex.Message; }
         }
 
         private void PaneToggleButton_Click(object sender, RoutedEventArgs e)
