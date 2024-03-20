@@ -67,8 +67,14 @@ public class LocalCacheService
         return folders;
     }
 
-    //public DbOperationEvent OperationEvent()
-    //{
-    //    return GetContext().GetDbOperationEvent();
-    //}
+
+    /// <summary>
+    /// 清空本地数据库保证切换用户不会存在脏数据
+    /// </summary>
+    /// <returns></returns>
+    public void ClearData()
+    {
+        DatabaseService.MailMessages.DeleteAll();
+        DatabaseService.MailFolders.DeleteAll();
+    }
 }

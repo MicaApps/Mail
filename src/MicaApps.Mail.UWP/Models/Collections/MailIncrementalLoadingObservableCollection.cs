@@ -47,8 +47,9 @@ namespace Mail.Models.Collections
             {
                 //No need to handle this exception
             }
-            catch (Exception)
+            catch (Exception e1)//这里跟断点有报错情况，暂时加了变量遇到容易看到问题
             {
+                Console.WriteLine(e1);
                 //Handle exception here
             }
 
