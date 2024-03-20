@@ -131,11 +131,11 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\ContactToAvatarConverter.cs" />
+    <Compile Include="Converters\EmailAvatarFallback.cs" />
+    <Compile Include="Converters\EmailToAvatarConverter.cs" />
     <Compile Include="Converters\FileSizeToDescriptionConverter.cs" />
     <Compile Include="Converters\FolderIconConverter.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
-    <Compile Include="Interfaces\DbEntity.cs" />
     <Compile Include="Extensions\Graph\MsalProvider.cs" />
     <Compile Include="Extensions\RunCatch.cs" />
     <Compile Include="Models\EditMailOption.cs" />

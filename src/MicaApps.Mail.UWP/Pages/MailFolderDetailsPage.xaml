@@ -162,7 +162,7 @@
                                                            Margin="5,5,15,5"
                                                            VerticalAlignment="Center"
                                                            DisplayName="{x:Bind SenderName}"
-                                                           ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}" />
+                                                           ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource EmailToAvatarConverter}}" />
                                             <StackPanel Grid.Column="1"
                                                         VerticalAlignment="Center">
                                                 <TextBlock FontWeight="SemiBold"
@@ -376,7 +376,7 @@
                             <ColumnDefinition Width="10" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <PersonPicture ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}"
+                        <PersonPicture ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource EmailToAvatarConverter}}"
                                        Width="32"
                                        Height="32"
                                        Margin="10,5"

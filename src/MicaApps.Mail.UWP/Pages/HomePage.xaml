@@ -52,7 +52,7 @@
                                 <DataTemplate x:DataType="models:AccountModel">
                                     <Grid Width="28"
                                           HorizontalAlignment="Left">
-                                        <PersonPicture ProfilePicture="{x:Bind Address,Converter={StaticResource ContactToAvatarConverter}}"
+                                        <PersonPicture ProfilePicture="{x:Bind Address,Converter={StaticResource EmailToAvatarConverter}}"
                                                        HorizontalAlignment="Center"
                                                        Width="24"
                                                        Height="24"
@@ -197,7 +197,7 @@
                                 <PersonPicture Width="32"
                                                Height="32"
                                                DisplayName="{x:Bind Name}"
-                                               ProfilePicture="{x:Bind Address,Converter={StaticResource ContactToAvatarConverter}}" />
+                                               ProfilePicture="{x:Bind Address,Converter={StaticResource EmailToAvatarConverter}}" />
                                 <StackPanel Grid.Column="2">
                                     <TextBlock FontWeight="SemiBold"
                                                Text="{x:Bind Name}" />
