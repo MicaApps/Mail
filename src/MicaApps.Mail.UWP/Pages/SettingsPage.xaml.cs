@@ -1,5 +1,4 @@
-﻿using Chloe;
-using Mail.Extensions;
+﻿using Mail.Extensions;
 using Mail.Models;
 using Mail.Services;
 using Microsoft.Extensions.DependencyInjection;
