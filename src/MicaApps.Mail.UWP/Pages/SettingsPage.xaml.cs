@@ -1,8 +1,9 @@
 ﻿using Mail.Extensions;
+using Mail.Models;
 using Mail.Services;
-using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -20,6 +21,7 @@ namespace Mail.Pages
         public async void SignOut(object sender, RoutedEventArgs e)
         {
             await App.Services.GetService<OutlookService>().SignOutAsync(null);
+            App.Services.GetService<LocalCacheService>().ClearData();
         }
 
         public async void GetEmail(object sender, RoutedEventArgs e)

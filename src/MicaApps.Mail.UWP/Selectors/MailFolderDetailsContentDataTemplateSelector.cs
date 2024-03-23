@@ -1,4 +1,4 @@
-﻿using Mail.Models;
+﻿using Mail.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -12,7 +12,7 @@ namespace Mail.Selectors
 
         protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
         {
-            return item is MailMessageListDetailViewModel { IsEmpty: true } ? EditTemplate : DefaultTemplate;
+            return item is MailMessageListDetailViewModel { HasEmptyMailMessageId: true } ? EditTemplate : DefaultTemplate;
         }
     }
 }

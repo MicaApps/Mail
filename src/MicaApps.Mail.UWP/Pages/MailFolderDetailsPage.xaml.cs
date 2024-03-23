@@ -1,9 +1,9 @@
 using Mail.Extensions;
 using Mail.Models;
+using Mail.Models.Collections;
+using Mail.Models.Enums;
 using Mail.Services;
-using Mail.Services.Collection;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
+using Mail.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;
@@ -31,27 +31,32 @@ namespace Mail.Pages
 {
     public sealed partial class MailFolderDetailsPage : Page
     {
-        private IMailService CurrentService;
-        private MailFolderData? NavigationData;
-        private MailIncrementalLoadingObservableCollection? PreviewSource;
-        private CancellationTokenSource SelectionChangeCancellation;
-        private readonly AsyncLock SelectionChangeLocker = new AsyncLock();
+        private IMailService _currentMailService;
+        private MailFolder? _navigationData;
+        private MailIncrementalLoadingObservableCollection? _previewSource;
+        private CancellationTokenSource _selectionChangeCancellation;
+        private readonly AsyncLock _selectionChangeLocker = new AsyncLock();
+
+        // dependent services
+        private IMemoryCache _memoryCache;
 
         public MailFolderDetailsPage()
         {
             InitializeComponent();
+
+            _memoryCache = App.Services.GetRequiredService<IMemoryCache>();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            CurrentService = App.Services.GetService<OutlookService>()!;
+            _currentMailService = App.Services.GetService<OutlookService>()!;
 
-            if (e.Parameter is MailFolderData Data)
+            if (e.Parameter is MailFolder Data)
             {
-                NavigationData = Data;
+                _navigationData = Data;
                 FolderName.Text = Data.Name;
                 NavigationTab.SelectedItem = FocusedTab;
-                if(Data.Type == MailFolderType.Inbox && Data.MailType == MailType.Outlook)
+                if (Data.Type == MailFolderType.Inbox && Data.MailType == MailType.Outlook)
                 {
                     NavigationTab.Visibility = Visibility.Visible;
                 }
@@ -63,13 +68,13 @@ namespace Mail.Pages
             }
         }
 
-        private async Task InitializeDataFromMailFolderAsync(MailFolderData MailFolder, bool forceReload = false)
+        private async Task InitializeDataFromMailFolderAsync(MailFolder MailFolder, bool forceReload = false)
         {
             EmptyContentText.Text = "Syncing you email";
 
             try
             {
-                DetailsView.ItemsSource = PreviewSource = new MailIncrementalLoadingObservableCollection((Instance, RequestCount, Token) =>
+                DetailsView.ItemsSource = _previewSource = new MailIncrementalLoadingObservableCollection((Instance, RequestCount, Token) =>
                 {
                     LoadMailMessageOption Options = new LoadMailMessageOption
                     {
@@ -77,23 +82,23 @@ namespace Mail.Pages
                         StartIndex = Instance.Count,
                         LoadCount = (int)Math.Max(Instance.MinIncrementalLoadingStep, RequestCount),
                         IsFocusedTab = FocusedTab.Equals(NavigationTab.SelectedItem) && MailFolder.Type == MailFolderType.Inbox,
-                        ForceReload = forceReload
+                        ForceReload = forceReload,
                     };
 
-                    if (Options.IsFocusedTab && CurrentService is IMailService.IFocusFilterSupport filterSupport)
+                    if (Options.IsFocusedTab && _currentMailService is IMailService.IFocusFilterSupport filterSupport)
                     {
                         return filterSupport.GetMailMessageAsync(Options, CancelToken: Token);
                     }
                     else
                     {
-                        return CurrentService.GetMailMessageAsync(Options, CancelToken: Token);
+                        return _currentMailService.GetMailMessageAsync(Options, CancelToken: Token);
                     }
 
                 }, Convert.ToUInt32(MailFolder.TotalItemCount));
 
-                await PreviewSource.LoadMoreItemsAsync(30);
+                await _previewSource.LoadMoreItemsAsync(18);
 
-                if (PreviewSource.Count == 0)
+                if (_previewSource.Count == 0)
                 {
                     EmptyContentText.Text = "No available email";
                 }
@@ -204,13 +209,13 @@ namespace Mail.Pages
 
         private async Task LoadImageAndCacheAsync(MailMessageListDetailViewModel Model, WebView Browser, CancellationToken CancelToken = default)
         {
-            IReadOnlyList<MailMessageFileAttachmentData> AttachmentFileList = await CurrentService.GetMailAttachmentFileAsync(Model, CancelToken).ToArrayAsync(CancelToken);
+            IReadOnlyList<MailMessageFileAttachment> AttachmentFileList = await _currentMailService.GetMailAttachmentFileAsync(Model, CancelToken).ToArrayAsync(CancelToken);
 
             if (AttachmentFileList.Count > 0)
             {
-                string ReplaceHtmlInnerImageCidToBase64(string CidPlaceHolder, IEnumerable<MailMessageFileAttachmentData> MessageAttachmentFileList)
+                string ReplaceHtmlInnerImageCidToBase64(string CidPlaceHolder, IEnumerable<MailMessageFileAttachment> MessageAttachmentFileList)
                 {
-                    if (MessageAttachmentFileList.FirstOrDefault((Attachment) => Attachment.Id.Equals(CidPlaceHolder.Replace("cid:", ""))) is MailMessageFileAttachmentData TargetAttachment)
+                    if (MessageAttachmentFileList.FirstOrDefault((Attachment) => Attachment.Id.Equals(CidPlaceHolder.Replace("cid:", ""))) is MailMessageFileAttachment TargetAttachment)
                     {
                         return $"data:{TargetAttachment.ContentType};base64,{Convert.ToBase64String(TargetAttachment.ContentBytes)}";
                     }
@@ -218,11 +223,11 @@ namespace Mail.Pages
                     return CidPlaceHolder;
                 }
 
-                Browser.NavigateToString(ConvertContentTheme(new Regex("cid:[^\"]+").Replace(Model.Content, (Match) => ReplaceHtmlInnerImageCidToBase64(Match.Value, AttachmentFileList)), Model.ContentType == MailMessageContentType.Text));
+                Browser.NavigateToString(ConvertContentTheme(new Regex("cid:[^\"]+").Replace(Model.MailMessage.Content.Content, (Match) => ReplaceHtmlInnerImageCidToBase64(Match.Value, AttachmentFileList)), Model.MailMessage.Content.ContentType == MailMessageContentType.Text));
             }
             else
             {
-                Browser.NavigateToString(ConvertContentTheme(Model.Content, Model.ContentType == MailMessageContentType.Text));
+                Browser.NavigateToString(ConvertContentTheme(Model.MailMessage.Content.Content, Model.MailMessage.Content.ContentType == MailMessageContentType.Text));
             }
         }
 
@@ -253,15 +258,15 @@ namespace Mail.Pages
         {
             if (e.AddedItems.SingleOrDefault() is MailMessageListDetailViewModel Model)
             {
-                if (sender is ListDetailsView view && !Model.IsEmpty)
+                if (sender is ListDetailsView view && !Model.HasEmptyMailMessageId)
                 {
-                    SelectionChangeCancellation?.Cancel();
-                    SelectionChangeCancellation?.Dispose();
-                    SelectionChangeCancellation = new CancellationTokenSource();
+                    _selectionChangeCancellation?.Cancel();
+                    _selectionChangeCancellation?.Dispose();
+                    _selectionChangeCancellation = new CancellationTokenSource();
 
                     try
                     {
-                        using (await SelectionChangeLocker.LockAsync(SelectionChangeCancellation.Token))
+                        using (await _selectionChangeLocker.LockAsync(_selectionChangeCancellation.Token))
                         {
                             for (int Retry = 0; Retry < 10; Retry++)
                             {
@@ -274,8 +279,8 @@ namespace Mail.Pages
                                     try
                                     {
                                         Browser.NavigateToString(string.Empty);
-                                        await LoadImageAndCacheAsync(Model, Browser, SelectionChangeCancellation.Token);
-                                        await LoadAttachmentsList(AttachmentView, Model, SelectionChangeCancellation.Token);
+                                        await LoadImageAndCacheAsync(Model, Browser, _selectionChangeCancellation.Token);
+                                        await LoadAttachmentsList(AttachmentView, Model, _selectionChangeCancellation.Token);
                                     }
                                     finally
                                     {
@@ -325,7 +330,7 @@ namespace Mail.Pages
 
         private async void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            await InitializeDataFromMailFolderAsync(NavigationData);
+            await InitializeDataFromMailFolderAsync(_navigationData);
         }
 
         private async void Browser_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
@@ -352,7 +357,7 @@ namespace Mail.Pages
         {
             Sender.Items.Clear();
 
-            await foreach (MailMessageFileAttachmentData attachment in CurrentService.GetMailAttachmentFileAsync(Model, CancelToken))
+            await foreach (MailMessageFileAttachment attachment in _currentMailService.GetMailAttachmentFileAsync(Model, CancelToken))
             {
                 Sender.Items.Add(attachment);
             }
@@ -360,7 +365,7 @@ namespace Mail.Pages
 
         private async void MailFileAttachmentDownload(object sender, RoutedEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is MailMessageFileAttachmentData Attachment)
+            if ((sender as FrameworkElement)?.DataContext is MailMessageFileAttachment Attachment)
             {
                 FolderPicker Picker = new FolderPicker
                 {
@@ -383,13 +388,20 @@ namespace Mail.Pages
 
         private void CreateMail_Click(object sender, RoutedEventArgs e)
         {
-            if (PreviewSource.FirstOrDefault() is not { IsEmpty: true })
+            if (_previewSource.FirstOrDefault() is not { HasEmptyMailMessageId: true })
             {
-                MailMessageListDetailViewModel NewEmptyModel = MailMessageListDetailViewModel.Empty(new MailMessageRecipientData(string.Empty, string.Empty));
-                PreviewSource.Insert(0, NewEmptyModel);
+                MailMessageListDetailViewModel NewEmptyModel = MailMessageListDetailViewModel.Empty(new MailMessageRecipient(string.Empty, string.Empty));
+                _previewSource.Insert(0, NewEmptyModel);
                 DetailsView.SelectedItem = NewEmptyModel;
 
-                //EditMail.CreateEditWindow(new EditMailOption {Model = model,EditMailType = EditMailType.Send });
+                // 这段代码是用来创建一个“编辑邮件”的窗口的
+                // 但是编辑邮件的逻辑仍需重写 故在此先注释掉
+                
+                // EditMail.CreateEditWindow(new EditMailOption
+                // {
+                //     Model = NewEmptyModel,
+                //     EditMailType = EditMailType.Send
+                // });
             }
         }
 
@@ -409,7 +421,7 @@ namespace Mail.Pages
         {
             if (Sender is Frame frame)
             {
-                if (frame.DataContext is MailMessageListDetailViewModel Model && !Model.IsEmpty)
+                if (frame.DataContext is MailMessageListDetailViewModel Model && !Model.HasEmptyMailMessageId)
                 {
                     frame.Navigate(typeof(EditMail), new EditMailOption
                     {
@@ -437,7 +449,7 @@ namespace Mail.Pages
             if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
                 //TODO 目标文件夹id来源需要前台处理
-                await CurrentService.MailMoveAsync(Model.Id, "sQACTCKK1QAAAA==");
+                await _currentMailService.MailMoveAsync(Model.MailMessage.Id, "sQACTCKK1QAAAA==");
             }
         }
 
@@ -446,9 +458,9 @@ namespace Mail.Pages
             // TODO refresh folder
             if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
-                if (!await CurrentService.MailRemoveAsync(Model))
+                if (!await _currentMailService.MailRemoveAsync(Model))
                 {
-                    Trace.WriteLine($"无法删除邮件: {Model.Id}");
+                    Trace.WriteLine($"无法删除邮件: {Model.MailMessage.Id}");
                 }
             }
         }
@@ -457,20 +469,20 @@ namespace Mail.Pages
         {
             if ((Sender as FrameworkElement)?.DataContext is MailMessageListDetailViewModel Model)
             {
-                var folder = CurrentService.GetCache().Get<MailFolderData>("archive");
+                var folder = _memoryCache.Get<MailFolder>("archive");
                 if (folder == null)
                 {
                     //TODO Outlook是加入了缓存, 其他服务需要处理
                     return;
                 }
 
-                await CurrentService.MailMoveAsync(Model.Id, folder.Id);
+                await _currentMailService.MailMoveAsync(Model.MailMessage.Id, folder.Id);
             }
         }
         private async void AppBarButton_List_Refresh_Click(object sender, RoutedEventArgs e)
         {
             //TODO: Refresh your email list here
-            await InitializeDataFromMailFolderAsync(NavigationData, true);
+            await InitializeDataFromMailFolderAsync(_navigationData, true);
         }
 
     }

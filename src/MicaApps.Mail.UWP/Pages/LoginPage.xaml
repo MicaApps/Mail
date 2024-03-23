@@ -6,10 +6,10 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ctkl="using:CommunityToolkit.Labs.WinUI"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-      xmlns:pm ="using:MicaApps.Mail.PageModels"
+      xmlns:vm ="using:Mail.ViewModels"
       mc:Ignorable="d">
     <Page.DataContext>
-        <pm:LoginPageModel />
+        <vm:LoginPageModel/>
     </Page.DataContext>
     <Page.Resources>
         <ResourceDictionary>

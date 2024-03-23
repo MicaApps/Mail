@@ -223,7 +223,7 @@
                 <TextBlock FontWeight="Bold" Text="主题:" FontSize="24" />
                 <TextBox FontWeight="Bold" FontSize="24" Padding="0 2 0 0" Style="{StaticResource TransTextBoxStyle}"
                          Grid.Column="1" Margin="0 0 24 0"
-                         Text="{x:Bind Model.Title,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                         Text="{x:Bind Model.MailMessage.Title,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                          Background="Transparent" BorderThickness="0" />
             </Grid>
             <Border BorderBrush="#828282" Opacity="0.08" BorderThickness="0.5" />
@@ -289,7 +289,7 @@
         <ListBox Grid.Row="3" x:Name="AttachmentListBox" />
         <TextBox Style="{StaticResource TransTextBoxStyle}" 
                  Grid.Row="4"
-                 Text="{x:Bind Model.Content,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
+                 Text="{x:Bind Model.MailMessage.Content,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
                  TextCompositionEnded="TextBox_OnTextCompositionEnded"
                  TextWrapping="Wrap"
                  Margin="0 0 36 0" 

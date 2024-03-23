@@ -7,11 +7,11 @@
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       xmlns:Core="using:Microsoft.Xaml.Interactions.Core" 
       xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-      xmlns:pm="using:MicaApps.Mail.PageModels"
+      xmlns:vm="using:Mail.ViewModels"
       mc:Ignorable="d"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
     <Page.DataContext>
-        <pm:SplashPageModel />
+        <vm:SplashPageModel />
     </Page.DataContext>
     <Interactivity:Interaction.Behaviors>
         <Core:EventTriggerBehavior EventName="Loaded">

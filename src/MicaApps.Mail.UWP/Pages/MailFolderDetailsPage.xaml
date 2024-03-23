@@ -3,20 +3,22 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:data="using:Mail.Services.Data"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="using:Mail.Models"
+      xmlns:viewmodels="using:Mail.ViewModels"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
       xmlns:ui="using:Microsoft.Toolkit.Uwp.UI"
       xmlns:selectors="using:Mail.Selectors"
+      xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+      xmlns:myBehaviors="using:MicaApps.Mail.Behaviors"
       Background="Transparent"
       NavigationCacheMode="Required"
       mc:Ignorable="d">
 
     <Page.Resources>
         <DataTemplate x:Key="DefaultTemplate"
-                      x:DataType="models:MailMessageListDetailViewModel">
+                      x:DataType="viewmodels:MailMessageListDetailViewModel">
             <UserControl>
                 <Grid>
                     <VisualStateManager.VisualStateGroups>
@@ -49,9 +51,9 @@
                                   VerticalScrollMode="Auto"
                                   HorizontalScrollMode="Disabled">
                         <StackPanel>
-                            <TextBlock FontSize="20"
+                            <TextBlock Text="{x:Bind MailMessage.Title}"
+                                       FontSize="20"
                                        FontWeight="Bold"
-                                       Text="{x:Bind Title}"
                                        TextWrapping="WrapWholeWords" />
                             <Grid x:Name="RecipientsGrid"
                                   Margin="0,30,0,0">
@@ -76,19 +78,20 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock FontWeight="Bold"
-                                               Text="From:" />
+                                               Text="From" />
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock FontWeight="SemiBold"
-                                                   Text="{x:Bind Sender.Name}" />
-                                        <TextBlock FontSize="12"
+                                        <TextBlock Text="{Binding MailMessage.Sender.Name}" 
+                                                   FontWeight="SemiBold" 
+                                                   />
+                                        <TextBlock Text="{Binding MailMessage.Sender.Address}" 
+                                                   FontSize="12"
                                                    FontWeight="SemiBold"
-                                                   Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                                   Text="{x:Bind Sender.Address}" />
+                                                   Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"/>
                                     </StackPanel>
                                 </Grid>
-                                <Grid Grid.Column="2"
-                                      HorizontalAlignment="Left"
-                                      x:Name="ToRecipientsGrid">
+                                <Grid x:Name="ToRecipientsGrid"
+                                      Grid.Column="2"
+                                      HorizontalAlignment="Left">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="10" />
@@ -102,7 +105,7 @@
                                               ScrollViewer.VerticalScrollMode="Disabled"
                                               ScrollViewer.HorizontalScrollMode="Enabled"
                                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                              ItemsSource="{x:Bind ToRecipients}">
+                                              ItemsSource="{Binding MailMessage.To}">
                                         <ListView.ItemContainerTransitions>
                                             <TransitionCollection />
                                         </ListView.ItemContainerTransitions>
@@ -121,15 +124,15 @@
                                             </Style>
                                         </ListView.ItemContainerStyle>
                                         <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="data:MailMessageRecipientData">
+                                            <DataTemplate x:DataType="models:MailMessageRecipient">
                                                 <StackPanel>
                                                     <TextBlock FontWeight="SemiBold"
-                                                               Text="{x:Bind Name}"
+                                                               Text="{Binding Name}"
                                                                TextTrimming="CharacterEllipsis" />
                                                     <TextBlock FontSize="12"
                                                                FontWeight="SemiBold"
                                                                Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                                               Text="{x:Bind Address}"
+                                                               Text="{Binding Address}"
                                                                TextTrimming="CharacterEllipsis" />
                                                 </StackPanel>
                                             </DataTemplate>
@@ -162,17 +165,20 @@
                                                            Height="32"
                                                            Margin="5,5,15,5"
                                                            VerticalAlignment="Center"
-                                                           DisplayName="{x:Bind SenderName}"
-                                                           ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}" />
+                                                           DisplayName="{x:Bind MailMessage.Sender.Name}">
+                                                <interactivity:Interaction.Behaviors>
+                                                    <myBehaviors:EmailAvatarBehavior EmailAddress="{x:Bind MailMessage.Sender.Address}"/>
+                                                </interactivity:Interaction.Behaviors>
+                                            </PersonPicture>
                                             <StackPanel Grid.Column="1"
                                                         VerticalAlignment="Center">
                                                 <TextBlock FontWeight="SemiBold"
-                                                           Text="{x:Bind Sender.Name}"
+                                                           Text="{x:Bind MailMessage.Sender.Name}"
                                                            TextTrimming="CharacterEllipsis" />
                                                 <TextBlock FontSize="12"
                                                            FontWeight="SemiBold"
                                                            Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                                           Text="{x:Bind Sender.Address}"
+                                                           Text="{x:Bind MailMessage.Sender.Address}"
                                                            TextTrimming="CharacterEllipsis" />
                                             </StackPanel>
                                         </Grid>
@@ -257,7 +263,7 @@
                                             </Style>
                                         </ListView.ItemContainerStyle>
                                         <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="data:MailMessageFileAttachmentData">
+                                            <DataTemplate x:DataType="models:MailMessageFileAttachment">
                                                 <Button Click="MailFileAttachmentDownload">
                                                     <StackPanel Width="180">
                                                         <TextBlock FontWeight="SemiBold"
@@ -290,7 +296,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="EditTemplate"
-                      x:DataType="models:MailMessageListDetailViewModel">
+                      x:DataType="viewmodels:MailMessageListDetailViewModel">
             <Frame Loading="FrameworkElement_OnLoading" />
         </DataTemplate>
 
@@ -369,7 +375,7 @@
 
             <!--Current Folder All Mail PreView-->
             <controls:ListDetailsView.ItemTemplate>
-                <DataTemplate x:DataType="models:MailMessageListDetailViewModel">
+                <DataTemplate x:DataType="viewmodels:MailMessageListDetailViewModel">
                     <Grid Padding="2.5,10,12.5,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -377,27 +383,30 @@
                             <ColumnDefinition Width="10" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <PersonPicture ProfilePicture="{x:Bind Sender.Address, Converter={StaticResource ContactToAvatarConverter}}"
-                                       Width="32"
+                        <PersonPicture Width="32"
                                        Height="32"
                                        Margin="10,5"
                                        VerticalAlignment="Top"
-                                       DisplayName="{x:Bind SenderName}" />
+                                       DisplayName="{x:Bind MailMessage.Sender.Name}" >
+                            <interactivity:Interaction.Behaviors>
+                                <myBehaviors:EmailAvatarBehavior EmailAddress="{x:Bind MailMessage.Sender.Address}"/>
+                            </interactivity:Interaction.Behaviors>
+                        </PersonPicture>
                         <StackPanel Grid.Column="1"
                                     DataContext="{Binding}">
                             <TextBlock FontWeight="Bold"
-                                       Text="{x:Bind SenderName}"
+                                       Text="{x:Bind MailMessage.Sender.Name}"
                                        TextTrimming="CharacterEllipsis" />
                             <TextBlock FontSize="12"
                                        Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
                                        MaxLines="1"
-                                       Text="{x:Bind Title}"
+                                       Text="{x:Bind MailMessage.Title}"
                                        TextTrimming="CharacterEllipsis"
                                        TextWrapping="WrapWholeWords" />
                             <TextBlock FontSize="12"
                                        Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
                                        MaxLines="1"
-                                       Text="{x:Bind PreviewText}"
+                                       Text="{x:Bind MailMessage.Content.ContentPreview}"
                                        TextTrimming="CharacterEllipsis"
                                        TextWrapping="WrapWholeWords" />
                         </StackPanel>
@@ -405,7 +414,7 @@
                                    FontSize="12"
                                    FontWeight="SemiBold"
                                    Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"
-                                   Text="{x:Bind SentTime}" />
+                                   Text="{x:Bind MailMessage.SentTimeText}" />
 
                         <Grid.ContextFlyout>
                             <MenuFlyout>

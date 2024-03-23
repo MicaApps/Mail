@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Authentication;
 using Mail.Extensions;
+using Mail.Models;
+using Mail.Models.Enums;
 using Mail.Services;
-using Mail.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using System;
@@ -21,36 +22,30 @@ namespace Mail.Pages
 {
     public sealed partial class HomePage : Page
     {
-        private readonly ObservableCollection<AccountModel> AccountSource = new();
-
-        private readonly ObservableCollection<object> MailFolderSource = new();
-        private readonly IMailService Service;
+        private readonly ObservableCollection<AccountModel> _accountSource = new();
+        private readonly ObservableCollection<object> _mailFolderSource = new();
+        private readonly OutlookService _mailService;
 
         public HomePage()
         {
             InitializeComponent();
 
             SetupTitleBar();
-
             SetupPaneToggleButton();
 
             //TODO: Test only and should remove this later
-            try
-            {
-                var service = App.Services.GetService<OutlookService>()!;
-                Service = service;
-                var Provider = service.Provider as MsalProvider;
-                var model = new AccountModel(
-                    Provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value,
-                    Provider.Account.Username,
-                    service.MailType);
-                AccountSource.Add(model);
+            _mailService = App.Services.GetRequiredService<OutlookService>();
 
-                service.CurrentAccount = model;
-            }
-            catch
+            if (_mailService is OutlookService outlookService)
             {
-                throw;
+                var provider = outlookService.Provider as MsalProvider;
+                var model = new AccountModel(
+                    provider.Account.GetTenantProfiles().First().ClaimsPrincipal.FindFirst("name").Value,
+                    provider.Account.Username,
+                    outlookService.MailType);
+                _accountSource.Add(model);
+
+                outlookService.CurrentAccount = model;
             }
 
             Loaded += HomePage_Loaded;
@@ -83,17 +78,19 @@ namespace Mail.Pages
         {
             try
             {
-                MailFolderSource.Add(new NavigationViewItemSeparator());
+                _mailFolderSource.Add(new NavigationViewItemSeparator());
 
                 try
                 {
-                    IReadOnlyList<MailFolderData> MailFolders = await Service.GetMailSuperFoldersAsync().OrderBy((Data) => Data.Type).ToArrayAsync();
+                    IReadOnlyList<Models.MailFolder> MailFolders = await _mailService.GetMailSuperFoldersAsync()
+                        .OrderBy(folder => folder.Type)
+                        .ToArrayAsync();
 
                     if (MailFolders.Count > 0)
                     {
-                        MailFolderSource.AddRange(MailFolders.TakeWhile((Data) => Data.Type != MailFolderType.Other));
-                        MailFolderSource.Add(new NavigationViewItemSeparator());
-                        MailFolderSource.AddRange(MailFolders.Skip(MailFolderSource.Count));
+                        _mailFolderSource.AddRange(MailFolders.TakeWhile((Data) => Data.Type != MailFolderType.Other));
+                        _mailFolderSource.Add(new NavigationViewItemSeparator());
+                        _mailFolderSource.AddRange(MailFolders.Skip(_mailFolderSource.Count));
                     }
                 }
                 catch (Exception exception)
@@ -101,17 +98,16 @@ namespace Mail.Pages
                     Trace.WriteLine(exception);
                 }
 
-                NavView.SelectedItem = MailFolderSource.OfType<MailFolderData>().FirstOrDefault();
-
-                Service.MailFoldersTree.CollectionChanged += (Sender, Args) =>
+                NavView.SelectedItem = _mailFolderSource.OfType<Models.MailFolder>().FirstOrDefault();
+                _mailService.MailFoldersTree.CollectionChanged += (Sender, Args) =>
                 {
                     //Trace.WriteLine($"Tree Changed: {Enum.GetName(typeof(NotifyCollectionChangedAction),Args.Action)} : {JsonConvert.SerializeObject(Args.NewItems)}");
                     foreach (var item in Args.NewItems)
                     {
                         if (Args.Action == NotifyCollectionChangedAction.Add)
-                            MailFolderSource.Add(item);
+                            _mailFolderSource.Add(item);
                         else if (Args.Action == NotifyCollectionChangedAction.Remove)
-                            MailFolderSource.Remove(item);
+                            _mailFolderSource.Remove(item);
                     }
                 };
             }
@@ -143,17 +139,18 @@ namespace Mail.Pages
         private void NavView_SelectionChanged(NavigationView sender,
             Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
-            try { 
-            if (args.IsSettingsSelected)
+            try
             {
-                NavigationContent.Navigate(typeof(SettingsPage), null, new DrillInNavigationTransitionInfo());
+                if (args.IsSettingsSelected)
+                {
+                    NavigationContent.Navigate(typeof(SettingsPage), null, new DrillInNavigationTransitionInfo());
+                }
+                else if (args.SelectedItem is Models.MailFolder data)
+                {
+                    NavigationContent.Navigate(typeof(MailFolderDetailsPage), data, new DrillInNavigationTransitionInfo());
+                }
             }
-            else if (args.SelectedItem is MailFolderData data)
-            {
-                NavigationContent.Navigate(typeof(MailFolderDetailsPage), data, new DrillInNavigationTransitionInfo());
-            }
-            }
-            catch(Exception ex) { string a = ex.Message; }
+            catch (Exception ex) { string a = ex.Message; }
         }
 
         private void PaneToggleButton_Click(object sender, RoutedEventArgs e)

@@ -14,12 +14,12 @@ using Windows.UI.Xaml.Navigation;
 using Mail.Extensions;
 using Mail.Models;
 using Mail.Services;
-using Mail.Services.Data;
-using Mail.Services.Data.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Nito.AsyncEx;
 using Windows.UI.Xaml.Media.Animation;
+using Mail.Models.Enums;
+using Mail.ViewModels;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -36,12 +36,12 @@ namespace Mail.Pages
         /// <summary>
         /// TODO edit address UI not changed
         /// </summary>
-        private MailMessageRecipientData MailSender { get; set; }
+        private MailMessageRecipient MailSender { get; set; }
 
         /// <summary>
         /// TODO multiple recipient
         /// </summary>
-        private MailMessageRecipientData To { get; set; } = new(string.Empty, string.Empty);
+        private MailMessageRecipient To { get; set; } = new(string.Empty, string.Empty);
 
         private EditMailOption EditMailOption { get; set; }
         private string ReplyOrForwardContent { get; set; } = string.Empty;
@@ -50,11 +50,11 @@ namespace Mail.Pages
         {
             Service = App.Services.GetService<OutlookService>()!;
 
-            MailSender = new MailMessageRecipientData(string.Empty,
+            MailSender = new MailMessageRecipient(string.Empty,
                 Service?.CurrentAccount?.Address ?? string.Empty);
-            Model = new MailMessageListDetailViewModel(MailMessageData.Empty(MailSender));
+            Model = new MailMessageListDetailViewModel(MailMessage.Empty(MailSender));
 
-            Model.ToRecipients.Add(To);
+            Model.MailMessage.To.Add(To);
             EditMailOption = new EditMailOption { Model = Model, EditMailType = EditMailType.Send };
 
             // init 由导航执行
@@ -69,15 +69,15 @@ namespace Mail.Pages
 
             void CopyContent()
             {
-                ReplyOrForwardContent = Model.Content;
-                Model.Content = string.Empty;
+                ReplyOrForwardContent = Model.MailMessage.Content.Content;
+                Model.MailMessage.Content.Content = string.Empty;
             }
 
             switch (MailOption.EditMailType)
             {
                 case EditMailType.Forward:
-                    Model.ToRecipients.Clear();
-                    Model.Sender.Address = MailSender.Address;
+                    Model.MailMessage.To.Clear();
+                    Model.MailMessage.Sender.Address = MailSender.Address;
                     CopyContent();
                     break;
                 case EditMailType.Send:
@@ -90,25 +90,25 @@ namespace Mail.Pages
                     break;
             }
 
-            var to = Model.ToRecipients.FirstOrDefault();
+            var to = Model.MailMessage.To.FirstOrDefault();
             if (to is null)
             {
-                Model.ToRecipients.Add(To);
+                Model.MailMessage.To.Add(To);
             }
             else
             {
                 To = to;
             }
 
-            if (Model.Sender.Address.IsNullOrEmpty())
+            if (Model.MailMessage.Sender.Address.IsNullOrEmpty())
             {
-                Model.Sender.Address = Service!.CurrentAccount!.Address;
+                Model.MailMessage.Sender.Address = Service!.CurrentAccount!.Address;
             }
 
-            MailSender = Model.Sender;
+            MailSender = Model.MailMessage.Sender;
 
             // save draft
-            if (Model.Id.IsNullOrEmpty())
+            if (Model.MailMessage.Id.IsNullOrEmpty())
             {
                 Service?.MailDraftSaveAsync(Model);
             }
@@ -135,7 +135,7 @@ namespace Mail.Pages
             {
                 case EditMailType.Reply:
                 case EditMailType.Forward:
-                    (Model.Content, ReplyOrForwardContent) = (ReplyOrForwardContent, Model.Content);
+                    (Model.MailMessage.Content.Content, ReplyOrForwardContent) = (ReplyOrForwardContent, Model.MailMessage.Content.Content);
                     break;
                 case EditMailType.Send:
                 case EditMailType.Draft:
@@ -267,7 +267,7 @@ namespace Mail.Pages
             await Service!.UploadAttachmentSessionAsync(Model, BasicProperties, StorageFile, UploadedSliceCallback);
         }
 
-        private async Task<MailMessageFileAttachmentData?> AttachmentUploadAsync(StorageFile StorageFile)
+        private async Task<MailMessageFileAttachment?> AttachmentUploadAsync(StorageFile StorageFile)
         {
             return await Service!.UploadAttachmentAsync(Model, StorageFile);
         }

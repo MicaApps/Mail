@@ -3,6 +3,5 @@
     xmlns:converters="using:Mail.Converters"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <converters:FolderIconConverter x:Key="FolderIconConverter" />
-    <converters:ContactToAvatarConverter x:Key="ContactToAvatarConverter" />
     <converters:FileSizeToDescriptionConverter x:Key="FileSizeToDescriptionConverter" />
 </ResourceDictionary>

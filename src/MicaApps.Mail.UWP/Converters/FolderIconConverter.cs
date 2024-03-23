@@ -1,4 +1,4 @@
-﻿using Mail.Services.Data;
+﻿using Mail.Models.Enums;
 using System;
 using Windows.UI.Xaml.Data;
 

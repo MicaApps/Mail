@@ -4,10 +4,12 @@
       xmlns:visuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:models="using:Mail.Services.Data"
+      xmlns:models="using:Mail.Models"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       xmlns:triggers="using:Microsoft.Toolkit.Uwp.UI.Triggers"
       xmlns:selectors="using:Mail.Selectors"
+      xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+      xmlns:myBehaviors="using:MicaApps.Mail.Behaviors"
       mc:Ignorable="d">
     <Page.Resources>
         <DataTemplate x:Key="DividerTemplate">
@@ -15,7 +17,7 @@
         </DataTemplate>
         
         <DataTemplate x:Key="ContentTemplate"
-                      x:DataType="models:MailFolderData">
+                      x:DataType="models:MailFolder">
             <muxc:NavigationViewItem Content="{x:Bind Name}">
                 <muxc:NavigationViewItem.Icon>
                     <FontIcon Glyph="{x:Bind Type,Converter={StaticResource FolderIconConverter}}" />
@@ -23,7 +25,7 @@
             </muxc:NavigationViewItem>
         </DataTemplate>
         
-        <DataTemplate x:Key="ContentWithChildTemplate" x:DataType="models:MailFolderData">
+        <DataTemplate x:Key="ContentWithChildTemplate" x:DataType="models:MailFolder">
             <muxc:NavigationViewItem Content="{x:Bind Name}"
                                      MenuItemsSource="{x:Bind ChildFolders}">
                 <muxc:NavigationViewItem.Icon>
@@ -52,11 +54,14 @@
                                 <DataTemplate x:DataType="models:AccountModel">
                                     <Grid Width="28"
                                           HorizontalAlignment="Left">
-                                        <PersonPicture ProfilePicture="{x:Bind Address,Converter={StaticResource ContactToAvatarConverter}}"
-                                                       HorizontalAlignment="Center"
+                                        <PersonPicture HorizontalAlignment="Center"
                                                        Width="24"
                                                        Height="24"
-                                                       DisplayName="{x:Bind Name}" />
+                                                       DisplayName="{x:Bind Name}" >
+                                            <interactivity:Interaction.Behaviors>
+                                                <myBehaviors:EmailAvatarBehavior EmailAddress="{x:Bind Address}"/>
+                                            </interactivity:Interaction.Behaviors>
+                                        </PersonPicture>
 
                                         <ToolTipService.ToolTip>
                                             <TextBlock>
@@ -165,7 +170,7 @@
                              SelectionChanged="NavView_SelectionChanged"
                              OpenPaneLength="250"
                              OverflowLabelMode="MoreLabel"
-                             MenuItemsSource="{x:Bind MailFolderSource}"
+                             MenuItemsSource="{x:Bind _mailFolderSource}"
                              MenuItemTemplateSelector="{StaticResource MailFolderNavigationDataTemplateSelector}">
             <muxc:NavigationView.Resources>
                 <!--<Thickness x:Key="NavigationViewContentMargin">0,50,0,0</Thickness>-->
@@ -177,7 +182,7 @@
             <muxc:NavigationView.PaneCustomContent>
                 <ListView x:Name="listView"
                           Margin="0,0,0,0"
-                          ItemsSource="{x:Bind AccountSource}">
+                          ItemsSource="{x:Bind _accountSource}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:AccountModel">
                             <Grid Padding="0,10">
@@ -196,8 +201,11 @@
                                 </Grid.ColumnDefinitions>
                                 <PersonPicture Width="32"
                                                Height="32"
-                                               DisplayName="{x:Bind Name}"
-                                               ProfilePicture="{x:Bind Address,Converter={StaticResource ContactToAvatarConverter}}" />
+                                               DisplayName="{x:Bind Name}">
+                                    <interactivity:Interaction.Behaviors>
+                                        <myBehaviors:EmailAvatarBehavior EmailAddress="{x:Bind Address}"/>
+                                    </interactivity:Interaction.Behaviors>
+                                </PersonPicture>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock FontWeight="SemiBold"
                                                Text="{x:Bind Name}" />

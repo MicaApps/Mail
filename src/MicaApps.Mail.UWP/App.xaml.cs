@@ -1,6 +1,6 @@
-﻿using Chloe;
-using Chloe.Infrastructure;
+﻿using LiteDB;
 using Mail.Extensions;
+using Mail.Models;
 using Mail.Pages;
 using Mail.Services;
 using Microsoft.Data.Sqlite;
@@ -8,7 +8,10 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Uwp.Helpers;
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.IO;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -25,23 +28,23 @@ namespace Mail
         public App()
         {
             InitializeComponent();
-            Services = RegisterServices();
+            Services = BuildServiceProvider();
         }
 
-        private async Task InitalizeDatabaseAsync()
+        private IServiceProvider BuildServiceProvider()
         {
-            var path = Package.Current.InstalledLocation.Path;
-            await Services.GetService<IDbContext>().Session.ExecuteReaderAsync(await PathIO.ReadTextAsync(Path.Combine(path, "Assets", "sql.sql")));
-        }
+            Windows.Storage.StorageFolder storageFolder =
+                Windows.Storage.ApplicationData.Current.LocalFolder;
+            var fileStream = storageFolder.OpenStreamForWriteAsync("storage.db", CreationCollisionOption.OpenIfExists).Result;
 
-        private IServiceProvider RegisterServices()
-        {
-            return new ServiceCollection().AddSingleton<OutlookService, OutlookService>()
-                                          .AddSingleton<ICacheService, CacheService>()
-                                          .AddSingleton<LocalCacheService>()
-                                          .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))
-                                          .AddTransient<IDbContext>(_ => new CustomDbContext(new DbConnectionFactory(() => new SqliteConnection($"DataSource={ApplicationData.Current.LocalFolder.Path}\\mail.db"))))
-                                          .BuildServiceProvider();
+            LiteDatabase liteDatabase = new LiteDatabase(fileStream);
+
+            return new ServiceCollection()
+                .AddSingleton<OutlookService, OutlookService>()
+                .AddSingleton<LocalCacheService>()
+                .AddSingleton<LiteDatabaseService>(_ => new LiteDatabaseService(liteDatabase))
+                .AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()))
+                .BuildServiceProvider();
         }
 
         protected override void OnWindowCreated(WindowCreatedEventArgs args)
@@ -62,8 +65,6 @@ namespace Mail
         private async Task HandleLaunchedOrActivatedAsync(IActivatedEventArgs args)
         {
             SystemInformation.Instance.TrackAppUse(args);
-
-            await InitalizeDatabaseAsync();
 
             Window.Current.Content = new SplashPage(args.SplashScreen, args.PreviousExecutionState == ApplicationExecutionState.Terminated);
             Window.Current.Activate();
