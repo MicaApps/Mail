@@ -47,10 +47,11 @@ public class LocalCacheService
             .Query()
             .Where(msg => msg.FolderId == option.FolderId)
             .Where(msg => msg.InferenceClassification == tab)
+            // sort before paging
+            .OrderByDescending(x => x.SentTime)
             .Skip(option.StartIndex)
             .Limit(option.LoadCount)
             .ToEnumerable()
-            .OrderByDescending(x => x.SentTime)
             .ToList();
     }
 

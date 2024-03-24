@@ -184,6 +184,9 @@ namespace Mail.Services
         public override async IAsyncEnumerable<Models.MailFolder> GetMailSuperFoldersAsync(
             [EnumeratorCancellation] CancellationToken CancelToken = default)
         {
+            //
+            await LoadSuperMailFolderList(CancelToken);
+
             var folderData = _liteDatabaseService.MailFolders
                 .Query()
                 .Where((x) => x.Type == MailFolderType.Inbox)
@@ -210,8 +213,6 @@ namespace Mail.Services
                 MailFoldersTree.Add(mailFolderData);
                 yield return mailFolderData;
             }
-
-            await LoadSuperMailFolderList(CancelToken);
         }
 
         private async Task LoadSuperMailFolderList(CancellationToken CancelToken)
