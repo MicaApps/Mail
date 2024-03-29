@@ -18,7 +18,8 @@
 
 We're striving to create a UWP Mail client for Windows.
 
-![image](https://github.com/MicaApps/Mail/assets/6630660/9980ef06-43f8-4708-bcd0-195717798361)
+![image](https://github.com/MicaApps/Mail/assets/6630660/076a560a-0d83-4779-ad33-6c1fbfb5a390)
+
 
 
 ## Roadmap
