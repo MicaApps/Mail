@@ -24,8 +24,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Contacts;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Mail.Services
 {
@@ -369,6 +371,18 @@ namespace Mail.Services
             }
 
             return ret;
+        }
+
+        public override async Task<byte[]?> GetUserAvatarAsync(
+            CancellationToken CancelToken = default)
+        {
+            byte[] AvatarBytes = null;
+            using (Stream AvatarStream = (await IProviderExtension.GetClient(Provider).Me.Photo.Content.GetAsync(cancellationToken: CancelToken)))
+            {
+                AvatarBytes = new byte[AvatarStream.Length];
+                AvatarStream.Read(AvatarBytes, 0, AvatarBytes.Length);
+            }
+            return AvatarBytes;
         }
 
         public override async IAsyncEnumerable<MailMessageFileAttachmentData> GetMailAttachmentFileAsync(
